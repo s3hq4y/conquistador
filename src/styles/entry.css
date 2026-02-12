@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Root container to sit above the canvas */
+#entry { display: block; }
+#game { display: none; }
+
+#entry-root { height: 100vh; }

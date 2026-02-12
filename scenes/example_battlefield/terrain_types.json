@@ -1,0 +1,59 @@
+[
+  {
+    "id": "plains",
+    "name": "Plains",
+    "nameZh": "平原",
+    "color": {
+      "r": 0.35,
+      "g": 0.65,
+      "b": 0.25
+    },
+    "description": "基础地形，适合建造和发展",
+    "icon": "🌾",
+    "isPassable": true,
+    "movementCost": 1
+  },
+  {
+    "id": "forest",
+    "name": "Forest",
+    "nameZh": "森林",
+    "color": {
+      "r": 0.15,
+      "g": 0.42,
+      "b": 0.18
+    },
+    "description": "提供木材资源，隐蔽加成",
+    "icon": "🌲",
+    "isPassable": true,
+    "movementCost": 2
+  },
+  {
+    "id": "mountain",
+    "name": "Mountain",
+    "nameZh": "山地",
+    "color": {
+      "r": 0.5,
+      "g": 0.47,
+      "b": 0.42
+    },
+    "description": "提供防御加成，限制移动",
+    "icon": "⛰️",
+    "isPassable": true,
+    "movementCost": 3
+  },
+  {
+    "id": "shallow_sea",
+    "name": "Shallow Sea",
+    "nameZh": "浅海",
+    "color": {
+      "r": 0.22,
+      "g": 0.52,
+      "b": 0.72
+    },
+    "description": "可航行，可建造港口",
+    "icon": "🌊",
+    "isWater": true,
+    "isPassable": true,
+    "movementCost": 2
+  }
+]
