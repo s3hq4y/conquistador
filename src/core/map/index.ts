@@ -3,8 +3,12 @@ export { Tile } from './Tile';
 export type { 
   SceneData, 
   TerrainTypeDefinition, 
+  TerrainTypeInstance,
+  TerrainComponents,
   OwnerTagDefinition,
   TileInstance,
+  TileComponents,
+  LocalizedString,
   HexColor
 } from './SceneData';
 export { 
@@ -12,5 +16,7 @@ export {
   DEFAULT_TERRAIN_TYPES,
   DEFAULT_OWNER_TAGS,
   hexToRgb,
-  rgbToHex
+  rgbToHex,
+  terrainInstanceToDefinition,
+  getTerrainDefinitions
 } from './SceneData';

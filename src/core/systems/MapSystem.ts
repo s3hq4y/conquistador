@@ -1,5 +1,5 @@
 import { GameSystem } from './GameSystem';
-import { HexGrid, Tile, SceneData, TerrainTypeDefinition, OwnerTagDefinition, createEmptyScene, DEFAULT_TERRAIN_TYPES, DEFAULT_OWNER_TAGS } from '../map';
+import { HexGrid, Tile, SceneData, TerrainTypeDefinition, OwnerTagDefinition, createEmptyScene, DEFAULT_TERRAIN_TYPES, DEFAULT_OWNER_TAGS, terrainInstanceToDefinition } from '../map';
 import type { GameEngine } from '../engine';
 import { HexTile } from '../../components/HexTile';
 
@@ -23,7 +23,9 @@ export class MapSystem extends GameSystem {
   }
 
   private initDefaultDefinitions(): void {
-    DEFAULT_TERRAIN_TYPES.forEach(t => this.terrainTypes.set(t.id, t));
+    Object.entries(DEFAULT_TERRAIN_TYPES).forEach(([id, instance]) => {
+      this.terrainTypes.set(id, terrainInstanceToDefinition(id, instance));
+    });
     DEFAULT_OWNER_TAGS.forEach(o => this.ownerTags.set(o.id, o));
   }
 
@@ -56,7 +58,17 @@ export class MapSystem extends GameSystem {
 
   addTerrainType(def: TerrainTypeDefinition): void {
     this.terrainTypes.set(def.id, def);
-    this.sceneData.terrainTypes.push(def);
+    this.sceneData.terrainTypes[def.id] = {
+      components: {
+        name: def.name,
+        description: def.description,
+        color: def.color,
+        icon: def.icon,
+        isWater: def.isWater,
+        isPassable: def.isPassable,
+        movementCost: def.movementCost
+      }
+    };
   }
 
   addOwnerTag(def: OwnerTagDefinition): void {
@@ -66,10 +78,17 @@ export class MapSystem extends GameSystem {
 
   updateTerrainType(def: TerrainTypeDefinition): void {
     this.terrainTypes.set(def.id, def);
-    const idx = this.sceneData.terrainTypes.findIndex(t => t.id === def.id);
-    if (idx >= 0) {
-      this.sceneData.terrainTypes[idx] = def;
-    }
+    this.sceneData.terrainTypes[def.id] = {
+      components: {
+        name: def.name,
+        description: def.description,
+        color: def.color,
+        icon: def.icon,
+        isWater: def.isWater,
+        isPassable: def.isPassable,
+        movementCost: def.movementCost
+      }
+    };
   }
 
   updateOwnerTag(def: OwnerTagDefinition): void {
@@ -192,7 +211,9 @@ export class MapSystem extends GameSystem {
       this.terrainTypes.clear();
       this.ownerTags.clear();
       
-      data.terrainTypes.forEach(t => this.terrainTypes.set(t.id, t));
+      Object.entries(data.terrainTypes).forEach(([id, instance]) => {
+        this.terrainTypes.set(id, terrainInstanceToDefinition(id, instance));
+      });
       data.ownerTags.forEach(o => this.ownerTags.set(o.id, o));
       
       this.hexSize = data.settings.hexSize;

@@ -8,6 +8,39 @@ export interface SceneListItem {
   modifiedAt: string;
 }
 
+export interface LocalizedString {
+  en: string;
+  zh: string;
+  [lang: string]: string;
+}
+
+export interface TerrainComponents {
+  name: LocalizedString;
+  description: LocalizedString;
+  color: string;
+  icon: string;
+  isWater?: boolean;
+  isPassable?: boolean;
+  movementCost?: number;
+}
+
+export interface TerrainTypeInstance {
+  components: TerrainComponents;
+}
+
+export interface TileComponents {
+  terrain: string;
+  owner: string;
+  building: string | null;
+  district: string | null;
+  deposit: string | null;
+}
+
+export interface TileInstance {
+  pos: [number, number];
+  components: TileComponents;
+}
+
 export interface SceneData {
   version: string;
   id: string;
@@ -21,9 +54,9 @@ export interface SceneData {
     defaultTerrain: string;
     defaultOwner: string;
   };
-  terrainTypes: any[];
+  terrainTypes: Record<string, TerrainTypeInstance>;
   ownerTags: any[];
-  tiles: any[];
+  tiles: TileInstance[];
 }
 
 export async function listScenes(): Promise<SceneListItem[]> {

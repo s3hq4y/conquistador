@@ -953,7 +953,7 @@ export class EditorSystem extends GameSystem {
       `;
       btn.innerHTML = `
         <span style="width: 12px; height: 12px; border-radius: 3px; background: ${terrain.color}; flex-shrink: 0;"></span>
-        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${terrain.nameZh}</span>
+        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${terrain.name.zh}</span>
       `;
       btn.onclick = () => this.setTerrain(terrain.id);
       container.appendChild(btn);
@@ -1076,10 +1076,9 @@ export class EditorSystem extends GameSystem {
       if (id && name && color && this.mapSystem) {
         this.mapSystem.addTerrainType({
           id,
-          name,
-          nameZh: name,
+          name: { en: name, zh: name },
+          description: { en: '', zh: '' },
           color,
-          description: '',
           icon: '🎨',
           isPassable: true,
           movementCost: 1

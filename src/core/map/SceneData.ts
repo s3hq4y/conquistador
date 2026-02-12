@@ -3,12 +3,31 @@ import defaultOwnerTags from '../../data/ownerTags.json';
 
 export type HexColor = string;
 
+export interface LocalizedString {
+  en: string;
+  zh: string;
+  [lang: string]: string;
+}
+
+export interface TerrainComponents {
+  name: LocalizedString;
+  description: LocalizedString;
+  color: HexColor;
+  icon: string;
+  isWater?: boolean;
+  isPassable?: boolean;
+  movementCost?: number;
+}
+
+export interface TerrainTypeInstance {
+  components: TerrainComponents;
+}
+
 export interface TerrainTypeDefinition {
   id: string;
-  name: string;
-  nameZh: string;
+  name: LocalizedString;
+  description: LocalizedString;
   color: HexColor;
-  description: string;
   icon: string;
   isWater?: boolean;
   isPassable?: boolean;
@@ -52,7 +71,7 @@ export interface SceneData {
     defaultTerrain: string;
     defaultOwner: string;
   };
-  terrainTypes: TerrainTypeDefinition[];
+  terrainTypes: Record<string, TerrainTypeInstance>;
   ownerTags: OwnerTagDefinition[];
   tiles: TileInstance[];
 }
@@ -72,11 +91,30 @@ export function rgbToHex(r: number, g: number, b: number): HexColor {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
-const terrainData = defaultTerrainTypes as TerrainTypeDefinition[];
+const terrainData = defaultTerrainTypes as Record<string, TerrainTypeInstance>;
 const ownerData = defaultOwnerTags as OwnerTagDefinition[];
 
-export const DEFAULT_TERRAIN_TYPES: TerrainTypeDefinition[] = terrainData && Array.isArray(terrainData) ? terrainData : [];
+export const DEFAULT_TERRAIN_TYPES: Record<string, TerrainTypeInstance> = terrainData || {};
 export const DEFAULT_OWNER_TAGS: OwnerTagDefinition[] = ownerData && Array.isArray(ownerData) ? ownerData : [];
+
+export function terrainInstanceToDefinition(id: string, instance: TerrainTypeInstance): TerrainTypeDefinition {
+  return {
+    id,
+    name: instance.components.name,
+    description: instance.components.description,
+    color: instance.components.color,
+    icon: instance.components.icon,
+    isWater: instance.components.isWater,
+    isPassable: instance.components.isPassable,
+    movementCost: instance.components.movementCost
+  };
+}
+
+export function getTerrainDefinitions(instances: Record<string, TerrainTypeInstance>): TerrainTypeDefinition[] {
+  return Object.entries(instances).map(([id, instance]) => 
+    terrainInstanceToDefinition(id, instance)
+  );
+}
 
 export function createEmptyScene(name: string = '新场景'): SceneData {
   const now = new Date().toISOString();
@@ -93,7 +131,7 @@ export function createEmptyScene(name: string = '新场景'): SceneData {
       defaultTerrain: 'plains',
       defaultOwner: 'neutral'
     },
-    terrainTypes: [...DEFAULT_TERRAIN_TYPES],
+    terrainTypes: { ...DEFAULT_TERRAIN_TYPES },
     ownerTags: [...DEFAULT_OWNER_TAGS],
     tiles: []
   };

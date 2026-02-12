@@ -1,43 +1,67 @@
-[
-  {
-    "id": "plains",
-    "name": "Plains",
-    "nameZh": "平原",
-    "color": "#59a640",
-    "description": "基础地形，适合建造和发展",
-    "icon": "🌾",
-    "isPassable": true,
-    "movementCost": 1
+{
+  "plains": {
+    "components": {
+      "name": {
+        "en": "Plains",
+        "zh": "平原"
+      },
+      "description": {
+        "en": "Basic terrain, suitable for building and development",
+        "zh": "基础地形，适合建造和发展"
+      },
+      "color": "#59a640",
+      "icon": "🌾",
+      "isPassable": true,
+      "movementCost": 1
+    }
   },
-  {
-    "id": "forest",
-    "name": "Forest",
-    "nameZh": "森林",
-    "color": "#266b2e",
-    "description": "提供木材资源，隐蔽加成",
-    "icon": "🌲",
-    "isPassable": true,
-    "movementCost": 2
+  "forest": {
+    "components": {
+      "name": {
+        "en": "Forest",
+        "zh": "森林"
+      },
+      "description": {
+        "en": "Provides wood resources, stealth bonus",
+        "zh": "提供木材资源，隐蔽加成"
+      },
+      "color": "#266b2e",
+      "icon": "🌲",
+      "isPassable": true,
+      "movementCost": 2
+    }
   },
-  {
-    "id": "mountain",
-    "name": "Mountain",
-    "nameZh": "山地",
-    "color": "#7f786b",
-    "description": "提供防御加成，限制移动",
-    "icon": "⛰️",
-    "isPassable": true,
-    "movementCost": 3
+  "mountain": {
+    "components": {
+      "name": {
+        "en": "Mountain",
+        "zh": "山地"
+      },
+      "description": {
+        "en": "Provides defense bonus, restricts movement",
+        "zh": "提供防御加成，限制移动"
+      },
+      "color": "#7f786b",
+      "icon": "⛰️",
+      "isPassable": true,
+      "movementCost": 3
+    }
   },
-  {
-    "id": "shallow_sea",
-    "name": "Shallow Sea",
-    "nameZh": "浅海",
-    "color": "#3884b8",
-    "description": "可航行，可建造港口",
-    "icon": "🌊",
-    "isWater": true,
-    "isPassable": true,
-    "movementCost": 2
+  "shallow_sea": {
+    "components": {
+      "name": {
+        "en": "Shallow Sea",
+        "zh": "浅海"
+      },
+      "description": {
+        "en": "Navigable, can build ports",
+        "zh": "可航行，可建造港口"
+      },
+      "color": "#3884b8",
+      "icon": "🌊",
+      "isWater": true,
+      "isPassable": true,
+      "movementCost": 2
+    }
   }
-]
+}
