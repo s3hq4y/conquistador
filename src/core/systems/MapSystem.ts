@@ -1,5 +1,5 @@
 import { GameSystem } from './GameSystem';
-import { HexGrid, Tile, LegacySceneData, TerrainTypeDefinition, OwnerTagDefinition, createEmptyScene, DEFAULT_TERRAIN_TYPES } from '../map';
+import { HexGrid, Tile, SceneData, TerrainTypeDefinition, OwnerTagDefinition, createEmptyScene, DEFAULT_TERRAIN_TYPES, DEFAULT_OWNER_TAGS } from '../map';
 import type { GameEngine } from '../engine';
 import { HexTile } from '../../components/HexTile';
 
@@ -10,7 +10,7 @@ export class MapSystem extends GameSystem {
   private hexSize: number;
   private tileEntities: Map<string, HexTile> = new Map();
   private mode: MapMode = 'NONE';
-  private sceneData: LegacySceneData;
+  private sceneData: SceneData;
   private terrainTypes: Map<string, TerrainTypeDefinition> = new Map();
   private ownerTags: Map<string, OwnerTagDefinition> = new Map();
 
@@ -23,7 +23,8 @@ export class MapSystem extends GameSystem {
   }
 
   private initDefaultDefinitions(): void {
-    DEFAULT_TERRAIN_TYPES.forEach((t: TerrainTypeDefinition) => this.terrainTypes.set(t.id, t));
+    DEFAULT_TERRAIN_TYPES.forEach(t => this.terrainTypes.set(t.id, t));
+    DEFAULT_OWNER_TAGS.forEach(o => this.ownerTags.set(o.id, o));
   }
 
   initialize(): void {
@@ -65,7 +66,7 @@ export class MapSystem extends GameSystem {
 
   updateTerrainType(def: TerrainTypeDefinition): void {
     this.terrainTypes.set(def.id, def);
-    const idx = this.sceneData.terrainTypes.findIndex((t: TerrainTypeDefinition) => t.id === def.id);
+    const idx = this.sceneData.terrainTypes.findIndex(t => t.id === def.id);
     if (idx >= 0) {
       this.sceneData.terrainTypes[idx] = def;
     }
@@ -73,7 +74,7 @@ export class MapSystem extends GameSystem {
 
   updateOwnerTag(def: OwnerTagDefinition): void {
     this.ownerTags.set(def.id, def);
-    const idx = this.sceneData.ownerTags.findIndex((o: OwnerTagDefinition) => o.id === def.id);
+    const idx = this.sceneData.ownerTags.findIndex(o => o.id === def.id);
     if (idx >= 0) {
       this.sceneData.ownerTags[idx] = def;
     }
@@ -179,20 +180,20 @@ export class MapSystem extends GameSystem {
     return this.hexSize;
   }
 
-  getSceneData(): LegacySceneData {
+  getSceneData(): SceneData {
     this.sceneData.tiles = this.grid.getTiles().map(t => t.toJSON());
     this.sceneData.modifiedAt = new Date().toISOString();
     return { ...this.sceneData };
   }
 
-  loadSceneData(data: LegacySceneData): boolean {
+  loadSceneData(data: SceneData): boolean {
     try {
       this.sceneData = data;
       this.terrainTypes.clear();
       this.ownerTags.clear();
       
-      data.terrainTypes.forEach((t: TerrainTypeDefinition) => this.terrainTypes.set(t.id, t));
-      data.ownerTags.forEach((o: OwnerTagDefinition) => this.ownerTags.set(o.id, o));
+      data.terrainTypes.forEach(t => this.terrainTypes.set(t.id, t));
+      data.ownerTags.forEach(o => this.ownerTags.set(o.id, o));
       
       this.hexSize = data.settings.hexSize;
       this.grid = new HexGrid(10, this.hexSize);
