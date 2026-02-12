@@ -109,6 +109,8 @@ export class MapSystem extends GameSystem {
       tile.ownerId = tile.q < -3 ? 'enemy' : (tile.q > 3 ? 'neutral' : 'player');
       this.createTileEntity(tile);
     }
+
+    this.updateAllBorderStates();
   }
 
   startCustomMap(): void {
@@ -120,6 +122,8 @@ export class MapSystem extends GameSystem {
     center.ownerId = this.sceneData.settings.defaultOwner;
     this.grid.addTile(center);
     this.createTileEntity(center);
+
+    this.updateAllBorderStates();
   }
 
   clearMap(): void {
@@ -147,6 +151,7 @@ export class MapSystem extends GameSystem {
     this.grid.addTile(tile);
     this.createTileEntity(tile);
 
+    this.updateAllBorderStates();
     return tile;
   }
 
@@ -157,6 +162,7 @@ export class MapSystem extends GameSystem {
       hexTile.destroy();
       this.tileEntities.delete(key);
       this.grid.removeTile(q, r);
+      this.updateAllBorderStates();
       return true;
     }
     return false;
@@ -200,6 +206,7 @@ export class MapSystem extends GameSystem {
         this.createTileEntity(tile);
       }
 
+      this.updateAllBorderStates();
       return true;
     } catch (error) {
       console.error('Failed to load scene:', error);
@@ -213,5 +220,172 @@ export class MapSystem extends GameSystem {
 
   setSceneDescription(description: string): void {
     this.sceneData.description = description;
+  }
+
+  updateTileOwner(q: number, r: number, ownerId: string): void {
+    const tile = this.grid.getTile(q, r);
+    const hexTile = this.tileEntities.get(`${q},${r}`);
+    
+    if (tile && hexTile) {
+      tile.ownerId = ownerId;
+      const ownerDef = this.getOwnerDef(ownerId);
+      hexTile.setOwner(ownerDef);
+      this.updateAllBorderStates();
+    }
+  }
+
+  updateAllBorderStates(): void {
+    const ownerRegions = this.findOwnerRegions();
+    
+    for (const hexTile of this.tileEntities.values()) {
+      const tile = hexTile.getTile();
+      const key = tile.getKey();
+      const region = ownerRegions.get(tile.ownerId);
+      
+      if (!region) {
+        hexTile.setBorderState(false, 0, []);
+        continue;
+      }
+
+      const isBorder = region.borderTiles.has(key);
+      let distanceFromBorder = 0;
+
+      if (!isBorder && region.tileDistances.has(key)) {
+        distanceFromBorder = region.tileDistances.get(key)!;
+      }
+
+      const borderEdges = this.calculateBorderEdges(tile);
+      hexTile.setBorderState(isBorder, distanceFromBorder, borderEdges);
+    }
+  }
+
+  private calculateBorderEdges(tile: Tile): number[] {
+    const directions = [
+      [1, 0], [1, -1], [0, -1],
+      [-1, 0], [-1, 1], [0, 1]
+    ];
+    
+    const directionToEdge: { [key: number]: number } = {
+      0: 1,
+      1: 0,
+      2: 5,
+      3: 4,
+      4: 3,
+      5: 2
+    };
+    
+    const borderEdges: number[] = [];
+    
+    for (let i = 0; i < 6; i++) {
+      const [dq, dr] = directions[i];
+      const neighbor = this.grid.getTile(tile.q + dq, tile.r + dr);
+      
+      if (!neighbor || neighbor.ownerId !== tile.ownerId) {
+        borderEdges.push(directionToEdge[i]);
+      }
+    }
+    
+    return borderEdges;
+  }
+
+  private findOwnerRegions(): Map<string, { 
+    borderTiles: Set<string>, 
+    tileDistances: Map<string, number>,
+    borderEdges: Map<string, number[]>
+  }> {
+    const regions = new Map<string, { 
+      borderTiles: Set<string>, 
+      tileDistances: Map<string, number>,
+      borderEdges: Map<string, number[]>
+    }>();
+
+    const tiles = this.grid.getTiles();
+    const ownerGroups = new Map<string, Set<string>>();
+
+    for (const tile of tiles) {
+      if (!ownerGroups.has(tile.ownerId)) {
+        ownerGroups.set(tile.ownerId, new Set());
+      }
+      ownerGroups.get(tile.ownerId)!.add(tile.getKey());
+    }
+
+    for (const [ownerId, tileKeys] of ownerGroups) {
+      const borderTiles = new Set<string>();
+      const tileDistances = new Map<string, number>();
+      const borderEdgesMap = new Map<string, number[]>();
+
+      for (const key of tileKeys) {
+        const { q, r } = Tile.fromKey(key);
+        const edges = this.calculateBorderEdgesForOwner(q, r, ownerId, tileKeys);
+        
+        if (edges.length > 0) {
+          borderTiles.add(key);
+          tileDistances.set(key, 0);
+          borderEdgesMap.set(key, edges);
+        }
+      }
+
+      const visited = new Set<string>(borderTiles);
+      let currentWave = Array.from(borderTiles);
+      let distance = 1;
+
+      while (currentWave.length > 0 && distance <= 3) {
+        const nextWave: string[] = [];
+
+        for (const key of currentWave) {
+          const { q, r } = Tile.fromKey(key);
+          const neighbors = this.grid.getNeighbors(q, r);
+
+          for (const neighbor of neighbors) {
+            const nKey = neighbor.getKey();
+            if (!visited.has(nKey) && tileKeys.has(nKey)) {
+              visited.add(nKey);
+              tileDistances.set(nKey, distance);
+              const edges = this.calculateBorderEdgesForOwner(neighbor.q, neighbor.r, ownerId, tileKeys);
+              borderEdgesMap.set(nKey, edges);
+              nextWave.push(nKey);
+            }
+          }
+        }
+
+        currentWave = nextWave;
+        distance++;
+      }
+
+      regions.set(ownerId, { borderTiles, tileDistances, borderEdges: borderEdgesMap });
+    }
+
+    return regions;
+  }
+
+  private calculateBorderEdgesForOwner(q: number, r: number, _ownerId: string, ownerTiles: Set<string>): number[] {
+    const directions = [
+      [1, 0], [1, -1], [0, -1],
+      [-1, 0], [-1, 1], [0, 1]
+    ];
+    
+    const directionToEdge: { [key: number]: number } = {
+      0: 1,
+      1: 0,
+      2: 5,
+      3: 4,
+      4: 3,
+      5: 2
+    };
+    
+    const borderEdges: number[] = [];
+    
+    for (let i = 0; i < 6; i++) {
+      const [dq, dr] = directions[i];
+      const nq = q + dq;
+      const nr = r + dr;
+      const nKey = `${nq},${nr}`;
+      
+      if (!ownerTiles.has(nKey)) {
+        borderEdges.push(directionToEdge[i]);
+      }
+    }
+    
+    return borderEdges;
   }
 }

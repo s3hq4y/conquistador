@@ -1,3 +1,4 @@
+import * as pc from 'playcanvas';
 import { GameSystem, MapSystem } from '../core/systems';
 import type { GameEngine } from '../core/engine';
 import { 
@@ -8,11 +9,13 @@ import {
 import * as sceneApi from './sceneApi';
 
 export type EditorTool = 'select' | 'paint' | 'fill' | 'erase' | 'add' | 'drag_paint';
+export type PaintMode = 'both' | 'terrain' | 'owner';
 
 export class EditorSystem extends GameSystem {
   private currentTool: EditorTool = 'paint';
   private currentTerrainId: string = 'plains';
   private currentOwnerId: string = 'neutral';
+  private paintMode: PaintMode = 'both';
   private isPainting: boolean = false;
   private lastPaintedTile: string | null = null;
   private hoveredTileKey: string | null = null;
@@ -22,6 +25,8 @@ export class EditorSystem extends GameSystem {
   private uiContainer: HTMLDivElement | null = null;
   private brushSize: number = 1;
   private currentSceneId: string | null = null;
+  private debugFirstTile: { q: number; r: number } | null = null;
+  private debugHighlightEntities: pc.Entity[] = [];
 
   constructor(engine: GameEngine) {
     super(engine);
@@ -87,6 +92,11 @@ export class EditorSystem extends GameSystem {
     const worldPos = camera.screenToWorld(e.clientX, e.clientY);
     const grid = this.mapSystem.getGrid();
     const hexPos = grid.pixelToHex(worldPos.x, worldPos.z);
+
+    if (e.shiftKey && this.currentTool === 'select') {
+      this.handleDebugClick(hexPos.q, hexPos.r);
+      return;
+    }
 
     this.isPainting = true;
     this.lastPaintedTile = null;
@@ -205,6 +215,170 @@ export class EditorSystem extends GameSystem {
     }
   }
 
+  private handleDebugClick(q: number, r: number): void {
+    const grid = this.mapSystem?.getGrid();
+    const tileEntities = this.mapSystem?.getTileEntities();
+    if (!grid || !tileEntities) return;
+
+    const tile = grid.getTile(q, r);
+    
+    if (!tile) {
+      this.clearDebugHighlight();
+      this.debugFirstTile = null;
+      return;
+    }
+
+    if (!this.debugFirstTile) {
+      this.debugFirstTile = { q, r };
+      this.highlightDebugTile(q, r, new pc.Color(1, 1, 0, 0.5));
+      console.log(`Debug: 第一个瓦片选中 (${q}, ${r})`);
+    } else {
+      const first = this.debugFirstTile;
+      const second = { q, r };
+      
+      this.highlightDebugTile(q, r, new pc.Color(0, 1, 1, 0.5));
+      
+      const sharedEdge = this.findSharedEdge(first, second);
+      
+      if (sharedEdge !== null) {
+        console.log(`Debug: 两个相邻瓦片 (${first.q},${first.r}) 和 (${second.q},${second.r}) 的共有边界是边 ${sharedEdge}`);
+        this.showSharedEdgeHighlight(first, second, sharedEdge);
+      } else {
+        const distance = this.hexDistance(first.q, first.r, second.q, second.r);
+        console.log(`Debug: 两个瓦片 (${first.q},${first.r}) 和 (${second.q},${second.r}) 不相邻，距离: ${distance}`);
+      }
+      
+      setTimeout(() => {
+        this.clearDebugHighlight();
+        this.debugFirstTile = null;
+      }, 3000);
+    }
+  }
+
+  private hexDistance(q1: number, r1: number, q2: number, r2: number): number {
+    return (Math.abs(q1 - q2) + Math.abs(q1 + r1 - q2 - r2) + Math.abs(r1 - r2)) / 2;
+  }
+
+  private findSharedEdge(first: { q: number; r: number }, second: { q: number; r: number }): number | null {
+    const directions = [
+      [1, 0], [1, -1], [0, -1],
+      [-1, 0], [-1, 1], [0, 1]
+    ];
+
+    const directionToEdge: { [key: number]: number } = {
+      0: 1,
+      1: 0,
+      2: 5,
+      3: 4,
+      4: 3,
+      5: 2
+    };
+
+    const dq = second.q - first.q;
+    const dr = second.r - first.r;
+
+    for (let i = 0; i < 6; i++) {
+      if (directions[i][0] === dq && directions[i][1] === dr) {
+        return directionToEdge[i];
+      }
+    }
+
+    return null;
+  }
+
+  private highlightDebugTile(q: number, r: number, color: pc.Color): void {
+    const grid = this.mapSystem?.getGrid();
+    if (!grid) return;
+
+    const app = (this.engine as any).app as pc.Application;
+    if (!app) return;
+
+    const hexSize = grid.getHexSize();
+    const pos = grid.hexToPixel(q, r);
+
+    const geometry = new pc.CylinderGeometry({
+      radius: hexSize * 1.1,
+      height: 10,
+      heightSegments: 1,
+      capSegments: 6
+    });
+    const mesh = pc.Mesh.fromGeometry(app.graphicsDevice, geometry);
+
+    const material = new pc.StandardMaterial();
+    material.diffuse = color;
+    material.useLighting = false;
+    material.emissive = color;
+    material.emissiveIntensity = 0.8;
+    material.opacity = 0.5;
+    material.blendType = pc.BLEND_NORMAL;
+    material.update();
+
+    const meshInstance = new pc.MeshInstance(mesh, material);
+
+    const entity = new pc.Entity(`DebugHighlight_${q}_${r}`);
+    entity.addComponent('render', {
+      meshInstances: [meshInstance],
+      castShadows: false,
+      receiveShadows: false
+    });
+
+    entity.setLocalPosition(pos.x, 5, pos.y);
+    entity.setLocalEulerAngles(0, 30, 0);
+
+    app.root.addChild(entity);
+    this.debugHighlightEntities.push(entity);
+  }
+
+  private showSharedEdgeHighlight(first: { q: number; r: number }, second: { q: number; r: number }, _edgeIndex: number): void {
+    const grid = this.mapSystem?.getGrid();
+    if (!grid) return;
+
+    const app = (this.engine as any).app as pc.Application;
+    if (!app) return;
+
+    const hexSize = grid.getHexSize();
+    const pos1 = grid.hexToPixel(first.q, first.r);
+    const pos2 = grid.hexToPixel(second.q, second.r);
+
+    const midX = (pos1.x + pos2.x) / 2;
+    const midZ = (pos1.y + pos2.y) / 2;
+
+    const geometry = new pc.BoxGeometry({
+      halfExtents: new pc.Vec3(hexSize * 0.6, 5, 4)
+    });
+    const mesh = pc.Mesh.fromGeometry(app.graphicsDevice, geometry);
+
+    const material = new pc.StandardMaterial();
+    material.diffuse = new pc.Color(1, 0.5, 0);
+    material.useLighting = false;
+    material.emissive = new pc.Color(1, 0.5, 0);
+    material.emissiveIntensity = 1;
+    material.opacity = 0.8;
+    material.blendType = pc.BLEND_NORMAL;
+    material.update();
+
+    const meshInstance = new pc.MeshInstance(mesh, material);
+
+    const entity = new pc.Entity('DebugSharedEdge');
+    entity.addComponent('render', {
+      meshInstances: [meshInstance],
+      castShadows: false,
+      receiveShadows: false
+    });
+
+    const angle = Math.atan2(pos2.y - pos1.y, pos2.x - pos1.x);
+    entity.setLocalPosition(midX, 5, midZ);
+    entity.setLocalEulerAngles(0, -angle * 180 / Math.PI + 90, 0);
+
+    app.root.addChild(entity);
+    this.debugHighlightEntities.push(entity);
+  }
+
+  private clearDebugHighlight(): void {
+    this.debugHighlightEntities.forEach(entity => entity.destroy());
+    this.debugHighlightEntities = [];
+  }
+
   private paintAtPosition(q: number, r: number): void {
     const tileKey = `${q},${r}`;
     if (tileKey === this.lastPaintedTile) return;
@@ -223,10 +397,15 @@ export class EditorSystem extends GameSystem {
     if (tile) {
       const hexTile = tileEntities.get(tileKey);
       if (hexTile) {
-        const terrainDef = this.mapSystem!.getTerrainDef(this.currentTerrainId);
-        const ownerDef = this.mapSystem!.getOwnerDef(this.currentOwnerId);
-        hexTile.setTerrain(terrainDef);
-        hexTile.setOwner(ownerDef);
+        if (this.paintMode === 'terrain' || this.paintMode === 'both') {
+          const terrainDef = this.mapSystem!.getTerrainDef(this.currentTerrainId);
+          hexTile.setTerrain(terrainDef);
+        }
+        if (this.paintMode === 'owner' || this.paintMode === 'both') {
+          const ownerDef = this.mapSystem!.getOwnerDef(this.currentOwnerId);
+          hexTile.setOwner(ownerDef);
+        }
+        this.mapSystem!.updateAllBorderStates();
       }
     }
 
@@ -241,38 +420,77 @@ export class EditorSystem extends GameSystem {
     const startTile = grid.getTile(startQ, startR);
     if (!startTile) return;
 
-    const originalTerrain = startTile.terrainId;
-    if (originalTerrain === this.currentTerrainId) return;
+    const paintMode = this.paintMode;
 
-    const visited = new Set<string>();
-    const queue: { q: number; r: number }[] = [{ q: startQ, r: startR }];
+    if (paintMode === 'terrain' || paintMode === 'both') {
+      const originalTerrain = startTile.terrainId;
+      if (originalTerrain === this.currentTerrainId && paintMode !== 'both') return;
 
-    while (queue.length > 0) {
-      const { q, r } = queue.shift()!;
-      const key = `${q},${r}`;
+      const visited = new Set<string>();
+      const queue: { q: number; r: number }[] = [{ q: startQ, r: startR }];
 
-      if (visited.has(key)) continue;
-      visited.add(key);
+      while (queue.length > 0) {
+        const { q, r } = queue.shift()!;
+        const key = `${q},${r}`;
 
-      const tile = grid.getTile(q, r);
-      if (!tile || tile.terrainId !== originalTerrain) continue;
+        if (visited.has(key)) continue;
+        visited.add(key);
 
-      const hexTile = tileEntities.get(key);
-      if (hexTile) {
-        const terrainDef = this.mapSystem.getTerrainDef(this.currentTerrainId);
-        const ownerDef = this.mapSystem.getOwnerDef(this.currentOwnerId);
-        hexTile.setTerrain(terrainDef);
-        hexTile.setOwner(ownerDef);
+        const tile = grid.getTile(q, r);
+        if (!tile || tile.terrainId !== originalTerrain) continue;
+
+        const hexTile = tileEntities.get(key);
+        if (hexTile) {
+          const terrainDef = this.mapSystem.getTerrainDef(this.currentTerrainId);
+          hexTile.setTerrain(terrainDef);
+          if (paintMode === 'both') {
+            const ownerDef = this.mapSystem.getOwnerDef(this.currentOwnerId);
+            hexTile.setOwner(ownerDef);
+          }
+        }
+
+        const neighbors = grid.getNeighbors(q, r);
+        for (const neighbor of neighbors) {
+          const nKey = `${neighbor.q},${neighbor.r}`;
+          if (!visited.has(nKey)) {
+            queue.push({ q: neighbor.q, r: neighbor.r });
+          }
+        }
       }
+    } else if (paintMode === 'owner') {
+      const originalOwner = startTile.ownerId;
+      if (originalOwner === this.currentOwnerId) return;
 
-      const neighbors = grid.getNeighbors(q, r);
-      for (const neighbor of neighbors) {
-        const nKey = `${neighbor.q},${neighbor.r}`;
-        if (!visited.has(nKey)) {
-          queue.push({ q: neighbor.q, r: neighbor.r });
+      const visited = new Set<string>();
+      const queue: { q: number; r: number }[] = [{ q: startQ, r: startR }];
+
+      while (queue.length > 0) {
+        const { q, r } = queue.shift()!;
+        const key = `${q},${r}`;
+
+        if (visited.has(key)) continue;
+        visited.add(key);
+
+        const tile = grid.getTile(q, r);
+        if (!tile || tile.ownerId !== originalOwner) continue;
+
+        const hexTile = tileEntities.get(key);
+        if (hexTile) {
+          const ownerDef = this.mapSystem.getOwnerDef(this.currentOwnerId);
+          hexTile.setOwner(ownerDef);
+        }
+
+        const neighbors = grid.getNeighbors(q, r);
+        for (const neighbor of neighbors) {
+          const nKey = `${neighbor.q},${neighbor.r}`;
+          if (!visited.has(nKey)) {
+            queue.push({ q: neighbor.q, r: neighbor.r });
+          }
         }
       }
     }
+
+    this.mapSystem.updateAllBorderStates();
   }
 
   private eraseTile(q: number, r: number): void {
@@ -347,6 +565,11 @@ export class EditorSystem extends GameSystem {
 
   setOwner(ownerId: string): void {
     this.currentOwnerId = ownerId;
+    this.updateUI();
+  }
+
+  setPaintMode(mode: PaintMode): void {
+    this.paintMode = mode;
     this.updateUI();
   }
 
@@ -616,6 +839,15 @@ export class EditorSystem extends GameSystem {
         </div>
         
         <div style="margin-bottom: 16px;">
+          <label style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; margin-bottom: 8px; display: block;">绘制模式</label>
+          <div id="paint-mode-buttons" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;">
+            <button id="mode-both" class="mode-btn" style="padding: 6px 4px; background: rgba(59, 130, 246, 0.3); border: 1px solid rgba(59, 130, 246, 0.5); border-radius: 6px; color: #60a5fa; font-size: 11px; cursor: pointer;">全部</button>
+            <button id="mode-terrain" class="mode-btn" style="padding: 6px 4px; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(100, 116, 139, 0.2); border-radius: 6px; color: #94a3b8; font-size: 11px; cursor: pointer;">地形</button>
+            <button id="mode-owner" class="mode-btn" style="padding: 6px 4px; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(100, 116, 139, 0.2); border-radius: 6px; color: #94a3b8; font-size: 11px; cursor: pointer;">所有者</button>
+          </div>
+        </div>
+        
+        <div style="margin-bottom: 16px;">
           <div style="display: flex; gap: 4px; margin-bottom: 8px;">
             <button id="tab-terrain" class="tab-btn active" style="flex: 1; padding: 6px 8px; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(100, 116, 139, 0.2); border-radius: 6px 6px 0 0; color: #94a3b8; font-size: 12px; cursor: pointer;">地形</button>
             <button id="tab-owner" class="tab-btn" style="flex: 1; padding: 6px 8px; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(100, 116, 139, 0.2); border-radius: 6px 6px 0 0; color: #94a3b8; font-size: 12px; cursor: pointer;">所有者</button>
@@ -779,6 +1011,10 @@ export class EditorSystem extends GameSystem {
       if (terrainPanel) terrainPanel.style.display = 'none';
     });
 
+    document.getElementById('mode-both')?.addEventListener('click', () => this.setPaintMode('both'));
+    document.getElementById('mode-terrain')?.addEventListener('click', () => this.setPaintMode('terrain'));
+    document.getElementById('mode-owner')?.addEventListener('click', () => this.setPaintMode('owner'));
+
     document.getElementById('btn-save')?.addEventListener('click', () => this.saveSceneToServer());
     document.getElementById('btn-load')?.addEventListener('click', () => this.showSceneList());
     document.getElementById('btn-export')?.addEventListener('click', () => this.exportScene());
@@ -909,6 +1145,15 @@ export class EditorSystem extends GameSystem {
     toolButtons.forEach(btn => {
       const toolId = btn.id.replace('tool-', '');
       const isActive = toolId === this.currentTool;
+      (btn as HTMLElement).style.background = isActive ? 'rgba(59, 130, 246, 0.3)' : 'rgba(30, 41, 59, 0.6)';
+      (btn as HTMLElement).style.borderColor = isActive ? 'rgba(59, 130, 246, 0.5)' : 'rgba(100, 116, 139, 0.2)';
+      (btn as HTMLElement).style.color = isActive ? '#60a5fa' : '#94a3b8';
+    });
+
+    const modeButtons = document.querySelectorAll('.mode-btn');
+    modeButtons.forEach(btn => {
+      const modeId = btn.id.replace('mode-', '');
+      const isActive = modeId === this.paintMode;
       (btn as HTMLElement).style.background = isActive ? 'rgba(59, 130, 246, 0.3)' : 'rgba(30, 41, 59, 0.6)';
       (btn as HTMLElement).style.borderColor = isActive ? 'rgba(59, 130, 246, 0.5)' : 'rgba(100, 116, 139, 0.2)';
       (btn as HTMLElement).style.color = isActive ? '#60a5fa' : '#94a3b8';

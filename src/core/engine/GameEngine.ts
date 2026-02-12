@@ -21,7 +21,7 @@ export class GameEngine {
     this.app = new pc.Application(canvas, {
       graphicsDeviceOptions: {
         alpha: false,
-        antialias: true,
+        antialias: false,
         depth: true,
         stencil: true
       }
