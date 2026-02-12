@@ -28,6 +28,19 @@ export interface TerrainTypeInstance {
   components: TerrainComponents;
 }
 
+export interface OwnerComponents {
+  name: LocalizedString;
+  description: LocalizedString;
+  color: string;
+  icon: string;
+  isPlayer?: boolean;
+  isAI?: boolean;
+}
+
+export interface OwnerTagInstance {
+  components: OwnerComponents;
+}
+
 export interface TileComponents {
   terrain: string;
   owner: string;
@@ -55,7 +68,7 @@ export interface SceneData {
     defaultOwner: string;
   };
   terrainTypes: Record<string, TerrainTypeInstance>;
-  ownerTags: any[];
+  ownerTags: Record<string, OwnerTagInstance>;
   tiles: TileInstance[];
 }
 

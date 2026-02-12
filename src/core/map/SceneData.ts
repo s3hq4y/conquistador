@@ -34,12 +34,24 @@ export interface TerrainTypeDefinition {
   movementCost?: number;
 }
 
+export interface OwnerComponents {
+  name: LocalizedString;
+  description: LocalizedString;
+  color: HexColor;
+  icon: string;
+  isPlayer?: boolean;
+  isAI?: boolean;
+}
+
+export interface OwnerTagInstance {
+  components: OwnerComponents;
+}
+
 export interface OwnerTagDefinition {
   id: string;
-  name: string;
-  nameZh: string;
+  name: LocalizedString;
+  description: LocalizedString;
   color: HexColor;
-  description: string;
   icon: string;
   isPlayer?: boolean;
   isAI?: boolean;
@@ -72,7 +84,7 @@ export interface SceneData {
     defaultOwner: string;
   };
   terrainTypes: Record<string, TerrainTypeInstance>;
-  ownerTags: OwnerTagDefinition[];
+  ownerTags: Record<string, OwnerTagInstance>;
   tiles: TileInstance[];
 }
 
@@ -92,10 +104,10 @@ export function rgbToHex(r: number, g: number, b: number): HexColor {
 }
 
 const terrainData = defaultTerrainTypes as Record<string, TerrainTypeInstance>;
-const ownerData = defaultOwnerTags as OwnerTagDefinition[];
+const ownerData = defaultOwnerTags as Record<string, OwnerTagInstance>;
 
 export const DEFAULT_TERRAIN_TYPES: Record<string, TerrainTypeInstance> = terrainData || {};
-export const DEFAULT_OWNER_TAGS: OwnerTagDefinition[] = ownerData && Array.isArray(ownerData) ? ownerData : [];
+export const DEFAULT_OWNER_TAGS: Record<string, OwnerTagInstance> = ownerData || {};
 
 export function terrainInstanceToDefinition(id: string, instance: TerrainTypeInstance): TerrainTypeDefinition {
   return {
@@ -110,9 +122,27 @@ export function terrainInstanceToDefinition(id: string, instance: TerrainTypeIns
   };
 }
 
+export function ownerInstanceToDefinition(id: string, instance: OwnerTagInstance): OwnerTagDefinition {
+  return {
+    id,
+    name: instance.components.name,
+    description: instance.components.description,
+    color: instance.components.color,
+    icon: instance.components.icon,
+    isPlayer: instance.components.isPlayer,
+    isAI: instance.components.isAI
+  };
+}
+
 export function getTerrainDefinitions(instances: Record<string, TerrainTypeInstance>): TerrainTypeDefinition[] {
   return Object.entries(instances).map(([id, instance]) => 
     terrainInstanceToDefinition(id, instance)
+  );
+}
+
+export function getOwnerDefinitions(instances: Record<string, OwnerTagInstance>): OwnerTagDefinition[] {
+  return Object.entries(instances).map(([id, instance]) => 
+    ownerInstanceToDefinition(id, instance)
   );
 }
 
@@ -132,7 +162,7 @@ export function createEmptyScene(name: string = '新场景'): SceneData {
       defaultOwner: 'neutral'
     },
     terrainTypes: { ...DEFAULT_TERRAIN_TYPES },
-    ownerTags: [...DEFAULT_OWNER_TAGS],
+    ownerTags: { ...DEFAULT_OWNER_TAGS },
     tiles: []
   };
 }

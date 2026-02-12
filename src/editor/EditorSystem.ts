@@ -984,7 +984,7 @@ export class EditorSystem extends GameSystem {
       `;
       btn.innerHTML = `
         <span style="width: 12px; height: 12px; border-radius: 50%; background: ${owner.color}; flex-shrink: 0;"></span>
-        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${owner.nameZh}</span>
+        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${owner.name.zh}</span>
       `;
       btn.onclick = () => this.setOwner(owner.id);
       container.appendChild(btn);
@@ -1125,10 +1125,9 @@ export class EditorSystem extends GameSystem {
       if (id && name && color && this.mapSystem) {
         this.mapSystem.addOwnerTag({
           id,
-          name,
-          nameZh: name,
+          name: { en: name, zh: name },
+          description: { en: '', zh: '' },
           color,
-          description: '',
           icon: '🏷️',
           isPlayer: false,
           isAI: false

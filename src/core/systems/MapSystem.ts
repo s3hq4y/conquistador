@@ -1,5 +1,5 @@
 import { GameSystem } from './GameSystem';
-import { HexGrid, Tile, SceneData, TerrainTypeDefinition, OwnerTagDefinition, createEmptyScene, DEFAULT_TERRAIN_TYPES, DEFAULT_OWNER_TAGS, terrainInstanceToDefinition } from '../map';
+import { HexGrid, Tile, SceneData, TerrainTypeDefinition, OwnerTagDefinition, createEmptyScene, DEFAULT_TERRAIN_TYPES, DEFAULT_OWNER_TAGS, terrainInstanceToDefinition, ownerInstanceToDefinition } from '../map';
 import type { GameEngine } from '../engine';
 import { HexTile } from '../../components/HexTile';
 
@@ -26,7 +26,9 @@ export class MapSystem extends GameSystem {
     Object.entries(DEFAULT_TERRAIN_TYPES).forEach(([id, instance]) => {
       this.terrainTypes.set(id, terrainInstanceToDefinition(id, instance));
     });
-    DEFAULT_OWNER_TAGS.forEach(o => this.ownerTags.set(o.id, o));
+    Object.entries(DEFAULT_OWNER_TAGS).forEach(([id, instance]) => {
+      this.ownerTags.set(id, ownerInstanceToDefinition(id, instance));
+    });
   }
 
   initialize(): void {
@@ -73,7 +75,16 @@ export class MapSystem extends GameSystem {
 
   addOwnerTag(def: OwnerTagDefinition): void {
     this.ownerTags.set(def.id, def);
-    this.sceneData.ownerTags.push(def);
+    this.sceneData.ownerTags[def.id] = {
+      components: {
+        name: def.name,
+        description: def.description,
+        color: def.color,
+        icon: def.icon,
+        isPlayer: def.isPlayer,
+        isAI: def.isAI
+      }
+    };
   }
 
   updateTerrainType(def: TerrainTypeDefinition): void {
@@ -93,10 +104,16 @@ export class MapSystem extends GameSystem {
 
   updateOwnerTag(def: OwnerTagDefinition): void {
     this.ownerTags.set(def.id, def);
-    const idx = this.sceneData.ownerTags.findIndex(o => o.id === def.id);
-    if (idx >= 0) {
-      this.sceneData.ownerTags[idx] = def;
-    }
+    this.sceneData.ownerTags[def.id] = {
+      components: {
+        name: def.name,
+        description: def.description,
+        color: def.color,
+        icon: def.icon,
+        isPlayer: def.isPlayer,
+        isAI: def.isAI
+      }
+    };
   }
 
   private createTileEntity(tile: Tile): void {
@@ -214,7 +231,9 @@ export class MapSystem extends GameSystem {
       Object.entries(data.terrainTypes).forEach(([id, instance]) => {
         this.terrainTypes.set(id, terrainInstanceToDefinition(id, instance));
       });
-      data.ownerTags.forEach(o => this.ownerTags.set(o.id, o));
+      Object.entries(data.ownerTags).forEach(([id, instance]) => {
+        this.ownerTags.set(id, ownerInstanceToDefinition(id, instance));
+      });
       
       this.hexSize = data.settings.hexSize;
       this.grid = new HexGrid(10, this.hexSize);

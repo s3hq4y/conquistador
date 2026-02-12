@@ -6,6 +6,8 @@ export type {
   TerrainTypeInstance,
   TerrainComponents,
   OwnerTagDefinition,
+  OwnerTagInstance,
+  OwnerComponents,
   TileInstance,
   TileComponents,
   LocalizedString,
@@ -18,5 +20,7 @@ export {
   hexToRgb,
   rgbToHex,
   terrainInstanceToDefinition,
-  getTerrainDefinitions
+  ownerInstanceToDefinition,
+  getTerrainDefinitions,
+  getOwnerDefinitions
 } from './SceneData';

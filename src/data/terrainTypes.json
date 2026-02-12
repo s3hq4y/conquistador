@@ -1,103 +1,163 @@
-[
-  {
-    "id": "plains",
-    "name": "Plains",
-    "nameZh": "平原",
-    "color": "#59a640",
-    "description": "基础地形，适合建造和发展",
-    "icon": "🌾",
-    "isPassable": true,
-    "movementCost": 1
+{
+  "plains": {
+    "components": {
+      "name": {
+        "en": "Plains",
+        "zh": "平原"
+      },
+      "description": {
+        "en": "Basic terrain, suitable for building and development",
+        "zh": "基础地形，适合建造和发展"
+      },
+      "color": "#59a640",
+      "icon": "🌾",
+      "isPassable": true,
+      "movementCost": 1
+    }
   },
-  {
-    "id": "forest",
-    "name": "Forest",
-    "nameZh": "森林",
-    "color": "#266b2e",
-    "description": "提供木材资源，隐蔽加成",
-    "icon": "🌲",
-    "isPassable": true,
-    "movementCost": 2
+  "forest": {
+    "components": {
+      "name": {
+        "en": "Forest",
+        "zh": "森林"
+      },
+      "description": {
+        "en": "Provides wood resources, stealth bonus",
+        "zh": "提供木材资源，隐蔽加成"
+      },
+      "color": "#266b2e",
+      "icon": "🌲",
+      "isPassable": true,
+      "movementCost": 2
+    }
   },
-  {
-    "id": "mountain",
-    "name": "Mountain",
-    "nameZh": "山地",
-    "color": "#7f786b",
-    "description": "提供防御加成，限制移动",
-    "icon": "⛰️",
-    "isPassable": true,
-    "movementCost": 3
+  "mountain": {
+    "components": {
+      "name": {
+        "en": "Mountain",
+        "zh": "山地"
+      },
+      "description": {
+        "en": "Provides defense bonus, restricts movement",
+        "zh": "提供防御加成，限制移动"
+      },
+      "color": "#7f786b",
+      "icon": "⛰️",
+      "isPassable": true,
+      "movementCost": 3
+    }
   },
-  {
-    "id": "desert",
-    "name": "Desert",
-    "nameZh": "沙漠",
-    "color": "#d9b859",
-    "description": "资源贫瘠，移动消耗大",
-    "icon": "🏜️",
-    "isPassable": true,
-    "movementCost": 2
+  "desert": {
+    "components": {
+      "name": {
+        "en": "Desert",
+        "zh": "沙漠"
+      },
+      "description": {
+        "en": "Barren land, high movement cost",
+        "zh": "资源贫瘠，移动消耗大"
+      },
+      "color": "#d9b859",
+      "icon": "🏜️",
+      "isPassable": true,
+      "movementCost": 2
+    }
   },
-  {
-    "id": "shallow_sea",
-    "name": "Shallow Sea",
-    "nameZh": "浅海",
-    "color": "#3884b8",
-    "description": "可航行，可建造港口",
-    "icon": "🌊",
-    "isWater": true,
-    "isPassable": true,
-    "movementCost": 2
+  "shallow_sea": {
+    "components": {
+      "name": {
+        "en": "Shallow Sea",
+        "zh": "浅海"
+      },
+      "description": {
+        "en": "Navigable, can build ports",
+        "zh": "可航行，可建造港口"
+      },
+      "color": "#3884b8",
+      "icon": "🌊",
+      "isWater": true,
+      "isPassable": true,
+      "movementCost": 2
+    }
   },
-  {
-    "id": "deep_sea",
-    "name": "Deep Sea",
-    "nameZh": "深海",
-    "color": "#1a4080",
-    "description": "仅深海单位可通行",
-    "icon": "🌊",
-    "isWater": true,
-    "isPassable": true,
-    "movementCost": 3
+  "deep_sea": {
+    "components": {
+      "name": {
+        "en": "Deep Sea",
+        "zh": "深海"
+      },
+      "description": {
+        "en": "Only deep sea units can pass",
+        "zh": "仅深海单位可通行"
+      },
+      "color": "#1a4080",
+      "icon": "🌊",
+      "isWater": true,
+      "isPassable": true,
+      "movementCost": 3
+    }
   },
-  {
-    "id": "barrier_mountain",
-    "name": "Barrier Mountain",
-    "nameZh": "屏障山",
-    "color": "#403b36",
-    "description": "不可通行，天然屏障",
-    "icon": "🏔️",
-    "isPassable": false
+  "barrier_mountain": {
+    "components": {
+      "name": {
+        "en": "Barrier Mountain",
+        "zh": "屏障山"
+      },
+      "description": {
+        "en": "Impassable, natural barrier",
+        "zh": "不可通行，天然屏障"
+      },
+      "color": "#403b36",
+      "icon": "🏔️",
+      "isPassable": false
+    }
   },
-  {
-    "id": "swamp",
-    "name": "Swamp",
-    "nameZh": "沼泽",
-    "color": "#526147",
-    "description": "移动困难，有疾病风险",
-    "icon": "🌿",
-    "isPassable": true,
-    "movementCost": 3
+  "swamp": {
+    "components": {
+      "name": {
+        "en": "Swamp",
+        "zh": "沼泽"
+      },
+      "description": {
+        "en": "Difficult terrain, disease risk",
+        "zh": "移动困难，有疾病风险"
+      },
+      "color": "#526147",
+      "icon": "🌿",
+      "isPassable": true,
+      "movementCost": 3
+    }
   },
-  {
-    "id": "tundra",
-    "name": "Tundra",
-    "nameZh": "冻原",
-    "color": "#b3c2cc",
-    "description": "寒冷地带，资源有限",
-    "icon": "❄️",
-    "isPassable": true,
-    "movementCost": 2
+  "tundra": {
+    "components": {
+      "name": {
+        "en": "Tundra",
+        "zh": "冻原"
+      },
+      "description": {
+        "en": "Cold land, limited resources",
+        "zh": "寒冷地带，资源有限"
+      },
+      "color": "#b3c2cc",
+      "icon": "❄️",
+      "isPassable": true,
+      "movementCost": 2
+    }
   },
-  {
-    "id": "volcano",
-    "name": "Volcano",
-    "nameZh": "火山",
-    "color": "#99381f",
-    "description": "危险地形，可能有稀有资源",
-    "icon": "🌋",
-    "isPassable": true,
-    "movementCost": 4
+  "volcano": {
+    "components": {
+      "name": {
+        "en": "Volcano",
+        "zh": "火山"
+      },
+      "description": {
+        "en": "Dangerous terrain, may have rare resources",
+        "zh": "危险地形，可能有稀有资源"
+      },
+      "color": "#99381f",
+      "icon": "🌋",
+      "isPassable": true,
+      "movementCost": 4
+    }
   }
-]
+}
