@@ -4,7 +4,7 @@ import type { GameEngine } from '../core/engine';
 import { 
   TerrainTypeDefinition, 
   OwnerTagDefinition, 
-  LegacySceneData
+  SceneData
 } from '../core/map';
 import * as sceneApi from './sceneApi';
 
@@ -742,7 +742,7 @@ export class EditorSystem extends GameSystem {
     if (!this.mapSystem) return false;
     
     try {
-      const data: LegacySceneData = JSON.parse(jsonData);
+      const data: SceneData = JSON.parse(jsonData);
       return this.mapSystem.loadSceneData(data);
     } catch (error) {
       console.error('Failed to import scene:', error);

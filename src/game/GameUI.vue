@@ -1,27 +1,25 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useGameStore } from '../stores/game';
+import { useGameStore, type OwnerStates } from '../stores/game';
 
 const router = useRouter();
 const gameStore = useGameStore();
 
 const showMenu = ref(false);
-
-const turn = computed(() => gameStore.turn);
+const turn = ref(1);
+const selectedTile = ref<{ q: number; r: number; terrainId: string; ownerId: string } | null>(null);
 
 const ducat = computed(() => gameStore.getResource('ducat'));
 
-const currentCountry = computed(() => gameStore.currentCountry);
-
-const currentStability = computed(() => gameStore.currentStability);
-
-const selectedTile = ref<{ q: number; r: number; terrainId: string; ownerId: string } | null>(null);
-
 const ownerName = computed(() => {
   if (!selectedTile.value) return '';
-  const country = gameStore.getCountry(selectedTile.value.ownerId);
-  return country?.shortName || country?.name || selectedTile.value.ownerId;
+  const owners: Record<string, string> = {
+    'neutral': '中立',
+    'player': '玩家',
+    'enemy': '敌方'
+  };
+  return owners[selectedTile.value.ownerId] || selectedTile.value.ownerId;
 });
 
 const terrainName = computed(() => {
@@ -30,26 +28,23 @@ const terrainName = computed(() => {
     'plains': '平原',
     'forest': '森林',
     'mountain': '山地',
-    'mountains': '山脉',
     'desert': '沙漠',
     'shallow_sea': '浅海',
     'deep_sea': '深海',
     'barrier_mountain': '屏障山',
     'swamp': '沼泽',
     'tundra': '冻原',
-    'volcano': '火山',
-    'hills': '丘陵'
+    'volcano': '火山'
   };
   return terrains[selectedTile.value.terrainId] || selectedTile.value.terrainId;
 });
 
 const handleEndTurn = () => {
-  gameStore.nextTurn();
+  turn.value++;
 };
 
 const handleBackToMenu = () => {
   showMenu.value = false;
-  gameStore.resetGame();
   router.push('/');
 };
 
@@ -69,6 +64,10 @@ onMounted(() => {
   if (canvas) {
     canvas.addEventListener('click', handleCanvasClick);
   }
+  
+  window.__setOwnerStates = (states: OwnerStates) => {
+    gameStore.setOwnerStates(states);
+  };
 });
 
 onUnmounted(() => {
@@ -76,6 +75,8 @@ onUnmounted(() => {
   if (canvas) {
     canvas.removeEventListener('click', handleCanvasClick);
   }
+  
+  window.__setOwnerStates = undefined;
 });
 </script>
 
@@ -108,26 +109,10 @@ onUnmounted(() => {
               <span class="text-amber-300 font-mono">{{ ducat }}</span>
               <span class="text-stone-500 text-xs">ducat</span>
             </div>
-            
-            <div class="h-4 w-px bg-stone-700"></div>
-            
-            <div class="flex items-center gap-2">
-              <span class="text-green-400">⚖️</span>
-              <span class="text-green-300 font-mono">{{ (currentStability * 100).toFixed(0) }}%</span>
-              <span class="text-stone-500 text-xs">稳定</span>
-            </div>
           </div>
         </div>
         
         <div class="flex items-center gap-3">
-          <div v-if="currentCountry" class="flex items-center gap-2 px-3 py-1 rounded bg-stone-800/50">
-            <div 
-              class="w-3 h-3 rounded-full" 
-              :style="{ backgroundColor: currentCountry.color }"
-            ></div>
-            <span class="text-stone-300 text-sm">{{ currentCountry.shortName || currentCountry.name }}</span>
-          </div>
-          
           <button 
             @click="showMenu = !showMenu"
             class="p-2 rounded hover:bg-stone-800/50 transition-colors"
