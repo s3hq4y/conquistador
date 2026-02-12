@@ -1,24 +1,22 @@
-import { TileInstance } from './SceneData';
+import { TileInstance, TileComponents } from './SceneData';
 
-export class Tile implements TileInstance {
+export class Tile {
   q: number;
   r: number;
-  terrainId: string;
-  ownerId: string;
+  terrain: string;
+  owner: string;
   building: string | null;
-  districtKey: string | null;
-  preciousDeposit: boolean;
-  oilDeposit: boolean;
+  district: string | null;
+  deposit: string | null;
 
   constructor(q: number, r: number) {
     this.q = q;
     this.r = r;
-    this.terrainId = 'plains';
-    this.ownerId = 'neutral';
+    this.terrain = 'plains';
+    this.owner = 'neutral';
     this.building = null;
-    this.districtKey = null;
-    this.preciousDeposit = false;
-    this.oilDeposit = false;
+    this.district = null;
+    this.deposit = null;
   }
 
   getKey(): string {
@@ -32,25 +30,25 @@ export class Tile implements TileInstance {
 
   toJSON(): TileInstance {
     return {
-      q: this.q,
-      r: this.r,
-      terrainId: this.terrainId,
-      ownerId: this.ownerId,
-      building: this.building,
-      districtKey: this.districtKey,
-      preciousDeposit: this.preciousDeposit,
-      oilDeposit: this.oilDeposit
+      pos: [this.q, this.r],
+      components: {
+        terrain: this.terrain,
+        owner: this.owner,
+        building: this.building,
+        district: this.district,
+        deposit: this.deposit
+      }
     };
   }
 
   static fromJSON(data: TileInstance): Tile {
-    const tile = new Tile(data.q, data.r);
-    tile.terrainId = data.terrainId;
-    tile.ownerId = data.ownerId;
-    tile.building = data.building;
-    tile.districtKey = data.districtKey;
-    tile.preciousDeposit = data.preciousDeposit;
-    tile.oilDeposit = data.oilDeposit;
+    const [q, r] = data.pos;
+    const tile = new Tile(q, r);
+    tile.terrain = data.components.terrain;
+    tile.owner = data.components.owner;
+    tile.building = data.components.building;
+    tile.district = data.components.district;
+    tile.deposit = data.components.deposit;
     return tile;
   }
 }

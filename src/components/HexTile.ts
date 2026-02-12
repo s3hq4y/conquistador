@@ -296,7 +296,7 @@ export class HexTile {
   }
 
   setTerrain(terrainDef: TerrainTypeDefinition): void {
-    this.tile.terrainId = terrainDef.id;
+    this.tile.terrain = terrainDef.id;
     const terrainColor = hexToPlayCanvas(terrainDef.color);
     this.material.diffuse = terrainColor.clone();
     this.material.emissive = terrainColor.clone();
@@ -304,7 +304,7 @@ export class HexTile {
   }
 
   setOwner(ownerDef: OwnerTagDefinition): void {
-    this.tile.ownerId = ownerDef.id;
+    this.tile.owner = ownerDef.id;
     this.ownerDef = ownerDef;
   }
 

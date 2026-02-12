@@ -8,7 +8,7 @@ const gameStore = useGameStore();
 
 const showMenu = ref(false);
 const turn = ref(1);
-const selectedTile = ref<{ q: number; r: number; terrainId: string; ownerId: string } | null>(null);
+const selectedTile = ref<{ q: number; r: number; terrain: string; owner: string } | null>(null);
 
 const ducat = computed(() => gameStore.getResource('ducat'));
 
@@ -19,7 +19,7 @@ const ownerName = computed(() => {
     'player': '玩家',
     'enemy': '敌方'
   };
-  return owners[selectedTile.value.ownerId] || selectedTile.value.ownerId;
+  return owners[selectedTile.value.owner] || selectedTile.value.owner;
 });
 
 const terrainName = computed(() => {
@@ -36,7 +36,7 @@ const terrainName = computed(() => {
     'tundra': '冻原',
     'volcano': '火山'
   };
-  return terrains[selectedTile.value.terrainId] || selectedTile.value.terrainId;
+  return terrains[selectedTile.value.terrain] || selectedTile.value.terrain;
 });
 
 const handleEndTurn = () => {
@@ -84,7 +84,24 @@ onUnmounted(() => {
   <div class="fixed inset-0 pointer-events-none">
     <div class="pointer-events-auto">
       <div class="absolute top-0 left-0 right-0 h-12 bg-stone-950/80 border-b border-stone-800/50 flex items-center justify-between px-4">
-        <div class="flex items-center gap-6">
+        <div class="flex items-center gap-2">
+          <span class="text-amber-400">🪙</span>
+          <span class="text-amber-300 font-mono">{{ ducat }}</span>
+          <span class="text-stone-500 text-xs">ducat</span>
+        </div>
+        
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-4 text-stone-400 text-sm">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              <span>回合 {{ turn }}</span>
+            </div>
+          </div>
+          
+          <div class="h-4 w-px bg-stone-700"></div>
+          
           <div class="flex items-center gap-2">
             <div class="w-8 h-8 rounded bg-gradient-to-br from-amber-700 to-amber-900 flex items-center justify-center">
               <svg class="w-4 h-4 text-amber-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -94,25 +111,6 @@ onUnmounted(() => {
             <span class="text-stone-400 font-light tracking-widest text-xs uppercase">Conquistador</span>
           </div>
           
-          <div class="flex items-center gap-4 text-stone-400 text-sm">
-            <div class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-              </svg>
-              <span>回合 {{ turn }}</span>
-            </div>
-            
-            <div class="h-4 w-px bg-stone-700"></div>
-            
-            <div class="flex items-center gap-2">
-              <span class="text-amber-400">💰</span>
-              <span class="text-amber-300 font-mono">{{ ducat }}</span>
-              <span class="text-stone-500 text-xs">ducat</span>
-            </div>
-          </div>
-        </div>
-        
-        <div class="flex items-center gap-3">
           <button 
             @click="showMenu = !showMenu"
             class="p-2 rounded hover:bg-stone-800/50 transition-colors"

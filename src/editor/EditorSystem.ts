@@ -423,7 +423,7 @@ export class EditorSystem extends GameSystem {
     const paintMode = this.paintMode;
 
     if (paintMode === 'terrain' || paintMode === 'both') {
-      const originalTerrain = startTile.terrainId;
+      const originalTerrain = startTile.terrain;
       if (originalTerrain === this.currentTerrainId && paintMode !== 'both') return;
 
       const visited = new Set<string>();
@@ -437,7 +437,7 @@ export class EditorSystem extends GameSystem {
         visited.add(key);
 
         const tile = grid.getTile(q, r);
-        if (!tile || tile.terrainId !== originalTerrain) continue;
+        if (!tile || tile.terrain !== originalTerrain) continue;
 
         const hexTile = tileEntities.get(key);
         if (hexTile) {
@@ -458,7 +458,7 @@ export class EditorSystem extends GameSystem {
         }
       }
     } else if (paintMode === 'owner') {
-      const originalOwner = startTile.ownerId;
+      const originalOwner = startTile.owner;
       if (originalOwner === this.currentOwnerId) return;
 
       const visited = new Set<string>();
@@ -472,7 +472,7 @@ export class EditorSystem extends GameSystem {
         visited.add(key);
 
         const tile = grid.getTile(q, r);
-        if (!tile || tile.ownerId !== originalOwner) continue;
+        if (!tile || tile.owner !== originalOwner) continue;
 
         const hexTile = tileEntities.get(key);
         if (hexTile) {
@@ -520,8 +520,8 @@ export class EditorSystem extends GameSystem {
     if (!existingTile) {
       const newTile = this.mapSystem.addTileAt(q, r);
       if (newTile) {
-        newTile.terrainId = this.currentTerrainId;
-        newTile.ownerId = this.currentOwnerId;
+        newTile.terrain = this.currentTerrainId;
+        newTile.owner = this.currentOwnerId;
         
         const tileEntities = this.mapSystem.getTileEntities();
         const hexTile = tileEntities.get(newTile.getKey());

@@ -1,0 +1,12 @@
+{
+  "resources": [
+    {
+      "id": "ducat",
+      "name": "Ducat",
+      "icon": {
+        "type": "emoji",
+        "value": "🪙"
+      }
+    }
+  ]
+}

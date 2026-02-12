@@ -85,8 +85,8 @@ export class MapSystem extends GameSystem {
     const renderer = this.engine.getRenderer();
     const tileLayer = renderer.getTileLayer();
 
-    const terrainDef = this.getTerrainDef(tile.terrainId);
-    const ownerDef = this.getOwnerDef(tile.ownerId);
+    const terrainDef = this.getTerrainDef(tile.terrain);
+    const ownerDef = this.getOwnerDef(tile.owner);
 
     const hexTile = new HexTile(app, tile, this.hexSize, terrainDef, ownerDef);
     const pos = this.grid.hexToPixel(tile.q, tile.r);
@@ -105,8 +105,8 @@ export class MapSystem extends GameSystem {
     
     for (const tile of tiles) {
       const randomTerrain = terrainList[Math.floor(Math.random() * terrainList.length)];
-      tile.terrainId = randomTerrain.id;
-      tile.ownerId = tile.q < -3 ? 'enemy' : (tile.q > 3 ? 'neutral' : 'player');
+      tile.terrain = randomTerrain.id;
+      tile.owner = tile.q < -3 ? 'enemy' : (tile.q > 3 ? 'neutral' : 'player');
       this.createTileEntity(tile);
     }
 
@@ -118,8 +118,8 @@ export class MapSystem extends GameSystem {
     this.clearMap();
 
     const center = new Tile(0, 0);
-    center.terrainId = this.sceneData.settings.defaultTerrain;
-    center.ownerId = this.sceneData.settings.defaultOwner;
+    center.terrain = this.sceneData.settings.defaultTerrain;
+    center.owner = this.sceneData.settings.defaultOwner;
     this.grid.addTile(center);
     this.createTileEntity(center);
 
@@ -146,8 +146,8 @@ export class MapSystem extends GameSystem {
     if (this.grid.getTile(q, r)) return undefined;
 
     const tile = new Tile(q, r);
-    tile.terrainId = this.sceneData.settings.defaultTerrain;
-    tile.ownerId = this.sceneData.settings.defaultOwner;
+    tile.terrain = this.sceneData.settings.defaultTerrain;
+    tile.owner = this.sceneData.settings.defaultOwner;
     this.grid.addTile(tile);
     this.createTileEntity(tile);
 
@@ -222,13 +222,13 @@ export class MapSystem extends GameSystem {
     this.sceneData.description = description;
   }
 
-  updateTileOwner(q: number, r: number, ownerId: string): void {
+  updateTileOwner(q: number, r: number, owner: string): void {
     const tile = this.grid.getTile(q, r);
     const hexTile = this.tileEntities.get(`${q},${r}`);
     
     if (tile && hexTile) {
-      tile.ownerId = ownerId;
-      const ownerDef = this.getOwnerDef(ownerId);
+      tile.owner = owner;
+      const ownerDef = this.getOwnerDef(owner);
       hexTile.setOwner(ownerDef);
       this.updateAllBorderStates();
     }
@@ -240,7 +240,7 @@ export class MapSystem extends GameSystem {
     for (const hexTile of this.tileEntities.values()) {
       const tile = hexTile.getTile();
       const key = tile.getKey();
-      const region = ownerRegions.get(tile.ownerId);
+      const region = ownerRegions.get(tile.owner);
       
       if (!region) {
         hexTile.setBorderState(false, 0, []);
@@ -280,7 +280,7 @@ export class MapSystem extends GameSystem {
       const [dq, dr] = directions[i];
       const neighbor = this.grid.getTile(tile.q + dq, tile.r + dr);
       
-      if (!neighbor || neighbor.ownerId !== tile.ownerId) {
+      if (!neighbor || neighbor.owner !== tile.owner) {
         borderEdges.push(directionToEdge[i]);
       }
     }
@@ -303,10 +303,10 @@ export class MapSystem extends GameSystem {
     const ownerGroups = new Map<string, Set<string>>();
 
     for (const tile of tiles) {
-      if (!ownerGroups.has(tile.ownerId)) {
-        ownerGroups.set(tile.ownerId, new Set());
+      if (!ownerGroups.has(tile.owner)) {
+        ownerGroups.set(tile.owner, new Set());
       }
-      ownerGroups.get(tile.ownerId)!.add(tile.getKey());
+      ownerGroups.get(tile.owner)!.add(tile.getKey());
     }
 
     for (const [ownerId, tileKeys] of ownerGroups) {

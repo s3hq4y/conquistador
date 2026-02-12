@@ -26,15 +26,17 @@ export interface OwnerTagDefinition {
   isAI?: boolean;
 }
 
-export interface TileInstance {
-  q: number;
-  r: number;
-  terrainId: string;
-  ownerId: string;
+export interface TileComponents {
+  terrain: string;
+  owner: string;
   building: string | null;
-  districtKey: string | null;
-  preciousDeposit: boolean;
-  oilDeposit: boolean;
+  district: string | null;
+  deposit: string | null;
+}
+
+export interface TileInstance {
+  pos: [number, number];
+  components: TileComponents;
 }
 
 export interface SceneData {
