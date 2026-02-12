@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3002;
+const PORT = 3003;
 const SCENES_DIR = path.join(__dirname, '..', 'scenes');
 
 app.use(cors());
@@ -217,16 +217,16 @@ async function createExampleScene() {
   };
   
   const terrainTypes = [
-    { id: 'plains', name: 'Plains', nameZh: '平原', color: { r: 0.35, g: 0.65, b: 0.25 }, description: '基础地形，适合建造和发展', icon: '🌾', isPassable: true, movementCost: 1 },
-    { id: 'forest', name: 'Forest', nameZh: '森林', color: { r: 0.15, g: 0.42, b: 0.18 }, description: '提供木材资源，隐蔽加成', icon: '🌲', isPassable: true, movementCost: 2 },
-    { id: 'mountain', name: 'Mountain', nameZh: '山地', color: { r: 0.50, g: 0.47, b: 0.42 }, description: '提供防御加成，限制移动', icon: '⛰️', isPassable: true, movementCost: 3 },
-    { id: 'shallow_sea', name: 'Shallow Sea', nameZh: '浅海', color: { r: 0.22, g: 0.52, b: 0.72 }, description: '可航行，可建造港口', icon: '🌊', isWater: true, isPassable: true, movementCost: 2 }
+    { id: 'plains', name: 'Plains', nameZh: '平原', color: '#59a640', description: '基础地形，适合建造和发展', icon: '🌾', isPassable: true, movementCost: 1 },
+    { id: 'forest', name: 'Forest', nameZh: '森林', color: '#266b2e', description: '提供木材资源，隐蔽加成', icon: '🌲', isPassable: true, movementCost: 2 },
+    { id: 'mountain', name: 'Mountain', nameZh: '山地', color: '#7f786b', description: '提供防御加成，限制移动', icon: '⛰️', isPassable: true, movementCost: 3 },
+    { id: 'shallow_sea', name: 'Shallow Sea', nameZh: '浅海', color: '#3884b8', description: '可航行，可建造港口', icon: '🌊', isWater: true, isPassable: true, movementCost: 2 }
   ];
   
   const ownerTags = [
-    { id: 'neutral', name: 'Neutral', nameZh: '中立', color: { r: 0.50, g: 0.50, b: 0.50 }, description: '中立区域', icon: '⚪', isPlayer: false, isAI: false },
-    { id: 'player', name: 'Player', nameZh: '玩家', color: { r: 0.15, g: 0.55, b: 0.92 }, description: '玩家控制区域', icon: '🔵', isPlayer: true, isAI: false },
-    { id: 'enemy', name: 'Enemy', nameZh: '敌人', color: { r: 0.92, g: 0.22, b: 0.22 }, description: '敌方控制区域', icon: '🔴', isPlayer: false, isAI: true }
+    { id: 'neutral', name: 'Neutral', nameZh: '中立', color: '#808080', description: '中立区域', icon: '⚪', isPlayer: false, isAI: false },
+    { id: 'player', name: 'Player', nameZh: '玩家', color: '#268ceb', description: '玩家控制区域', icon: '🔵', isPlayer: true, isAI: false },
+    { id: 'enemy', name: 'Enemy', nameZh: '敌人', color: '#eb3838', description: '敌方控制区域', icon: '🔴', isPlayer: false, isAI: true }
   ];
   
   const tiles: any[] = [];

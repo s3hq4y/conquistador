@@ -7,13 +7,12 @@ export type {
   TerrainTypeDefinition, 
   OwnerTagDefinition,
   TileInstance,
-  ColorRGB
+  HexColor
 } from './SceneData';
 export { 
   createEmptyScene,
   DEFAULT_TERRAIN_TYPES,
   DEFAULT_OWNER_TAGS,
-  rgbToHex,
-  hexToRGB,
-  colorToRGB
+  hexToRgb,
+  rgbToHex
 } from './SceneData';

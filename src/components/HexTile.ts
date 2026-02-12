@@ -1,9 +1,10 @@
 import * as pc from 'playcanvas';
 import { Tile } from '../core/Tile';
-import { TerrainTypeDefinition, OwnerTagDefinition, ColorRGB } from '../core/SceneData';
+import { TerrainTypeDefinition, OwnerTagDefinition, hexToRgb } from '../core/SceneData';
 
-function colorRGBToPlayCanvas(color: ColorRGB): pc.Color {
-  return new pc.Color(color.r, color.g, color.b);
+function hexToPlayCanvas(hex: string): pc.Color {
+  const rgb = hexToRgb(hex);
+  return new pc.Color(rgb.r / 255, rgb.g / 255, rgb.b / 255);
 }
 
 export class HexTile {
@@ -24,7 +25,7 @@ export class HexTile {
     this.entity = new pc.Entity(`Tile_${tile.q}_${tile.r}`);
     this.tile = tile;
     
-    const terrainColor = colorRGBToPlayCanvas(terrainDef.color);
+    const terrainColor = hexToPlayCanvas(terrainDef.color);
     
     this.material = new pc.StandardMaterial();
     this.material.diffuse = terrainColor.clone();
@@ -88,7 +89,7 @@ export class HexTile {
 
   setTerrain(terrainDef: TerrainTypeDefinition): void {
     this.tile.terrainId = terrainDef.id;
-    const terrainColor = colorRGBToPlayCanvas(terrainDef.color);
+    const terrainColor = hexToPlayCanvas(terrainDef.color);
     this.material.diffuse = terrainColor.clone();
     this.material.emissive = terrainColor.clone();
     this.updateEmissive();

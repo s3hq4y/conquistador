@@ -3,11 +3,7 @@
     "id": "neutral",
     "name": "Neutral",
     "nameZh": "中立",
-    "color": {
-      "r": 0.5,
-      "g": 0.5,
-      "b": 0.5
-    },
+    "color": "#808080",
     "description": "中立区域",
     "icon": "⚪",
     "isPlayer": false,
@@ -17,11 +13,7 @@
     "id": "player",
     "name": "Player",
     "nameZh": "玩家",
-    "color": {
-      "r": 0.15,
-      "g": 0.55,
-      "b": 0.92
-    },
+    "color": "#268ceb",
     "description": "玩家控制区域",
     "icon": "🔵",
     "isPlayer": true,
@@ -31,11 +23,7 @@
     "id": "enemy",
     "name": "Enemy",
     "nameZh": "敌人",
-    "color": {
-      "r": 0.92,
-      "g": 0.22,
-      "b": 0.22
-    },
+    "color": "#eb3838",
     "description": "敌方控制区域",
     "icon": "🔴",
     "isPlayer": false,

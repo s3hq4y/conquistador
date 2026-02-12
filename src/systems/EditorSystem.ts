@@ -4,9 +4,7 @@ import { MapSystem } from './MapSystem';
 import { 
   TerrainTypeDefinition, 
   OwnerTagDefinition, 
-  SceneData,
-  rgbToHex,
-  hexToRGB
+  SceneData
 } from '../core/SceneData';
 import * as sceneApi from '../api/sceneApi';
 
@@ -744,7 +742,7 @@ export class EditorSystem extends GameSystem {
     btn.className = 'terrain-btn';
     btn.innerHTML = `<span style="font-size: 14px;">${terrain.icon}</span><span style="font-size: 11px;">${terrain.nameZh}</span>`;
     
-    const hexColor = rgbToHex(terrain.color);
+    const hexColor = terrain.color;
     btn.style.cssText = `
       padding: 6px 8px;
       background: ${hexColor}33;
@@ -769,7 +767,7 @@ export class EditorSystem extends GameSystem {
     btn.className = 'owner-btn';
     btn.innerHTML = `<span style="font-size: 14px;">${owner.icon}</span><span style="font-size: 11px;">${owner.nameZh}</span>`;
     
-    const hexColor = rgbToHex(owner.color);
+    const hexColor = owner.color;
     btn.style.cssText = `
       padding: 6px 8px;
       background: ${hexColor}33;
@@ -831,7 +829,7 @@ export class EditorSystem extends GameSystem {
           id: id.toLowerCase().replace(/\s+/g, '_'),
           name: id,
           nameZh: name,
-          color: hexToRGB(colorHex),
+          color: colorHex,
           description: `自定义地形: ${name}`,
           icon,
           isPassable: true,
@@ -887,7 +885,7 @@ export class EditorSystem extends GameSystem {
           id: id.toLowerCase().replace(/\s+/g, '_'),
           name: id,
           nameZh: name,
-          color: hexToRGB(colorHex),
+          color: colorHex,
           description: `自定义所有者: ${name}`,
           icon,
           isPlayer: false,

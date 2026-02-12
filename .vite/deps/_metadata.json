@@ -1,0 +1,15 @@
+{
+  "hash": "aba58ee7",
+  "configHash": "285ff75e",
+  "lockfileHash": "22e2b662",
+  "browserHash": "53c8a8bc",
+  "optimized": {
+    "playcanvas": {
+      "src": "../../node_modules/playcanvas/build/playcanvas.dbg/src/index.js",
+      "file": "playcanvas.js",
+      "fileHash": "51de41df",
+      "needsInterop": false
+    }
+  },
+  "chunks": {}
+}

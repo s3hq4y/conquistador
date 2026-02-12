@@ -4,8 +4,8 @@
   "name": "示例战场",
   "description": "一个包含多种地形和势力的示例场景，展示场景编辑器的功能",
   "author": "System",
-  "createdAt": "2026-02-12T11:01:54.445Z",
-  "modifiedAt": "2026-02-12T11:01:54.445Z",
+  "createdAt": "2026-02-12T15:25:38.953Z",
+  "modifiedAt": "2026-02-12T15:25:38.953Z",
   "settings": {
     "hexSize": 50,
     "defaultTerrain": "plains",

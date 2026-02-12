@@ -2,7 +2,7 @@
   {
     "q": -4,
     "r": 0,
-    "terrainId": "plains",
+    "terrainId": "forest",
     "ownerId": "enemy",
     "building": null,
     "districtKey": null,
@@ -12,7 +12,7 @@
   {
     "q": -4,
     "r": 1,
-    "terrainId": "forest",
+    "terrainId": "plains",
     "ownerId": "enemy",
     "building": null,
     "districtKey": null,
@@ -42,7 +42,7 @@
   {
     "q": -4,
     "r": 4,
-    "terrainId": "plains",
+    "terrainId": "forest",
     "ownerId": "enemy",
     "building": null,
     "districtKey": null,
@@ -72,7 +72,7 @@
   {
     "q": -3,
     "r": 1,
-    "terrainId": "forest",
+    "terrainId": "plains",
     "ownerId": "enemy",
     "building": null,
     "districtKey": null,
@@ -102,7 +102,7 @@
   {
     "q": -3,
     "r": 4,
-    "terrainId": "plains",
+    "terrainId": "forest",
     "ownerId": "enemy",
     "building": null,
     "districtKey": null,
@@ -112,7 +112,7 @@
   {
     "q": -2,
     "r": -2,
-    "terrainId": "plains",
+    "terrainId": "forest",
     "ownerId": "neutral",
     "building": null,
     "districtKey": null,
@@ -122,7 +122,7 @@
   {
     "q": -2,
     "r": -1,
-    "terrainId": "forest",
+    "terrainId": "plains",
     "ownerId": "neutral",
     "building": null,
     "districtKey": null,
@@ -242,7 +242,7 @@
   {
     "q": -1,
     "r": 3,
-    "terrainId": "plains",
+    "terrainId": "forest",
     "ownerId": "neutral",
     "building": null,
     "districtKey": null,
@@ -252,7 +252,7 @@
   {
     "q": -1,
     "r": 4,
-    "terrainId": "forest",
+    "terrainId": "plains",
     "ownerId": "neutral",
     "building": null,
     "districtKey": null,
@@ -332,7 +332,7 @@
   {
     "q": 0,
     "r": 3,
-    "terrainId": "plains",
+    "terrainId": "forest",
     "ownerId": "neutral",
     "building": null,
     "districtKey": null,
@@ -412,7 +412,7 @@
   {
     "q": 1,
     "r": 2,
-    "terrainId": "forest",
+    "terrainId": "plains",
     "ownerId": "neutral",
     "building": null,
     "districtKey": null,
@@ -422,7 +422,7 @@
   {
     "q": 1,
     "r": 3,
-    "terrainId": "plains",
+    "terrainId": "forest",
     "ownerId": "neutral",
     "building": null,
     "districtKey": null,
@@ -522,7 +522,7 @@
   {
     "q": 3,
     "r": -2,
-    "terrainId": "forest",
+    "terrainId": "plains",
     "ownerId": "player",
     "building": null,
     "districtKey": null,
@@ -532,7 +532,7 @@
   {
     "q": 3,
     "r": -1,
-    "terrainId": "plains",
+    "terrainId": "forest",
     "ownerId": "player",
     "building": null,
     "districtKey": null,
@@ -582,7 +582,7 @@
   {
     "q": 4,
     "r": -2,
-    "terrainId": "forest",
+    "terrainId": "plains",
     "ownerId": "player",
     "building": null,
     "districtKey": null,
@@ -602,7 +602,7 @@
   {
     "q": 4,
     "r": 0,
-    "terrainId": "plains",
+    "terrainId": "forest",
     "ownerId": "player",
     "building": null,
     "districtKey": null,
