@@ -1,7 +1,6 @@
-import { GameSystem } from './GameSystem';
-import type { GameEngine } from '../engine/GameEngine';
-import { Tile } from '../core/Tile';
-import { MapSystem } from './MapSystem';
+import { GameSystem, MapSystem } from '../core/systems';
+import type { GameEngine } from '../core/engine';
+import { Tile } from '../core/map';
 
 export class SelectionSystem extends GameSystem {
   private selectedTile: Tile | null = null;

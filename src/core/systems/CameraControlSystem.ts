@@ -1,5 +1,5 @@
 import { GameSystem } from './GameSystem';
-import type { GameEngine } from '../engine/GameEngine';
+import type { GameEngine } from '../engine';
 
 export class CameraControlSystem extends GameSystem {
   private isDragging: boolean = false;

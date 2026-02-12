@@ -1,6 +1,5 @@
 import * as pc from 'playcanvas';
-import { Tile } from '../core/Tile';
-import { TerrainTypeDefinition, OwnerTagDefinition, hexToRgb } from '../core/SceneData';
+import { Tile, TerrainTypeDefinition, OwnerTagDefinition, hexToRgb } from '../core/map';
 
 function hexToPlayCanvas(hex: string): pc.Color {
   const rgb = hexToRgb(hex);

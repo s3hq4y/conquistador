@@ -1,16 +1,7 @@
 import { GameSystem } from './GameSystem';
-import { HexGrid } from '../core/HexGrid';
-import { Tile } from '../core/Tile';
-import type { GameEngine } from '../engine/GameEngine';
-import { HexTile } from '../components/HexTile';
-import { 
-  SceneData, 
-  TerrainTypeDefinition, 
-  OwnerTagDefinition, 
-  createEmptyScene,
-  DEFAULT_TERRAIN_TYPES,
-  DEFAULT_OWNER_TAGS
-} from '../core/SceneData';
+import { HexGrid, Tile, SceneData, TerrainTypeDefinition, OwnerTagDefinition, createEmptyScene, DEFAULT_TERRAIN_TYPES, DEFAULT_OWNER_TAGS } from '../map';
+import type { GameEngine } from '../engine';
+import { HexTile } from '../../components/HexTile';
 
 type MapMode = 'NONE' | 'RANDOM' | 'CUSTOM';
 

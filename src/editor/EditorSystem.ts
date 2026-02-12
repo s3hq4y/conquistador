@@ -1,12 +1,11 @@
-import { GameSystem } from './GameSystem';
-import type { GameEngine } from '../engine/GameEngine';
-import { MapSystem } from './MapSystem';
+import { GameSystem, MapSystem } from '../core/systems';
+import type { GameEngine } from '../core/engine';
 import { 
   TerrainTypeDefinition, 
   OwnerTagDefinition, 
   SceneData
-} from '../core/SceneData';
-import * as sceneApi from '../api/sceneApi';
+} from '../core/map';
+import * as sceneApi from './sceneApi';
 
 export type EditorTool = 'select' | 'paint' | 'fill' | 'erase' | 'add' | 'drag_paint';
 
@@ -356,6 +355,10 @@ export class EditorSystem extends GameSystem {
     this.updateUI();
   }
 
+  getBrushSize(): number {
+    return this.brushSize;
+  }
+
   getTool(): EditorTool {
     return this.currentTool;
   }
@@ -544,6 +547,18 @@ export class EditorSystem extends GameSystem {
     input.click();
   }
 
+  showUI(): void {
+    if (this.uiContainer) {
+      this.uiContainer.style.display = 'block';
+    }
+  }
+
+  hideUI(): void {
+    if (this.uiContainer) {
+      this.uiContainer.style.display = 'none';
+    }
+  }
+
   private rebuildUI(): void {
     this.removeUI();
     this.createUI();
@@ -611,179 +626,182 @@ export class EditorSystem extends GameSystem {
           </div>
           <div id="owner-panel" style="display: none;">
             <div id="owner-grid" class="scrollable-list" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; max-height: 150px; overflow-y: auto; padding-right: 4px;"></div>
-            <button id="btn-add-owner" style="width: 100%; margin-top: 8px; padding: 6px; background: rgba(16, 185, 129, 0.2); border: 1px dashed rgba(16, 185, 129, 0.4); border-radius: 6px; color: #34d399; font-size: 11px; cursor: pointer;">+ 添加所有者标签</button>
+            <button id="btn-add-owner" style="width: 100%; margin-top: 8px; padding: 6px; background: rgba(59, 130, 246, 0.2); border: 1px dashed rgba(59, 130, 246, 0.4); border-radius: 6px; color: #60a5fa; font-size: 11px; cursor: pointer;">+ 添加所有者标签</button>
           </div>
         </div>
-        
+
         <div style="margin-bottom: 16px;">
-          <label style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; margin-bottom: 8px; display: block;">
-            笔刷大小: <span id="brush-size-value">1</span>
-          </label>
-          <input type="range" id="brush-size" min="1" max="5" value="1" style="width: 100%; cursor: pointer;">
+          <label style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; margin-bottom: 8px; display: block;">场景信息</label>
+          <input id="scene-name" type="text" placeholder="场景名称" style="width: 100%; padding: 8px 12px; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(100, 116, 139, 0.2); border-radius: 6px; color: #e2e8f0; font-size: 13px; margin-bottom: 8px; box-sizing: border-box;">
+          <textarea id="scene-desc" placeholder="场景描述" style="width: 100%; padding: 8px 12px; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(100, 116, 139, 0.2); border-radius: 6px; color: #e2e8f0; font-size: 13px; resize: vertical; min-height: 60px; box-sizing: border-box;"></textarea>
         </div>
-        
-        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-          <button id="btn-export" style="flex: 1; padding: 10px 12px; background: linear-gradient(135deg, #3b82f6, #2563eb); border: none; border-radius: 8px; color: white; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s;">💾 保存场景</button>
-          <button id="btn-import" style="flex: 1; padding: 10px 12px; background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 8px; color: white; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s;">📂 加载场景</button>
+
+        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+          <button id="btn-save" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 6px; color: white; font-size: 13px; font-weight: 500; cursor: pointer;">💾 保存</button>
+          <button id="btn-load" style="flex: 1; padding: 10px; background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 6px; color: #60a5fa; font-size: 13px; cursor: pointer;">📂 加载</button>
         </div>
-        
-        <div style="padding-top: 12px; border-top: 1px solid rgba(100, 116, 139, 0.2);">
+
+        <div style="display: flex; gap: 8px;">
+          <button id="btn-export" style="flex: 1; padding: 8px; background: rgba(100, 116, 139, 0.2); border: 1px solid rgba(100, 116, 139, 0.3); border-radius: 6px; color: #94a3b8; font-size: 12px; cursor: pointer;">📤 导出</button>
+          <button id="btn-import" style="flex: 1; padding: 8px; background: rgba(100, 116, 139, 0.2); border: 1px solid rgba(100, 116, 139, 0.3); border-radius: 6px; color: #94a3b8; font-size: 12px; cursor: pointer;">📥 导入</button>
+        </div>
+
+        <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(100, 116, 139, 0.2);">
           <div style="font-size: 11px; color: #64748b; line-height: 1.6;">
-            <div><kbd style="background: rgba(51, 65, 85, 0.8); padding: 2px 6px; border-radius: 4px; font-size: 10px;">Q</kbd> 选择 <kbd style="background: rgba(51, 65, 85, 0.8); padding: 2px 6px; border-radius: 4px; font-size: 10px;">B</kbd> 绘制 <kbd style="background: rgba(51, 65, 85, 0.8); padding: 2px 6px; border-radius: 4px; font-size: 10px;">G</kbd> 填充</div>
-            <div><kbd style="background: rgba(51, 65, 85, 0.8); padding: 2px 6px; border-radius: 4px; font-size: 10px;">E</kbd> 擦除 <kbd style="background: rgba(51, 65, 85, 0.8); padding: 2px 6px; border-radius: 4px; font-size: 10px;">A</kbd> 添加 <kbd style="background: rgba(51, 65, 85, 0.8); padding: 2px 6px; border-radius: 4px; font-size: 10px;">D</kbd> 拖拽</div>
-            <div><kbd style="background: rgba(51, 65, 85, 0.8); padding: 2px 6px; border-radius: 4px; font-size: 10px;">1-9</kbd> 切换地形 <kbd style="background: rgba(51, 65, 85, 0.8); padding: 2px 6px; border-radius: 4px; font-size: 10px;">Ctrl+S</kbd> 保存</div>
+            <div style="margin-bottom: 4px;"><kbd style="padding: 2px 6px; background: rgba(30, 41, 59, 0.8); border-radius: 4px; font-size: 10px;">Q</kbd> 选择 <kbd style="padding: 2px 6px; background: rgba(30, 41, 59, 0.8); border-radius: 4px; font-size: 10px;">B</kbd> 绘制 <kbd style="padding: 2px 6px; background: rgba(30, 41, 59, 0.8); border-radius: 4px; font-size: 10px;">G</kbd> 填充</div>
+            <div style="margin-bottom: 4px;"><kbd style="padding: 2px 6px; background: rgba(30, 41, 59, 0.8); border-radius: 4px; font-size: 10px;">E</kbd> 擦除 <kbd style="padding: 2px 6px; background: rgba(30, 41, 59, 0.8); border-radius: 4px; font-size: 10px;">A</kbd> 添加 <kbd style="padding: 2px 6px; background: rgba(30, 41, 59, 0.8); border-radius: 4px; font-size: 10px;">D</kbd> 拖拽绘制</div>
+            <div><kbd style="padding: 2px 6px; background: rgba(30, 41, 59, 0.8); border-radius: 4px; font-size: 10px;">1-9</kbd> 快速选择地形</div>
           </div>
         </div>
       </div>
     `;
 
     uiRoot.appendChild(this.uiContainer);
-    this.setupUIEvents(terrains, owners);
-    this.updateUI();
+
+    this.createToolButtons();
+    this.createTerrainButtons(terrains);
+    this.createOwnerButtons(owners);
+    this.setupEventListeners();
   }
 
-  private setupUIEvents(terrains: TerrainTypeDefinition[], owners: OwnerTagDefinition[]): void {
-    const toolButtons = this.uiContainer?.querySelector('#tool-buttons');
-    if (toolButtons) {
-      const tools: { id: EditorTool; label: string; icon: string }[] = [
-        { id: 'select', label: '选择', icon: '↖' },
-        { id: 'paint', label: '绘制', icon: '🖌' },
-        { id: 'fill', label: '填充', icon: '🪣' },
-        { id: 'erase', label: '擦除', icon: '🗑' },
-        { id: 'add', label: '添加', icon: '+' },
-        { id: 'drag_paint', label: '拖拽', icon: '✋' }
-      ];
+  private createToolButtons(): void {
+    const container = document.getElementById('tool-buttons');
+    if (!container) return;
 
-      tools.forEach(tool => {
-        const btn = document.createElement('button');
-        btn.id = `tool-${tool.id}`;
-        btn.className = 'tool-btn';
-        btn.innerHTML = `<span style="font-size: 16px;">${tool.icon}</span><span style="font-size: 10px; display: block;">${tool.label}</span>`;
-        btn.style.cssText = `
-          padding: 8px 4px;
-          background: rgba(30, 41, 59, 0.6);
-          border: 1px solid rgba(100, 116, 139, 0.2);
-          border-radius: 6px;
-          color: #94a3b8;
-          cursor: pointer;
-          transition: all 0.2s;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 2px;
-        `;
-        btn.onclick = () => this.setTool(tool.id);
-        toolButtons.appendChild(btn);
-      });
-    }
+    const tools: { id: EditorTool; label: string; icon: string }[] = [
+      { id: 'select', label: '选择', icon: '👆' },
+      { id: 'paint', label: '绘制', icon: '🖌️' },
+      { id: 'fill', label: '填充', icon: '🪣' },
+      { id: 'erase', label: '擦除', icon: '🗑️' },
+      { id: 'add', label: '添加', icon: '➕' },
+      { id: 'drag_paint', label: '拖拽', icon: '✋' }
+    ];
 
-    const terrainGrid = this.uiContainer?.querySelector('#terrain-grid');
-    if (terrainGrid) {
-      terrains.forEach(terrain => {
-        const btn = this.createTerrainButton(terrain);
-        terrainGrid.appendChild(btn);
-      });
-    }
+    tools.forEach(tool => {
+      const btn = document.createElement('button');
+      btn.id = `tool-${tool.id}`;
+      btn.className = `tool-btn ${this.currentTool === tool.id ? 'active' : ''}`;
+      btn.style.cssText = `
+        padding: 8px 4px;
+        background: ${this.currentTool === tool.id ? 'rgba(59, 130, 246, 0.3)' : 'rgba(30, 41, 59, 0.6)'};
+        border: 1px solid ${this.currentTool === tool.id ? 'rgba(59, 130, 246, 0.5)' : 'rgba(100, 116, 139, 0.2)'};
+        border-radius: 6px;
+        color: ${this.currentTool === tool.id ? '#60a5fa' : '#94a3b8'};
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.2s;
+      `;
+      btn.innerHTML = `<div style="font-size: 16px; margin-bottom: 2px;">${tool.icon}</div><div>${tool.label}</div>`;
+      btn.onclick = () => this.setTool(tool.id);
+      container.appendChild(btn);
+    });
+  }
 
-    const ownerGrid = this.uiContainer?.querySelector('#owner-grid');
-    if (ownerGrid) {
-      owners.forEach(owner => {
-        const btn = this.createOwnerButton(owner);
-        ownerGrid.appendChild(btn);
-      });
-    }
+  private createTerrainButtons(terrains: TerrainTypeDefinition[]): void {
+    const container = document.getElementById('terrain-grid');
+    if (!container) return;
 
-    const tabTerrain = this.uiContainer?.querySelector('#tab-terrain');
-    const tabOwner = this.uiContainer?.querySelector('#tab-owner');
-    const terrainPanel = this.uiContainer?.querySelector('#terrain-panel');
-    const ownerPanel = this.uiContainer?.querySelector('#owner-panel');
+    container.innerHTML = '';
+    terrains.forEach(terrain => {
+      const btn = document.createElement('button');
+      btn.className = `terrain-btn ${this.currentTerrainId === terrain.id ? 'active' : ''}`;
+      btn.style.cssText = `
+        padding: 6px 8px;
+        background: ${this.currentTerrainId === terrain.id ? 'rgba(59, 130, 246, 0.3)' : 'rgba(30, 41, 59, 0.6)'};
+        border: 1px solid ${this.currentTerrainId === terrain.id ? 'rgba(59, 130, 246, 0.5)' : 'rgba(100, 116, 139, 0.2)'};
+        border-radius: 6px;
+        color: #e2e8f0;
+        font-size: 11px;
+        cursor: pointer;
+        text-align: left;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+      `;
+      btn.innerHTML = `
+        <span style="width: 12px; height: 12px; border-radius: 3px; background: ${terrain.color}; flex-shrink: 0;"></span>
+        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${terrain.nameZh}</span>
+      `;
+      btn.onclick = () => this.setTerrain(terrain.id);
+      container.appendChild(btn);
+    });
+  }
+
+  private createOwnerButtons(owners: OwnerTagDefinition[]): void {
+    const container = document.getElementById('owner-grid');
+    if (!container) return;
+
+    container.innerHTML = '';
+    owners.forEach(owner => {
+      const btn = document.createElement('button');
+      btn.className = `owner-btn ${this.currentOwnerId === owner.id ? 'active' : ''}`;
+      btn.style.cssText = `
+        padding: 6px 8px;
+        background: ${this.currentOwnerId === owner.id ? 'rgba(59, 130, 246, 0.3)' : 'rgba(30, 41, 59, 0.6)'};
+        border: 1px solid ${this.currentOwnerId === owner.id ? 'rgba(59, 130, 246, 0.5)' : 'rgba(100, 116, 139, 0.2)'};
+        border-radius: 6px;
+        color: #e2e8f0;
+        font-size: 11px;
+        cursor: pointer;
+        text-align: left;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+      `;
+      btn.innerHTML = `
+        <span style="width: 12px; height: 12px; border-radius: 50%; background: ${owner.color}; flex-shrink: 0;"></span>
+        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${owner.nameZh}</span>
+      `;
+      btn.onclick = () => this.setOwner(owner.id);
+      container.appendChild(btn);
+    });
+  }
+
+  private setupEventListeners(): void {
+    const tabTerrain = document.getElementById('tab-terrain');
+    const tabOwner = document.getElementById('tab-owner');
+    const terrainPanel = document.getElementById('terrain-panel');
+    const ownerPanel = document.getElementById('owner-panel');
 
     tabTerrain?.addEventListener('click', () => {
       tabTerrain.classList.add('active');
       tabOwner?.classList.remove('active');
-      if (terrainPanel) (terrainPanel as HTMLElement).style.display = 'block';
-      if (ownerPanel) (ownerPanel as HTMLElement).style.display = 'none';
+      if (terrainPanel) terrainPanel.style.display = 'block';
+      if (ownerPanel) ownerPanel.style.display = 'none';
     });
 
     tabOwner?.addEventListener('click', () => {
-      tabOwner?.classList.add('active');
+      tabOwner.classList.add('active');
       tabTerrain?.classList.remove('active');
-      if (ownerPanel) (ownerPanel as HTMLElement).style.display = 'block';
-      if (terrainPanel) (terrainPanel as HTMLElement).style.display = 'none';
+      if (ownerPanel) ownerPanel.style.display = 'block';
+      if (terrainPanel) terrainPanel.style.display = 'none';
     });
 
-    const addTerrainBtn = this.uiContainer?.querySelector('#btn-add-terrain');
-    addTerrainBtn?.addEventListener('click', () => this.showAddTerrainModal());
+    document.getElementById('btn-save')?.addEventListener('click', () => this.saveSceneToServer());
+    document.getElementById('btn-load')?.addEventListener('click', () => this.showSceneList());
+    document.getElementById('btn-export')?.addEventListener('click', () => this.exportScene());
+    document.getElementById('btn-import')?.addEventListener('click', () => this.triggerImport());
 
-    const addOwnerBtn = this.uiContainer?.querySelector('#btn-add-owner');
-    addOwnerBtn?.addEventListener('click', () => this.showAddOwnerModal());
+    const sceneNameInput = document.getElementById('scene-name') as HTMLInputElement;
+    const sceneDescInput = document.getElementById('scene-desc') as HTMLTextAreaElement;
 
-    const brushSizeInput = this.uiContainer?.querySelector('#brush-size') as HTMLInputElement;
-    if (brushSizeInput) {
-      brushSizeInput.oninput = () => {
-        this.setBrushSize(parseInt(brushSizeInput.value));
-      };
-    }
+    sceneNameInput?.addEventListener('input', (e) => {
+      this.mapSystem?.setSceneName((e.target as HTMLInputElement).value);
+    });
 
-    const exportBtn = this.uiContainer?.querySelector('#btn-export') as HTMLButtonElement | null;
-    if (exportBtn) {
-      exportBtn.onclick = () => this.saveSceneToServer();
-    }
+    sceneDescInput?.addEventListener('input', (e) => {
+      this.mapSystem?.setSceneDescription((e.target as HTMLTextAreaElement).value);
+    });
 
-    const importBtn = this.uiContainer?.querySelector('#btn-import') as HTMLButtonElement | null;
-    if (importBtn) {
-      importBtn.onclick = () => this.showSceneList();
-    }
-  }
+    document.getElementById('btn-add-terrain')?.addEventListener('click', () => {
+      this.showAddTerrainModal();
+    });
 
-  private createTerrainButton(terrain: TerrainTypeDefinition): HTMLButtonElement {
-    const btn = document.createElement('button');
-    btn.id = `terrain-${terrain.id}`;
-    btn.className = 'terrain-btn';
-    btn.innerHTML = `<span style="font-size: 14px;">${terrain.icon}</span><span style="font-size: 11px;">${terrain.nameZh}</span>`;
-    
-    const hexColor = terrain.color;
-    btn.style.cssText = `
-      padding: 6px 8px;
-      background: ${hexColor}33;
-      border: 1px solid ${hexColor}66;
-      border-radius: 6px;
-      color: #e2e8f0;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-    `;
-    btn.title = terrain.description;
-    btn.onclick = () => this.setTerrain(terrain.id);
-    return btn;
-  }
-
-  private createOwnerButton(owner: OwnerTagDefinition): HTMLButtonElement {
-    const btn = document.createElement('button');
-    btn.id = `owner-${owner.id}`;
-    btn.className = 'owner-btn';
-    btn.innerHTML = `<span style="font-size: 14px;">${owner.icon}</span><span style="font-size: 11px;">${owner.nameZh}</span>`;
-    
-    const hexColor = owner.color;
-    btn.style.cssText = `
-      padding: 6px 8px;
-      background: ${hexColor}33;
-      border: 1px solid ${hexColor}66;
-      border-radius: 6px;
-      color: #e2e8f0;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-    `;
-    btn.title = owner.description;
-    btn.onclick = () => this.setOwner(owner.id);
-    return btn;
+    document.getElementById('btn-add-owner')?.addEventListener('click', () => {
+      this.showAddOwnerModal();
+    });
   }
 
   private showAddTerrainModal(): void {
@@ -793,24 +811,20 @@ export class EditorSystem extends GameSystem {
       <div class="modal-content">
         <h4 style="margin: 0 0 16px 0; color: #e2e8f0;">添加地形类型</h4>
         <div style="margin-bottom: 12px;">
-          <label style="font-size: 11px; color: #94a3b8; display: block; margin-bottom: 4px;">ID (英文)</label>
-          <input type="text" id="new-terrain-id" placeholder="例如: lava" style="width: 100%; padding: 8px; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(100, 116, 139, 0.3); border-radius: 6px; color: #e2e8f0; font-size: 13px;">
+          <label style="font-size: 12px; color: #94a3b8; display: block; margin-bottom: 4px;">ID</label>
+          <input id="new-terrain-id" type="text" style="width: 100%; padding: 8px; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(100, 116, 139, 0.2); border-radius: 6px; color: #e2e8f0; font-size: 13px; box-sizing: border-box;">
         </div>
         <div style="margin-bottom: 12px;">
-          <label style="font-size: 11px; color: #94a3b8; display: block; margin-bottom: 4px;">名称 (中文)</label>
-          <input type="text" id="new-terrain-name" placeholder="例如: 熔岩" style="width: 100%; padding: 8px; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(100, 116, 139, 0.3); border-radius: 6px; color: #e2e8f0; font-size: 13px;">
+          <label style="font-size: 12px; color: #94a3b8; display: block; margin-bottom: 4px;">名称</label>
+          <input id="new-terrain-name" type="text" style="width: 100%; padding: 8px; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(100, 116, 139, 0.2); border-radius: 6px; color: #e2e8f0; font-size: 13px; box-sizing: border-box;">
         </div>
         <div style="margin-bottom: 12px;">
-          <label style="font-size: 11px; color: #94a3b8; display: block; margin-bottom: 4px;">颜色</label>
-          <input type="color" id="new-terrain-color" value="#ff6600" style="width: 100%; height: 36px; padding: 2px; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(100, 116, 139, 0.3); border-radius: 6px; cursor: pointer;">
-        </div>
-        <div style="margin-bottom: 12px;">
-          <label style="font-size: 11px; color: #94a3b8; display: block; margin-bottom: 4px;">图标 (emoji)</label>
-          <input type="text" id="new-terrain-icon" placeholder="🔥" style="width: 100%; padding: 8px; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(100, 116, 139, 0.3); border-radius: 6px; color: #e2e8f0; font-size: 13px;">
+          <label style="font-size: 12px; color: #94a3b8; display: block; margin-bottom: 4px;">颜色</label>
+          <input id="new-terrain-color" type="color" value="#59a640" style="width: 100%; height: 36px; padding: 2px; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(100, 116, 139, 0.2); border-radius: 6px; cursor: pointer;">
         </div>
         <div style="display: flex; gap: 8px;">
           <button id="modal-cancel" style="flex: 1; padding: 10px; background: rgba(100, 116, 139, 0.3); border: none; border-radius: 6px; color: #94a3b8; cursor: pointer;">取消</button>
-          <button id="modal-confirm" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #3b82f6, #2563eb); border: none; border-radius: 6px; color: white; cursor: pointer;">添加</button>
+          <button id="modal-confirm" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 6px; color: white; cursor: pointer;">确认</button>
         </div>
       </div>
     `;
@@ -819,23 +833,21 @@ export class EditorSystem extends GameSystem {
 
     modal.querySelector('#modal-cancel')?.addEventListener('click', () => modal.remove());
     modal.querySelector('#modal-confirm')?.addEventListener('click', () => {
-      const id = (modal.querySelector('#new-terrain-id') as HTMLInputElement).value.trim();
-      const name = (modal.querySelector('#new-terrain-name') as HTMLInputElement).value.trim();
-      const colorHex = (modal.querySelector('#new-terrain-color') as HTMLInputElement).value;
-      const icon = (modal.querySelector('#new-terrain-icon') as HTMLInputElement).value.trim() || '⬜';
+      const id = (document.getElementById('new-terrain-id') as HTMLInputElement)?.value;
+      const name = (document.getElementById('new-terrain-name') as HTMLInputElement)?.value;
+      const color = (document.getElementById('new-terrain-color') as HTMLInputElement)?.value;
 
-      if (id && name) {
-        const newTerrain: TerrainTypeDefinition = {
-          id: id.toLowerCase().replace(/\s+/g, '_'),
-          name: id,
+      if (id && name && color && this.mapSystem) {
+        this.mapSystem.addTerrainType({
+          id,
+          name,
           nameZh: name,
-          color: colorHex,
-          description: `自定义地形: ${name}`,
-          icon,
+          color,
+          description: '',
+          icon: '🎨',
           isPassable: true,
           movementCost: 1
-        };
-        this.mapSystem?.addTerrainType(newTerrain);
+        });
         this.rebuildUI();
       }
       modal.remove();
@@ -849,24 +861,20 @@ export class EditorSystem extends GameSystem {
       <div class="modal-content">
         <h4 style="margin: 0 0 16px 0; color: #e2e8f0;">添加所有者标签</h4>
         <div style="margin-bottom: 12px;">
-          <label style="font-size: 11px; color: #94a3b8; display: block; margin-bottom: 4px;">ID (英文)</label>
-          <input type="text" id="new-owner-id" placeholder="例如: ally" style="width: 100%; padding: 8px; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(100, 116, 139, 0.3); border-radius: 6px; color: #e2e8f0; font-size: 13px;">
+          <label style="font-size: 12px; color: #94a3b8; display: block; margin-bottom: 4px;">ID</label>
+          <input id="new-owner-id" type="text" style="width: 100%; padding: 8px; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(100, 116, 139, 0.2); border-radius: 6px; color: #e2e8f0; font-size: 13px; box-sizing: border-box;">
         </div>
         <div style="margin-bottom: 12px;">
-          <label style="font-size: 11px; color: #94a3b8; display: block; margin-bottom: 4px;">名称 (中文)</label>
-          <input type="text" id="new-owner-name" placeholder="例如: 盟友" style="width: 100%; padding: 8px; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(100, 116, 139, 0.3); border-radius: 6px; color: #e2e8f0; font-size: 13px;">
+          <label style="font-size: 12px; color: #94a3b8; display: block; margin-bottom: 4px;">名称</label>
+          <input id="new-owner-name" type="text" style="width: 100%; padding: 8px; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(100, 116, 139, 0.2); border-radius: 6px; color: #e2e8f0; font-size: 13px; box-sizing: border-box;">
         </div>
         <div style="margin-bottom: 12px;">
-          <label style="font-size: 11px; color: #94a3b8; display: block; margin-bottom: 4px;">颜色</label>
-          <input type="color" id="new-owner-color" value="#00ff00" style="width: 100%; height: 36px; padding: 2px; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(100, 116, 139, 0.3); border-radius: 6px; cursor: pointer;">
-        </div>
-        <div style="margin-bottom: 12px;">
-          <label style="font-size: 11px; color: #94a3b8; display: block; margin-bottom: 4px;">图标 (emoji)</label>
-          <input type="text" id="new-owner-icon" placeholder="🟢" style="width: 100%; padding: 8px; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(100, 116, 139, 0.3); border-radius: 6px; color: #e2e8f0; font-size: 13px;">
+          <label style="font-size: 12px; color: #94a3b8; display: block; margin-bottom: 4px;">颜色</label>
+          <input id="new-owner-color" type="color" value="#808080" style="width: 100%; height: 36px; padding: 2px; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(100, 116, 139, 0.2); border-radius: 6px; cursor: pointer;">
         </div>
         <div style="display: flex; gap: 8px;">
           <button id="modal-cancel" style="flex: 1; padding: 10px; background: rgba(100, 116, 139, 0.3); border: none; border-radius: 6px; color: #94a3b8; cursor: pointer;">取消</button>
-          <button id="modal-confirm" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 6px; color: white; cursor: pointer;">添加</button>
+          <button id="modal-confirm" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 6px; color: white; cursor: pointer;">确认</button>
         </div>
       </div>
     `;
@@ -875,23 +883,21 @@ export class EditorSystem extends GameSystem {
 
     modal.querySelector('#modal-cancel')?.addEventListener('click', () => modal.remove());
     modal.querySelector('#modal-confirm')?.addEventListener('click', () => {
-      const id = (modal.querySelector('#new-owner-id') as HTMLInputElement).value.trim();
-      const name = (modal.querySelector('#new-owner-name') as HTMLInputElement).value.trim();
-      const colorHex = (modal.querySelector('#new-owner-color') as HTMLInputElement).value;
-      const icon = (modal.querySelector('#new-owner-icon') as HTMLInputElement).value.trim() || '⬜';
+      const id = (document.getElementById('new-owner-id') as HTMLInputElement)?.value;
+      const name = (document.getElementById('new-owner-name') as HTMLInputElement)?.value;
+      const color = (document.getElementById('new-owner-color') as HTMLInputElement)?.value;
 
-      if (id && name) {
-        const newOwner: OwnerTagDefinition = {
-          id: id.toLowerCase().replace(/\s+/g, '_'),
-          name: id,
+      if (id && name && color && this.mapSystem) {
+        this.mapSystem.addOwnerTag({
+          id,
+          name,
           nameZh: name,
-          color: colorHex,
-          description: `自定义所有者: ${name}`,
-          icon,
+          color,
+          description: '',
+          icon: '🏷️',
           isPlayer: false,
           isAI: false
-        };
-        this.mapSystem?.addOwnerTag(newOwner);
+        });
         this.rebuildUI();
       }
       modal.remove();
@@ -899,50 +905,38 @@ export class EditorSystem extends GameSystem {
   }
 
   private updateUI(): void {
-    if (!this.uiContainer) return;
-
-    this.uiContainer.querySelectorAll('.tool-btn').forEach((btn) => {
-      const el = btn as HTMLButtonElement;
-      const isActive = el.id === `tool-${this.currentTool}`;
-      el.style.background = isActive ? 'rgba(59, 130, 246, 0.3)' : 'rgba(30, 41, 59, 0.6)';
-      el.style.borderColor = isActive ? 'rgba(59, 130, 246, 0.6)' : 'rgba(100, 116, 139, 0.2)';
-      el.style.color = isActive ? '#60a5fa' : '#94a3b8';
+    const toolButtons = document.querySelectorAll('.tool-btn');
+    toolButtons.forEach(btn => {
+      const toolId = btn.id.replace('tool-', '');
+      const isActive = toolId === this.currentTool;
+      (btn as HTMLElement).style.background = isActive ? 'rgba(59, 130, 246, 0.3)' : 'rgba(30, 41, 59, 0.6)';
+      (btn as HTMLElement).style.borderColor = isActive ? 'rgba(59, 130, 246, 0.5)' : 'rgba(100, 116, 139, 0.2)';
+      (btn as HTMLElement).style.color = isActive ? '#60a5fa' : '#94a3b8';
     });
 
-    this.uiContainer.querySelectorAll('.terrain-btn').forEach((btn) => {
-      const el = btn as HTMLButtonElement;
-      const isActive = el.id === `terrain-${this.currentTerrainId}`;
-      el.style.transform = isActive ? 'scale(1.05)' : 'scale(1)';
-      el.style.boxShadow = isActive ? '0 0 12px rgba(59, 130, 246, 0.4)' : 'none';
+    const terrainButtons = document.querySelectorAll('.terrain-btn');
+    terrainButtons.forEach(btn => {
+      const btnElement = btn as HTMLElement;
+      const terrainId = Array.from(btnElement.children)[1]?.textContent;
+      const isActive = terrainId === this.currentTerrainId;
+      btnElement.style.background = isActive ? 'rgba(59, 130, 246, 0.3)' : 'rgba(30, 41, 59, 0.6)';
+      btnElement.style.borderColor = isActive ? 'rgba(59, 130, 246, 0.5)' : 'rgba(100, 116, 139, 0.2)';
     });
 
-    this.uiContainer.querySelectorAll('.owner-btn').forEach((btn) => {
-      const el = btn as HTMLButtonElement;
-      const isActive = el.id === `owner-${this.currentOwnerId}`;
-      el.style.transform = isActive ? 'scale(1.05)' : 'scale(1)';
-      el.style.boxShadow = isActive ? '0 0 12px rgba(16, 185, 129, 0.4)' : 'none';
+    const ownerButtons = document.querySelectorAll('.owner-btn');
+    ownerButtons.forEach(btn => {
+      const btnElement = btn as HTMLElement;
+      const ownerId = Array.from(btnElement.children)[1]?.textContent;
+      const isActive = ownerId === this.currentOwnerId;
+      btnElement.style.background = isActive ? 'rgba(59, 130, 246, 0.3)' : 'rgba(30, 41, 59, 0.6)';
+      btnElement.style.borderColor = isActive ? 'rgba(59, 130, 246, 0.5)' : 'rgba(100, 116, 139, 0.2)';
     });
-
-    const brushSizeValue = this.uiContainer?.querySelector('#brush-size-value');
-    if (brushSizeValue) {
-      brushSizeValue.textContent = this.brushSize.toString();
-    }
   }
 
   private removeUI(): void {
-    this.uiContainer?.remove();
-    this.uiContainer = null;
-  }
-
-  showUI(): void {
     if (this.uiContainer) {
-      this.uiContainer.style.display = 'block';
-    }
-  }
-
-  hideUI(): void {
-    if (this.uiContainer) {
-      this.uiContainer.style.display = 'none';
+      this.uiContainer.remove();
+      this.uiContainer = null;
     }
   }
 }

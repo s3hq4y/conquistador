@@ -1,5 +1,5 @@
 import * as pc from 'playcanvas';
-import { Camera } from './Camera';
+import { Camera } from '../camera';
 
 export class Renderer {
   private app: pc.Application;

@@ -1,9 +1,9 @@
 import * as pc from 'playcanvas';
 import { Renderer } from './Renderer';
-import { Camera } from './Camera';
-import { InputManager } from './InputManager';
-import { EventBus } from './EventBus';
-import { GameSystem } from '../systems/GameSystem';
+import { Camera } from '../camera';
+import { InputManager } from '../common';
+import { EventBus } from '../common';
+import { GameSystem } from '../systems';
 
 export class GameEngine {
   private app: pc.Application;
