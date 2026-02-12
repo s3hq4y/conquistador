@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "tag": "player",
+      "relations": {
+        "enemy": -50,
+        "neutral": 0
+      },
+      "alliances": [],
+      "rivals": ["enemy"],
+      "guarantees": []
+    },
+    {
+      "tag": "enemy",
+      "relations": {
+        "player": -50,
+        "neutral": 0
+      },
+      "alliances": [],
+      "rivals": ["player"],
+      "guarantees": []
+    },
+    {
+      "tag": "neutral",
+      "relations": {
+        "player": 0,
+        "enemy": 0
+      },
+      "alliances": [],
+      "rivals": [],
+      "guarantees": []
+    }
+  ]
+}

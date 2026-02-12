@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "labels": [
+    {
+      "id": "ducats",
+      "name": "Ducats",
+      "nameZh": "金币",
+      "category": "currency",
+      "icon": "💰"
+    },
+    {
+      "id": "food",
+      "name": "Food",
+      "nameZh": "食物",
+      "category": "basic",
+      "icon": "🌾"
+    },
+    {
+      "id": "materials",
+      "name": "Materials",
+      "nameZh": "材料",
+      "category": "basic",
+      "icon": "📦"
+    },
+    {
+      "id": "energy",
+      "name": "Energy",
+      "nameZh": "能源",
+      "category": "basic",
+      "icon": "⚡"
+    },
+    {
+      "id": "crops",
+      "name": "Crops",
+      "nameZh": "农作物",
+      "category": "food",
+      "icon": "🌾"
+    },
+    {
+      "id": "meat",
+      "name": "Meat",
+      "nameZh": "肉类",
+      "category": "food",
+      "icon": "🥩"
+    },
+    {
+      "id": "fish",
+      "name": "Fish",
+      "nameZh": "鱼类",
+      "category": "food",
+      "icon": "🐟"
+    },
+    {
+      "id": "coal",
+      "name": "Coal",
+      "nameZh": "煤炭",
+      "category": "energy",
+      "icon": "�ite"
+    },
+    {
+      "id": "oil",
+      "name": "Oil",
+      "nameZh": "石油",
+      "category": "energy",
+      "icon": "🛢️"
+    },
+    {
+      "id": "gas",
+      "name": "Natural Gas",
+      "nameZh": "天然气",
+      "category": "energy",
+      "icon": "🔥"
+    },
+    {
+      "id": "wood",
+      "name": "Wood",
+      "nameZh": "木材",
+      "category": "raw",
+      "icon": "🪵"
+    },
+    {
+      "id": "steel",
+      "name": "Steel",
+      "nameZh": "钢铁",
+      "category": "raw",
+      "icon": "🔩"
+    },
+    {
+      "id": "preciousMetals",
+      "name": "Precious Metals",
+      "nameZh": "贵金属",
+      "category": "raw",
+      "icon": "💎"
+    },
+    {
+      "id": "techMetals",
+      "name": "Tech Metals",
+      "nameZh": "科技金属",
+      "category": "raw",
+      "icon": "🔬"
+    },
+    {
+      "id": "lightMetals",
+      "name": "Light Metals",
+      "nameZh": "轻金属",
+      "category": "raw",
+      "icon": "⚙️"
+    }
+  ]
+}

@@ -70,9 +70,11 @@ export function rgbToHex(r: number, g: number, b: number): HexColor {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
-export const DEFAULT_TERRAIN_TYPES: TerrainTypeDefinition[] = defaultTerrainTypes as TerrainTypeDefinition[];
+const terrainData = defaultTerrainTypes as TerrainTypeDefinition[];
+const ownerData = defaultOwnerTags as OwnerTagDefinition[];
 
-export const DEFAULT_OWNER_TAGS: OwnerTagDefinition[] = defaultOwnerTags as OwnerTagDefinition[];
+export const DEFAULT_TERRAIN_TYPES: TerrainTypeDefinition[] = terrainData && Array.isArray(terrainData) ? terrainData : [];
+export const DEFAULT_OWNER_TAGS: OwnerTagDefinition[] = ownerData && Array.isArray(ownerData) ? ownerData : [];
 
 export function createEmptyScene(name: string = '新场景'): SceneData {
   const now = new Date().toISOString();

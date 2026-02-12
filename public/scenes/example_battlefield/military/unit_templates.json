@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "templates": [
+    {
+      "id": "infantry_brigade",
+      "name": "Infantry Brigade",
+      "nameZh": "步兵旅",
+      "category": "land",
+      "baseStats": {
+        "manpower": 3000,
+        "attack": 10,
+        "defense": 15,
+        "organization": 50
+      },
+      "equipment": ["basic_rifle"],
+      "tags": ["infantry"],
+      "cost": {
+        "ducats": 50,
+        "materials": 30
+      }
+    },
+    {
+      "id": "cavalry_brigade",
+      "name": "Cavalry Brigade",
+      "nameZh": "骑兵旅",
+      "category": "land",
+      "baseStats": {
+        "manpower": 2000,
+        "attack": 12,
+        "defense": 8,
+        "organization": 40,
+        "movement": 1.5
+      },
+      "equipment": ["basic_rifle"],
+      "tags": ["cavalry"],
+      "cost": {
+        "ducats": 60,
+        "materials": 25
+      }
+    },
+    {
+      "id": "artillery_brigade",
+      "name": "Artillery Brigade",
+      "nameZh": "炮兵旅",
+      "category": "land",
+      "baseStats": {
+        "manpower": 1500,
+        "attack": 25,
+        "defense": 5,
+        "organization": 30
+      },
+      "equipment": ["field_gun"],
+      "tags": ["artillery"],
+      "cost": {
+        "ducats": 80,
+        "materials": 60,
+        "steel": 20
+      }
+    },
+    {
+      "id": "armor_division",
+      "name": "Armor Division",
+      "nameZh": "装甲师",
+      "category": "land",
+      "baseStats": {
+        "manpower": 5000,
+        "attack": 40,
+        "defense": 35,
+        "organization": 60,
+        "breakthrough": 30
+      },
+      "equipment": ["medium_tank"],
+      "tags": ["armor", "elite"],
+      "cost": {
+        "ducats": 200,
+        "materials": 150,
+        "steel": 100,
+        "oil": 40
+      }
+    },
+    {
+      "id": "fighter_wing",
+      "name": "Fighter Wing",
+      "nameZh": "战斗机联队",
+      "category": "air",
+      "baseStats": {
+        "manpower": 500,
+        "airAttack": 30,
+        "airDefense": 20
+      },
+      "equipment": ["fighter"],
+      "tags": [],
+      "cost": {
+        "ducats": 150,
+        "materials": 120,
+        "steel": 80,
+        "oil": 30
+      }
+    },
+    {
+      "id": "bomber_wing",
+      "name": "Bomber Wing",
+      "nameZh": "轰炸机联队",
+      "category": "air",
+      "baseStats": {
+        "manpower": 800,
+        "groundAttack": 40,
+        "strategicBombing": 30
+      },
+      "equipment": ["bomber"],
+      "tags": [],
+      "cost": {
+        "ducats": 200,
+        "materials": 180,
+        "steel": 120,
+        "oil": 50
+      }
+    }
+  ]
+}

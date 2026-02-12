@@ -1,0 +1,32 @@
+[
+  {
+    "id": "neutral",
+    "name": "Neutral",
+    "nameZh": "中立",
+    "color": "#808080",
+    "description": "中立区域",
+    "icon": "⚪",
+    "isPlayer": false,
+    "isAI": false
+  },
+  {
+    "id": "player",
+    "name": "Player",
+    "nameZh": "玩家",
+    "color": "#268ceb",
+    "description": "玩家控制区域",
+    "icon": "🔵",
+    "isPlayer": true,
+    "isAI": false
+  },
+  {
+    "id": "enemy",
+    "name": "Enemy",
+    "nameZh": "敌人",
+    "color": "#eb3838",
+    "description": "敌方控制区域",
+    "icon": "🔴",
+    "isPlayer": false,
+    "isAI": true
+  }
+]

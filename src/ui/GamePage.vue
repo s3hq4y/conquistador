@@ -3,6 +3,7 @@ import { onMounted, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useGameStore } from '../stores/game';
 import { startGame } from '../main';
+import GameUI from '../game/GameUI.vue';
 
 const router = useRouter();
 const gameStore = useGameStore();
@@ -30,5 +31,6 @@ onUnmounted(() => {
   <div class="w-full h-screen relative">
     <canvas id="gameCanvas"></canvas>
     <div id="ui"></div>
+    <GameUI v-if="gameStore.gameMode === 'GAME'" />
   </div>
 </template>

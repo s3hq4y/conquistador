@@ -1,0 +1,135 @@
+{
+  "version": 1,
+  "equipment": [
+    {
+      "id": "basic_rifle",
+      "name": "Basic Rifle",
+      "nameZh": "基础步枪",
+      "category": "small_arms",
+      "stats": {
+        "attack": 5,
+        "range": 1
+      },
+      "cost": {
+        "materials": 10
+      },
+      "requirements": []
+    },
+    {
+      "id": "machine_gun",
+      "name": "Machine Gun",
+      "nameZh": "机枪",
+      "category": "small_arms",
+      "stats": {
+        "attack": 15,
+        "defense": 5,
+        "range": 1
+      },
+      "cost": {
+        "materials": 30
+      },
+      "requirements": []
+    },
+    {
+      "id": "field_gun",
+      "name": "Field Gun",
+      "nameZh": "野战炮",
+      "category": "artillery",
+      "stats": {
+        "attack": 25,
+        "range": 3
+      },
+      "cost": {
+        "materials": 50,
+        "steel": 20
+      },
+      "requirements": []
+    },
+    {
+      "id": "howitzer",
+      "name": "Howitzer",
+      "nameZh": "榴弹炮",
+      "category": "artillery",
+      "stats": {
+        "attack": 35,
+        "range": 4,
+        "defense": 5
+      },
+      "cost": {
+        "materials": 80,
+        "steel": 40
+      },
+      "requirements": ["field_gun"]
+    },
+    {
+      "id": "light_tank",
+      "name": "Light Tank",
+      "nameZh": "轻型坦克",
+      "category": "armor",
+      "stats": {
+        "attack": 20,
+        "defense": 25,
+        "breakthrough": 15
+      },
+      "cost": {
+        "materials": 100,
+        "steel": 60,
+        "oil": 20
+      },
+      "requirements": []
+    },
+    {
+      "id": "medium_tank",
+      "name": "Medium Tank",
+      "nameZh": "中型坦克",
+      "category": "armor",
+      "stats": {
+        "attack": 35,
+        "defense": 40,
+        "breakthrough": 25
+      },
+      "cost": {
+        "materials": 150,
+        "steel": 100,
+        "oil": 40
+      },
+      "requirements": ["light_tank"]
+    },
+    {
+      "id": "fighter",
+      "name": "Fighter",
+      "nameZh": "战斗机",
+      "category": "air",
+      "stats": {
+        "airAttack": 30,
+        "airDefense": 20,
+        "groundAttack": 10
+      },
+      "cost": {
+        "materials": 120,
+        "steel": 80,
+        "oil": 30,
+        "techMetals": 20
+      },
+      "requirements": []
+    },
+    {
+      "id": "bomber",
+      "name": "Bomber",
+      "nameZh": "轰炸机",
+      "category": "air",
+      "stats": {
+        "airDefense": 10,
+        "groundAttack": 40,
+        "strategicBombing": 30
+      },
+      "cost": {
+        "materials": 180,
+        "steel": 120,
+        "oil": 50,
+        "techMetals": 30
+      },
+      "requirements": ["fighter"]
+    }
+  ]
+}

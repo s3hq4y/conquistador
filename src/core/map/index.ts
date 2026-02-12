@@ -1,16 +1,57 @@
 export { HexGrid } from './HexGrid';
 export { Tile } from './Tile';
+export { ScenarioLoader } from './ScenarioLoader';
+export type { LoadedScenario } from './ScenarioLoader';
 export type { 
-  SceneData, 
-  TerrainTypeDefinition, 
+  ScenarioData,
+  LegacySceneData,
+  ScenarioMeta,
+  ScenarioSettings,
+  TerrainTypeDefinition,
   OwnerTagDefinition,
+  Province,
+  ProvinceComponents,
+  ProvinceGeography,
+  ProvinceTerrain,
+  ProvinceCity,
+  ProvinceResources,
+  Country,
+  CountriesFile,
+  Faction,
+  CountryPolitics,
+  CountryTechnology,
+  CountryEconomy,
+  CountryDiplomacy,
+  DiplomacyFile,
+  DiplomacyEntry,
+  EconomyDefaults,
+  TerrainEconomyDefaults,
+  BuildingsFile,
+  Building,
+  ResourceLabelsFile,
+  ResourceLabel,
+  MilitaryTagsFile,
+  MilitaryTag,
+  EquipmentLibraryFile,
+  Equipment,
+  UnitTemplatesFile,
+  UnitTemplate,
+  ArmiesFile,
+  Army,
+  BattleConstantsFile,
+  BattleConstants,
+  TechTreeFile,
+  TechNode,
+  TechResearchFile,
+  TechResearch,
   TileInstance,
   HexColor
-} from './SceneData';
+} from './ScenarioTypes';
 export { 
+  createEmptyScenario,
   createEmptyScene,
   DEFAULT_TERRAIN_TYPES,
   DEFAULT_OWNER_TAGS,
   hexToRgb,
   rgbToHex
-} from './SceneData';
+} from './ScenarioTypes';

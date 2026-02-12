@@ -1,0 +1,9 @@
+{
+  "hexSize": 50,
+  "mapWidth": 9,
+  "mapHeight": 9,
+  "defaultTerrain": "plains",
+  "defaultOwner": "neutral",
+  "wrapX": false,
+  "wrapY": false
+}

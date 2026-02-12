@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { useGameStore } from '../stores/game';
+import { useGameStore, type GameMode } from '../stores/game';
 
 const router = useRouter();
 const { t } = useI18n();
 const gameStore = useGameStore();
 
-const handleStart = (mode: 'RANDOM' | 'CUSTOM') => {
+const handleStart = (mode: GameMode) => {
   gameStore.setGameMode(mode);
   router.push('/game');
 };
@@ -58,7 +58,33 @@ const handleStart = (mode: 'RANDOM' | 'CUSTOM') => {
             </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
+            <button 
+              @click="handleStart('GAME')"
+              class="group relative p-6 bg-stone-900/50 border border-stone-800/50 hover:border-amber-800/50 transition-all duration-300"
+            >
+              <div class="absolute inset-0 bg-gradient-to-br from-amber-900/0 to-amber-900/0 group-hover:from-amber-900/5 group-hover:to-amber-900/10 transition-all duration-300"></div>
+              <div class="relative flex items-start gap-4">
+                <div class="w-12 h-12 rounded bg-stone-800/50 group-hover:bg-amber-900/30 flex items-center justify-center transition-colors duration-300">
+                  <svg class="w-6 h-6 text-stone-500 group-hover:text-amber-500 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+                <div class="text-left flex-1">
+                  <h3 class="text-stone-200 font-light tracking-wider text-lg mb-1">
+                    游戏模式
+                  </h3>
+                  <p class="text-stone-600 text-sm font-light">
+                    加载示例场景开始游戏
+                  </p>
+                </div>
+                <svg class="w-5 h-5 text-stone-700 group-hover:text-amber-700 group-hover:translate-x-1 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </div>
+            </button>
+
             <button 
               @click="handleStart('RANDOM')"
               class="group relative p-6 bg-stone-900/50 border border-stone-800/50 hover:border-amber-800/50 transition-all duration-300"

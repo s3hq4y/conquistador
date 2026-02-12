@@ -1,0 +1,207 @@
+{
+  "version": 1,
+  "countryAggregation": {
+    "defaultDevelopmentIndex": 0.4,
+    "majorThresholdDevelopmentIndex": 0.8,
+    "majorDebtRatio": 0.6,
+    "minorDebtRatio": 0.35,
+    "majorBudgetRatio": 0.18,
+    "minorBudgetRatio": 0.16
+  },
+  "defaultsByTerrain": {
+    "plains": {
+      "development": 0.7,
+      "populationPotential": 0.9,
+      "urbanizationPotential": 0.65,
+      "infrastructure": {
+        "slots": 4
+      },
+      "province": {
+        "provinceResourcesSubcategories": {
+          "food": {
+            "crops": 10,
+            "meat": 5
+          },
+          "energy": {
+            "coal": 4,
+            "oil": 2,
+            "gas": 1
+          },
+          "raw": {
+            "wood": 5,
+            "steel": 8,
+            "preciousMetals": 1,
+            "techMetals": 1,
+            "lightMetals": 2
+          }
+        }
+      }
+    },
+    "forest": {
+      "development": 0.5,
+      "populationPotential": 0.5,
+      "urbanizationPotential": 0.4,
+      "infrastructure": {
+        "slots": 3
+      },
+      "province": {
+        "provinceResourcesSubcategories": {
+          "food": {
+            "crops": 6,
+            "meat": 3
+          },
+          "energy": {
+            "coal": 3,
+            "oil": 1,
+            "gas": 1
+          },
+          "raw": {
+            "wood": 8,
+            "steel": 4,
+            "preciousMetals": 1,
+            "techMetals": 1,
+            "lightMetals": 2
+          }
+        }
+      }
+    },
+    "hills": {
+      "development": 0.53,
+      "populationPotential": 0.55,
+      "urbanizationPotential": 0.5,
+      "infrastructure": {
+        "slots": 3
+      },
+      "province": {
+        "provinceResourcesSubcategories": {
+          "food": {
+            "crops": 7,
+            "meat": 3
+          },
+          "energy": {
+            "coal": 5,
+            "oil": 2,
+            "gas": 1
+          },
+          "raw": {
+            "wood": 4,
+            "steel": 6,
+            "preciousMetals": 2,
+            "techMetals": 2,
+            "lightMetals": 3
+          }
+        }
+      }
+    },
+    "mountains": {
+      "development": 0.3,
+      "populationPotential": 0.2,
+      "urbanizationPotential": 0.15,
+      "infrastructure": {
+        "slots": 2
+      },
+      "province": {
+        "provinceResourcesSubcategories": {
+          "food": {
+            "crops": 2,
+            "meat": 1
+          },
+          "energy": {
+            "coal": 6,
+            "oil": 3,
+            "gas": 2
+          },
+          "raw": {
+            "wood": 2,
+            "steel": 8,
+            "preciousMetals": 4,
+            "techMetals": 3,
+            "lightMetals": 4
+          }
+        }
+      }
+    },
+    "shallow_sea": {
+      "development": 0.1,
+      "populationPotential": 0.0,
+      "urbanizationPotential": 0.0,
+      "infrastructure": {
+        "slots": 0
+      },
+      "province": {
+        "provinceResourcesSubcategories": {
+          "food": {
+            "fish": 8
+          },
+          "energy": {
+            "oil": 5
+          },
+          "raw": {}
+        }
+      }
+    },
+    "deep_sea": {
+      "development": 0.0,
+      "populationPotential": 0.0,
+      "urbanizationPotential": 0.0,
+      "infrastructure": {
+        "slots": 0
+      },
+      "province": {
+        "provinceResourcesSubcategories": {
+          "food": {
+            "fish": 5
+          },
+          "energy": {
+            "oil": 8
+          },
+          "raw": {}
+        }
+      }
+    },
+    "desert": {
+      "development": 0.2,
+      "populationPotential": 0.15,
+      "urbanizationPotential": 0.1,
+      "infrastructure": {
+        "slots": 2
+      },
+      "province": {
+        "provinceResourcesSubcategories": {
+          "food": {
+            "crops": 2
+          },
+          "energy": {
+            "oil": 8,
+            "gas": 6
+          },
+          "raw": {
+            "preciousMetals": 2
+          }
+        }
+      }
+    },
+    "swamp": {
+      "development": 0.25,
+      "populationPotential": 0.2,
+      "urbanizationPotential": 0.15,
+      "infrastructure": {
+        "slots": 2
+      },
+      "province": {
+        "provinceResourcesSubcategories": {
+          "food": {
+            "crops": 4,
+            "fish": 3
+          },
+          "energy": {
+            "gas": 4
+          },
+          "raw": {
+            "wood": 6
+          }
+        }
+      }
+    }
+  }
+}
