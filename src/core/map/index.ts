@@ -11,7 +11,10 @@ export type {
   TileInstance,
   TileComponents,
   LocalizedString,
-  HexColor
+  HexColor,
+  Icon,
+  IconDefinition,
+  IconType
 } from './SceneData';
 export { 
   createEmptyScene,
@@ -22,5 +25,7 @@ export {
   terrainInstanceToDefinition,
   ownerInstanceToDefinition,
   getTerrainDefinitions,
-  getOwnerDefinitions
+  getOwnerDefinitions,
+  parseIcon,
+  iconToString
 } from './SceneData';

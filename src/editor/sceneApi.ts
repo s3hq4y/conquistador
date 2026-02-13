@@ -14,11 +14,21 @@ export interface LocalizedString {
   [lang: string]: string;
 }
 
+export type IconType = 'emoji' | 'svg' | 'image';
+
+export interface IconDefinition {
+  type: IconType;
+  value?: string;
+  path?: string;
+}
+
+export type Icon = string | IconDefinition;
+
 export interface TerrainComponents {
   name: LocalizedString;
   description: LocalizedString;
   color: string;
-  icon: string;
+  icon: Icon;
   isWater?: boolean;
   isPassable?: boolean;
   movementCost?: number;
@@ -32,7 +42,7 @@ export interface OwnerComponents {
   name: LocalizedString;
   description: LocalizedString;
   color: string;
-  icon: string;
+  icon: Icon;
   isPlayer?: boolean;
   isAI?: boolean;
 }

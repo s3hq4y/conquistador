@@ -1,7 +1,7 @@
 import { GameSystem } from '../core/systems';
 import type { GameEngine } from '../core/engine';
 import { MapSystem } from '../core/systems';
-import type { SceneData, TerrainTypeDefinition, OwnerTagDefinition, TileInstance } from '../core/map';
+import type { SceneData, TerrainTypeInstance, OwnerTagInstance, TileInstance } from '../core/map';
 import type { OwnerStates } from '../stores/game';
 
 declare global {
@@ -65,8 +65,8 @@ export class GameModeSystem extends GameSystem {
       createdAt: manifest.createdAt,
       modifiedAt: manifest.modifiedAt,
       settings: manifest.settings,
-      terrainTypes: terrainTypes as TerrainTypeDefinition[],
-      ownerTags: ownerTags as OwnerTagDefinition[],
+      terrainTypes: terrainTypes as Record<string, TerrainTypeInstance>,
+      ownerTags: ownerTags as Record<string, OwnerTagInstance>,
       tiles: tiles as TileInstance[]
     };
 

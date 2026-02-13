@@ -9,11 +9,42 @@ export interface LocalizedString {
   [lang: string]: string;
 }
 
+export type IconType = 'emoji' | 'svg' | 'image';
+
+export interface IconDefinition {
+  type: IconType;
+  value?: string;
+  path?: string;
+}
+
+export type Icon = string | IconDefinition;
+
+export function parseIcon(icon: Icon): IconDefinition {
+  if (typeof icon === 'string') {
+    return { type: 'emoji', value: icon };
+  }
+  return icon;
+}
+
+export function iconToString(icon: Icon): string {
+  const def = parseIcon(icon);
+  switch (def.type) {
+    case 'emoji':
+      return def.value || '';
+    case 'svg':
+      return def.path ? `[svg:${def.path}]` : def.value || '';
+    case 'image':
+      return def.path ? `[img:${def.path}]` : '';
+    default:
+      return '';
+  }
+}
+
 export interface TerrainComponents {
   name: LocalizedString;
   description: LocalizedString;
   color: HexColor;
-  icon: string;
+  icon: Icon;
   isWater?: boolean;
   isPassable?: boolean;
   movementCost?: number;
@@ -28,7 +59,7 @@ export interface TerrainTypeDefinition {
   name: LocalizedString;
   description: LocalizedString;
   color: HexColor;
-  icon: string;
+  icon: Icon;
   isWater?: boolean;
   isPassable?: boolean;
   movementCost?: number;
@@ -38,7 +69,7 @@ export interface OwnerComponents {
   name: LocalizedString;
   description: LocalizedString;
   color: HexColor;
-  icon: string;
+  icon: Icon;
   isPlayer?: boolean;
   isAI?: boolean;
 }
@@ -52,7 +83,7 @@ export interface OwnerTagDefinition {
   name: LocalizedString;
   description: LocalizedString;
   color: HexColor;
-  icon: string;
+  icon: Icon;
   isPlayer?: boolean;
   isAI?: boolean;
 }
