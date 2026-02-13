@@ -1,0 +1,46 @@
+{
+  "diplomacy": {
+    "player": {
+      "enemy": {
+        "relation": -100,
+        "treaties": [],
+        "atWar": true,
+        "history": []
+      },
+      "neutral": {
+        "relation": 0,
+        "treaties": [],
+        "atWar": false,
+        "history": []
+      }
+    },
+    "enemy": {
+      "player": {
+        "relation": -100,
+        "treaties": [],
+        "atWar": true,
+        "history": []
+      },
+      "neutral": {
+        "relation": 0,
+        "treaties": [],
+        "atWar": false,
+        "history": []
+      }
+    },
+    "neutral": {
+      "player": {
+        "relation": 0,
+        "treaties": [],
+        "atWar": false,
+        "history": []
+      },
+      "enemy": {
+        "relation": 0,
+        "treaties": [],
+        "atWar": false,
+        "history": []
+      }
+    }
+  }
+}
