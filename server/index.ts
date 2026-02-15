@@ -9,7 +9,8 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = 3003;
-const SCENES_DIR = path.join(__dirname, '..', 'scenes');
+const SCENES_DIR = path.join(__dirname, '..', 'public', 'scenarios');
+const GAME_SAVES_DIR = path.join(__dirname, '..', 'public', 'game_saves');
 
 app.use(cors());
 app.use(express.json());
@@ -19,11 +20,12 @@ app.use((req, res, next) => {
   next();
 });
 
-async function ensureScenesDir() {
+async function ensureDirs() {
   try {
     await fs.mkdir(SCENES_DIR, { recursive: true });
+    await fs.mkdir(GAME_SAVES_DIR, { recursive: true });
   } catch (error) {
-    console.error('Failed to create scenes directory:', error);
+    console.error('Failed to create directories:', error);
   }
 }
 
@@ -186,6 +188,139 @@ app.delete('/api/scenes/:id', async (req, res) => {
   }
 });
 
+// Game saves API (persisted under public/game_saves)
+app.get('/api/game_saves', async (req, res) => {
+  try {
+    const dirs = await fs.readdir(GAME_SAVES_DIR);
+    const saves: any[] = [];
+
+    for (const dir of dirs) {
+      const savePath = path.join(GAME_SAVES_DIR, dir);
+      const stat = await fs.stat(savePath);
+      if (stat.isDirectory()) {
+        try {
+          const manifestPath = path.join(savePath, 'manifest.json');
+          const manifestData = await fs.readFile(manifestPath, 'utf-8');
+          const manifest = JSON.parse(manifestData);
+          saves.push({ id: dir, name: manifest.name, modifiedAt: manifest.modifiedAt });
+        } catch {
+          saves.push({ id: dir, name: dir, modifiedAt: stat.mtime.toISOString() });
+        }
+      }
+    }
+
+    res.json({ success: true, saves });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to list game saves' });
+  }
+});
+
+app.get('/api/game_saves/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const savePath = path.join(GAME_SAVES_DIR, id);
+
+    const files = await Promise.all([
+      fs.readFile(path.join(savePath, 'manifest.json'), 'utf-8'),
+      fs.readFile(path.join(savePath, 'terrain_types.json'), 'utf-8').catch(() => 'null'),
+      fs.readFile(path.join(savePath, 'owner_tags.json'), 'utf-8').catch(() => 'null'),
+      fs.readFile(path.join(savePath, 'tiles.json'), 'utf-8').catch(() => 'null'),
+      fs.readFile(path.join(savePath, 'owner_states.json'), 'utf-8').catch(() => 'null')
+    ]);
+
+    const manifest = JSON.parse(files[0]);
+    const terrainTypes = files[1] !== 'null' ? JSON.parse(files[1]) : {};
+    const ownerTags = files[2] !== 'null' ? JSON.parse(files[2]) : {};
+    const tiles = files[3] !== 'null' ? JSON.parse(files[3]) : [];
+    const ownerStates = files[4] !== 'null' ? JSON.parse(files[4]) : {};
+
+    res.json({ success: true, scene: { ...manifest, terrainTypes, ownerTags, tiles }, ownerStates });
+  } catch (error) {
+    res.status(404).json({ success: false, error: 'Game save not found' });
+  }
+});
+
+app.post('/api/game_saves', async (req, res) => {
+  try {
+    const { id, name, description, author, settings, terrainTypes, ownerTags, tiles, ownerStates } = req.body;
+    const saveId = id || `save_${Date.now()}`;
+    const savePath = path.join(GAME_SAVES_DIR, saveId);
+
+    await fs.mkdir(savePath, { recursive: true });
+    const now = new Date().toISOString();
+
+    const manifest = {
+      version: '2.0.0',
+      id: saveId,
+      name: name || 'Game Save',
+      description: description || '',
+      author: author || 'Player',
+      createdAt: now,
+      modifiedAt: now,
+      settings: settings || {}
+    };
+
+    await Promise.all([
+      fs.writeFile(path.join(savePath, 'manifest.json'), JSON.stringify(manifest, null, 2)),
+      fs.writeFile(path.join(savePath, 'terrain_types.json'), JSON.stringify(terrainTypes || {}, null, 2)),
+      fs.writeFile(path.join(savePath, 'owner_tags.json'), JSON.stringify(ownerTags || {}, null, 2)),
+      fs.writeFile(path.join(savePath, 'tiles.json'), JSON.stringify(tiles || [], null, 2)),
+      fs.writeFile(path.join(savePath, 'owner_states.json'), JSON.stringify(ownerStates || {}, null, 2))
+    ]);
+
+    res.json({ success: true, saveId, message: 'Game save saved successfully' });
+  } catch (error) {
+    console.error('Failed to save game:', error);
+    res.status(500).json({ success: false, error: 'Failed to save game' });
+  }
+});
+
+app.put('/api/game_saves/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { name, description, author, settings, terrainTypes, ownerTags, tiles, ownerStates } = req.body;
+    const savePath = path.join(GAME_SAVES_DIR, id);
+
+    const manifestData = await fs.readFile(path.join(savePath, 'manifest.json'), 'utf-8');
+    const manifest = JSON.parse(manifestData);
+    const now = new Date().toISOString();
+
+    const updatedManifest = {
+      ...manifest,
+      name: name || manifest.name,
+      description: description !== undefined ? description : manifest.description,
+      author: author || manifest.author,
+      modifiedAt: now,
+      settings: settings || manifest.settings
+    };
+
+    await Promise.all([
+      fs.writeFile(path.join(savePath, 'manifest.json'), JSON.stringify(updatedManifest, null, 2)),
+      fs.writeFile(path.join(savePath, 'terrain_types.json'), JSON.stringify(terrainTypes || {}, null, 2)),
+      fs.writeFile(path.join(savePath, 'owner_tags.json'), JSON.stringify(ownerTags || {}, null, 2)),
+      fs.writeFile(path.join(savePath, 'tiles.json'), JSON.stringify(tiles || [], null, 2)),
+      fs.writeFile(path.join(savePath, 'owner_states.json'), JSON.stringify(ownerStates || {}, null, 2))
+    ]);
+
+    res.json({ success: true, message: 'Game save updated successfully' });
+  } catch (error) {
+    console.error('Failed to update game save:', error);
+    res.status(500).json({ success: false, error: 'Failed to update game save' });
+  }
+});
+
+app.delete('/api/game_saves/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const savePath = path.join(GAME_SAVES_DIR, id);
+    await fs.rm(savePath, { recursive: true, force: true });
+    res.json({ success: true, message: 'Game save deleted successfully' });
+  } catch (error) {
+    console.error('Failed to delete game save:', error);
+    res.status(500).json({ success: false, error: 'Failed to delete game save' });
+  }
+});
+
 async function createExampleScene() {
   const examplePath = path.join(SCENES_DIR, 'example_battlefield');
   
@@ -286,12 +421,13 @@ async function createExampleScene() {
 }
 
 async function main() {
-  await ensureScenesDir();
+  await ensureDirs();
   await createExampleScene();
   
   app.listen(PORT, () => {
     console.log(`Backend server running at http://localhost:${PORT}`);
     console.log(`Scenes directory: ${SCENES_DIR}`);
+    console.log(`Game saves directory: ${GAME_SAVES_DIR}`);
   });
 }
 

@@ -1,4 +1,4 @@
-import { TileInstance, TileComponents } from './SceneData';
+import { TileInstance } from './SceneData';
 
 export class Tile {
   q: number;

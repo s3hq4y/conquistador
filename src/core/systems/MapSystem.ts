@@ -274,6 +274,17 @@ export class MapSystem extends GameSystem {
     }
   }
 
+  updateTileTerrain(q: number, r: number, terrain: string): void {
+    const tile = this.grid.getTile(q, r);
+    const hexTile = this.tileEntities.get(`${q},${r}`);
+    
+    if (tile && hexTile) {
+      tile.terrain = terrain;
+      const terrainDef = this.getTerrainDef(terrain);
+      hexTile.setTerrain(terrainDef);
+    }
+  }
+
   updateAllBorderStates(): void {
     const ownerRegions = this.findOwnerRegions();
     

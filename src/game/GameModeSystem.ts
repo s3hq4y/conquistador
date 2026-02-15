@@ -46,7 +46,7 @@ export class GameModeSystem extends GameSystem {
   }
 
   private async loadSceneFromFolder(sceneId: string): Promise<{ sceneData: SceneData; ownerStates: OwnerStates }> {
-    const basePath = `/scenes/${sceneId}`;
+    const basePath = `/game_saves/${sceneId}`;
     
     const [manifest, terrainTypes, ownerTags, tiles, ownerStates] = await Promise.all([
       fetch(`${basePath}/manifest.json`).then(r => r.json()),

@@ -1,5 +1,3 @@
-const API_BASE = 'http://localhost:3003/api';
-
 export interface SceneListItem {
   id: string;
   name: string;
@@ -83,44 +81,115 @@ export interface SceneData {
 }
 
 export async function listScenes(): Promise<SceneListItem[]> {
-  const response = await fetch(`${API_BASE}/scenes`);
-  const data = await response.json();
-  if (!data.success) throw new Error(data.error);
-  return data.scenes;
+  const modules = import.meta.glob('/public/scenarios/*/manifest.json', { as: 'json' }) as Record<string, () => Promise<any>>;
+  const scenes: SceneListItem[] = [];
+  for (const p of Object.keys(modules)) {
+    try {
+      const loader = modules[p];
+      const manifest = await loader();
+      const m = p.match(/\/scenarios\/([^\/]+)\/manifest.json$/);
+      const id = m ? m[1] : p;
+      scenes.push({
+        id,
+        name: manifest.name || id,
+        description: manifest.description || '',
+        author: manifest.author || 'Unknown',
+        modifiedAt: manifest.modifiedAt || manifest.createdAt || new Date().toISOString()
+      });
+    } catch (e) {
+      // ignore individual manifest load errors
+    }
+  }
+  return scenes;
 }
 
 export async function loadScene(id: string): Promise<SceneData> {
-  const response = await fetch(`${API_BASE}/scenes/${id}`);
-  const data = await response.json();
-  if (!data.success) throw new Error(data.error);
-  return data.scene;
+  // Try to load scene files from /scenarios/<id>/
+  const base = `/scenarios/${id}`;
+  const [manifest, terrainTypes, ownerTags, tiles] = await Promise.all([
+    fetch(`${base}/manifest.json`).then(r => { if (!r.ok) throw new Error('manifest not found'); return r.json(); }),
+    fetch(`${base}/terrain_types.json`).then(r => { if (!r.ok) throw new Error('terrain_types not found'); return r.json(); }),
+    fetch(`${base}/owner_tags.json`).then(r => { if (!r.ok) throw new Error('owner_tags not found'); return r.json(); }),
+    fetch(`${base}/tiles.json`).then(r => { if (!r.ok) throw new Error('tiles not found'); return r.json(); })
+  ]);
+
+  const sceneData: SceneData = {
+    version: manifest.version,
+    id: manifest.id,
+    name: manifest.name,
+    description: manifest.description,
+    author: manifest.author,
+    createdAt: manifest.createdAt,
+    modifiedAt: manifest.modifiedAt,
+    settings: manifest.settings,
+    terrainTypes: terrainTypes as Record<string, TerrainTypeInstance>,
+    ownerTags: ownerTags as Record<string, OwnerTagInstance>,
+    tiles: tiles as TileInstance[]
+  };
+
+  return sceneData;
 }
 
 export async function saveScene(scene: SceneData): Promise<string> {
-  const response = await fetch(`${API_BASE}/scenes`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(scene)
-  });
-  const data = await response.json();
-  if (!data.success) throw new Error(data.error);
-  return data.sceneId;
+  // Frontend cannot write into the public folder on the server without a backend.
+  // Try to POST to backend if available, otherwise persist in localStorage as a fallback.
+  try {
+    const resp = await fetch('/api/scenes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(scene)
+    });
+    const data = await resp.json();
+    if (data && data.success) return data.sceneId;
+  } catch (e) {
+    // ignore and fallback
+  }
+
+  const id = scene.id || `local-${Date.now()}`;
+  localStorage.setItem(`scenarios:${id}`, JSON.stringify(scene));
+  // update index
+  const idxRaw = localStorage.getItem('scenarios:index');
+  const idx = idxRaw ? JSON.parse(idxRaw) as SceneListItem[] : [];
+  idx.push({ id, name: scene.name, description: scene.description || '', author: scene.author || 'Local', modifiedAt: scene.modifiedAt || new Date().toISOString() });
+  localStorage.setItem('scenarios:index', JSON.stringify(idx));
+  return id;
 }
 
 export async function updateScene(id: string, scene: Partial<SceneData>): Promise<void> {
-  const response = await fetch(`${API_BASE}/scenes/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(scene)
-  });
-  const data = await response.json();
-  if (!data.success) throw new Error(data.error);
+  try {
+    const resp = await fetch(`/api/scenes/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(scene)
+    });
+    const data = await resp.json();
+    if (data && data.success) return;
+  } catch (e) {
+    // fallback to localStorage
+  }
+
+  const key = `scenarios:${id}`;
+  const raw = localStorage.getItem(key);
+  if (!raw) throw new Error('scene not found in local fallback');
+  const existing = JSON.parse(raw) as SceneData;
+  const merged = { ...existing, ...scene } as SceneData;
+  localStorage.setItem(key, JSON.stringify(merged));
 }
 
 export async function deleteScene(id: string): Promise<void> {
-  const response = await fetch(`${API_BASE}/scenes/${id}`, {
-    method: 'DELETE'
-  });
-  const data = await response.json();
-  if (!data.success) throw new Error(data.error);
+  try {
+    const resp = await fetch(`/api/scenes/${id}`, { method: 'DELETE' });
+    const data = await resp.json();
+    if (data && data.success) return;
+  } catch (e) {
+    // fallback to localStorage
+  }
+
+  localStorage.removeItem(`scenarios:${id}`);
+  const idxRaw = localStorage.getItem('scenarios:index');
+  if (idxRaw) {
+    const idx = JSON.parse(idxRaw) as SceneListItem[];
+    const filtered = idx.filter(s => s.id !== id);
+    localStorage.setItem('scenarios:index', JSON.stringify(filtered));
+  }
 }

@@ -1,0 +1,40 @@
+:root {
+  --editor-bg-primary: rgba(15, 23, 42, 0.95);
+  --editor-bg-modal: rgba(15, 23, 42, 0.98);
+  --editor-bg-secondary: rgba(30, 41, 59, 0.6);
+  --editor-bg-tertiary: rgba(30, 41, 59, 0.3);
+  --editor-bg-overlay: rgba(0, 0, 0, 0.7);
+
+  --editor-border-primary: rgba(100, 116, 139, 0.3);
+  --editor-border-secondary: rgba(100, 116, 139, 0.2);
+
+  --editor-text-primary: #e2e8f0;
+  --editor-text-secondary: #94a3b8;
+  --editor-text-muted: #64748b;
+
+  --editor-accent-bg: rgba(59, 130, 246, 0.3);
+  --editor-accent-bg-hover: rgba(59, 130, 246, 0.2);
+  --editor-accent-border: rgba(59, 130, 246, 0.5);
+  --editor-accent-border-dashed: rgba(59, 130, 246, 0.4);
+  --editor-accent-text: #60a5fa;
+
+  --editor-success-bg: rgba(16, 185, 129, 0.9);
+  --editor-success-gradient: linear-gradient(135deg, #10b981, #059669);
+  --editor-error-bg: rgba(239, 68, 68, 0.9);
+  --editor-info-bg: rgba(59, 130, 246, 0.9);
+
+  --editor-shadow-primary: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  --editor-shadow-secondary: 0 10px 40px rgba(0, 0, 0, 0.5);
+
+  --editor-scrollbar-track: rgba(30, 41, 59, 0.5);
+  --editor-scrollbar-thumb: rgba(100, 116, 139, 0.5);
+  --editor-scrollbar-thumb-hover: rgba(100, 116, 139, 0.7);
+
+  --editor-radius-sm: 3px;
+  --editor-radius-md: 6px;
+  --editor-radius-lg: 8px;
+  --editor-radius-xl: 12px;
+
+  --editor-transition: all 0.2s;
+  --editor-blur: blur(12px);
+}
