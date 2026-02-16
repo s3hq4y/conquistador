@@ -12,30 +12,48 @@ import { EditorUIStateKey, type EditorUIState } from '../EditorUI';
 import { ActivePanelKey, type ActivePanelRef } from './editorSymbols';
 import './editor-vars.css';
 
+interface EditorCallbacks {
+  onSave: () => Promise<void>;
+  onLoad: (sceneId: string) => Promise<void>;
+  onExport: () => void;
+  onImport: (file: File) => void;
+  onAddTerrain: (terrain: { id: string; name: string; color: string }) => void;
+  onAddOwner: (owner: { id: string; name: string; color: string }) => void;
+  onDebugModeChange?: (enabled: boolean) => void;
+}
+
+const defaultState: EditorUIState = {
+  currentTool: ref<EditorTool>('paint'),
+  currentTerrainId: ref('plains'),
+  currentOwnerId: ref('neutral'),
+  paintMode: ref<PaintMode>('both'),
+  sceneName: ref(''),
+  sceneDescription: ref(''),
+  terrains: ref([]),
+  owners: ref([]),
+  debugMode: ref(false)
+};
+
+const defaultCallbacks: EditorCallbacks = {
+  onSave: async () => { console.warn('[EditorPanel] Save not available'); },
+  onLoad: async (_sceneId: string) => { console.warn('[EditorPanel] Load not available'); },
+  onExport: () => { console.warn('[EditorPanel] Export not available'); },
+  onImport: (_file: File) => { console.warn('[EditorPanel] Import not available'); },
+  onAddTerrain: (_terrain: { id: string; name: string; color: string }) => { console.warn('[EditorPanel] Add terrain not available'); },
+  onAddOwner: (_owner: { id: string; name: string; color: string }) => { console.warn('[EditorPanel] Add owner not available'); }
+};
+
 interface EditorContext {
   state: EditorUIState;
-  callbacks: {
-    onSave: () => Promise<void>;
-    onLoad: (sceneId: string) => Promise<void>;
-    onExport: () => void;
-    onImport: (file: File) => void;
-    onAddTerrain: (terrain: { id: string; name: string; color: string }) => void;
-    onAddOwner: (owner: { id: string; name: string; color: string }) => void;
-    onDebugModeChange?: (enabled: boolean) => void;
-  };
+  callbacks: EditorCallbacks;
 }
 
-const context = inject<EditorContext>(EditorUIStateKey);
-if (!context) {
-  throw new Error('EditorPanel must be used within EditorUI');
-}
+const context = inject<EditorContext | null>(EditorUIStateKey, null);
+const actualContext = context || { state: defaultState, callbacks: defaultCallbacks };
 
-const { state, callbacks } = context;
+const { state, callbacks } = actualContext;
 
-const activePanel = inject<ActivePanelRef>(ActivePanelKey);
-if (!activePanel) {
-  throw new Error('EditorPanel must be used within EditorRoot');
-}
+const activePanel = inject<ActivePanelRef>(ActivePanelKey, ref('tools'));
 
 const activeTab = ref<'terrain' | 'owner'>('terrain');
 
@@ -76,8 +94,15 @@ const handleSceneDescChange = () => {
   state.sceneDescription.value = localSceneDescription.value;
 };
 
-const handleSave = () => {
-  callbacks.onSave();
+const handleSave = async () => {
+  console.log('[EditorPanel] Saving scene...');
+  try {
+    await callbacks.onSave();
+    console.log('[EditorPanel] Save completed');
+  } catch (error) {
+    console.error('Save error:', error);
+    showToast('保存失败: ' + (error instanceof Error ? error.message : '未知错误'), 'error');
+  }
 };
 
 const handleLoad = async () => {
@@ -85,6 +110,7 @@ const handleLoad = async () => {
     scenes.value = await sceneApi.listScenes();
     showSceneList.value = true;
   } catch (error) {
+    console.error('Load scene list error:', error);
     showToast('获取场景列表失败', 'error');
   }
 };

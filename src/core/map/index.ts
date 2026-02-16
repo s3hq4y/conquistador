@@ -14,7 +14,8 @@ export type {
   HexColor,
   Icon,
   IconDefinition,
-  IconType
+  IconType,
+  EdgeInstance
 } from './SceneData';
 export { 
   createEmptyScene,
@@ -29,3 +30,5 @@ export {
   parseIcon,
   iconToString
 } from './SceneData';
+export type { EdgeData, EdgeType, EdgeConfig } from './Edge';
+export { EDGE_CONFIGS, createEdgeKey, edgeTypeFromString } from './Edge';

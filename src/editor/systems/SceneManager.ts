@@ -1,20 +1,26 @@
-import type { MapSystem } from '../../core/systems';
+import type { MapSystem, EdgeSystem } from '../../core/systems';
 import type { EditorUI } from '../EditorUI';
 import type { SceneData, TerrainTypeDefinition, OwnerTagDefinition } from '../../core/map';
 import * as sceneApi from '../sceneApi';
 
 export class SceneManager {
   private mapSystem: MapSystem | null;
+  private edgeSystem: EdgeSystem | null;
   private editorUI: EditorUI | null;
   private currentSceneId: string | null = null;
 
   constructor(mapSystem: MapSystem | null, editorUI: EditorUI | null) {
     this.mapSystem = mapSystem;
     this.editorUI = editorUI;
+    this.edgeSystem = null;
   }
 
   setMapSystem(mapSystem: MapSystem | null): void {
     this.mapSystem = mapSystem;
+  }
+
+  setEdgeSystem(edgeSystem: EdgeSystem | null): void {
+    this.edgeSystem = edgeSystem;
   }
 
   setEditorUI(editorUI: EditorUI | null): void {
@@ -26,10 +32,25 @@ export class SceneManager {
   }
 
   async saveSceneToServer(): Promise<void> {
-    if (!this.mapSystem) return;
+    if (!this.mapSystem) {
+      console.warn('[SceneManager] No mapSystem, cannot save');
+      return;
+    }
     
     try {
       const sceneData = this.mapSystem.getSceneData();
+      
+      console.log('[SceneManager] edgeSystem exists:', !!this.edgeSystem);
+      console.log('[SceneManager] Saving scene, edges count:', this.edgeSystem ? this.edgeSystem.toInstances().length : 0);
+      
+      if (this.edgeSystem) {
+        const instances = this.edgeSystem.toInstances();
+        console.log('[SceneManager] Edge instances:', instances);
+        sceneData.edges = instances;
+        console.log('[SceneManager] Edges to save:', JSON.stringify(sceneData.edges));
+      } else {
+        console.warn('[SceneManager] edgeSystem is null!');
+      }
       
       if (this.currentSceneId) {
         await sceneApi.updateScene(this.currentSceneId, sceneData);
@@ -42,7 +63,7 @@ export class SceneManager {
       
       this.editorUI?.showToast('场景已保存', 'success');
     } catch (error) {
-      console.error('Failed to save scene:', error);
+      console.error('[SceneManager] Failed to save scene:', error);
       this.editorUI?.showToast('保存场景失败', 'error');
     }
   }
@@ -51,11 +72,31 @@ export class SceneManager {
     if (!this.mapSystem) return false;
     
     try {
+      console.log('[SceneManager] Loading scene:', sceneId);
       const sceneData = await sceneApi.loadScene(sceneId);
+      console.log('[SceneManager] Full sceneData:', { 
+        hasEdges: 'edges' in sceneData, 
+        edgesValue: sceneData.edges,
+        edgesType: typeof sceneData.edges 
+      });
+      console.log('[SceneManager] Loaded scene data, edges:', sceneData.edges?.length || 0);
+      
       const success = this.mapSystem.loadSceneData(sceneData);
       
       if (success) {
         this.currentSceneId = sceneId;
+        
+        if (this.edgeSystem) {
+          const edges = sceneData.edges;
+          console.log('[SceneManager] Edge data:', edges);
+          if (edges && edges.length > 0) {
+            console.log('[SceneManager] Loading edges:', JSON.stringify(edges));
+            this.edgeSystem.loadFromInstances(edges);
+          } else {
+            console.log('[SceneManager] No edges to load');
+          }
+        }
+        
         this.updateUI();
         this.editorUI?.showToast('场景已加载', 'success');
         return true;
@@ -64,7 +105,7 @@ export class SceneManager {
         return false;
       }
     } catch (error) {
-      console.error('Failed to load scene:', error);
+      console.error('[SceneManager] Failed to load scene:', error);
       this.editorUI?.showToast('加载场景失败', 'error');
       return false;
     }
@@ -74,6 +115,11 @@ export class SceneManager {
     if (!this.mapSystem) return;
 
     const sceneData = this.mapSystem.getSceneData();
+    
+    if (this.edgeSystem) {
+      sceneData.edges = this.edgeSystem.toInstances();
+    }
+    
     const json = JSON.stringify(sceneData, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -98,6 +144,11 @@ export class SceneManager {
         
         if (this.mapSystem?.loadSceneData(sceneData)) {
           this.currentSceneId = sceneData.id;
+          
+          if (this.edgeSystem && sceneData.edges) {
+            this.edgeSystem.loadFromInstances(sceneData.edges);
+          }
+          
           this.updateUI();
           this.editorUI?.showToast('场景已导入', 'success');
         } else {

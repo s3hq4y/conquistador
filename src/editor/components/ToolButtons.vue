@@ -15,7 +15,8 @@ const tools: { id: EditorTool; label: string; icon: string }[] = [
   { id: 'fill', label: '填充', icon: '🪣' },
   { id: 'erase', label: '擦除', icon: '🗑️' },
   { id: 'add', label: '添加', icon: '➕' },
-  { id: 'drag_paint', label: '拖拽', icon: '✋' }
+  { id: 'drag_paint', label: '拖拽', icon: '✋' },
+  { id: 'river', label: '河流', icon: '🌊' }
 ];
 
 const handleToolClick = (toolId: EditorTool) => {

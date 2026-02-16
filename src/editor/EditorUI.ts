@@ -131,7 +131,11 @@ export class EditorUI {
   }
 
   showToast(message: string, type: 'success' | 'error' | 'info' = 'info'): void {
-    this.editorPanelInstance?.showToast?.(message, type);
+    if (this.editorPanelInstance?.showToast) {
+      this.editorPanelInstance.showToast(message, type);
+    } else {
+      console.warn('[EditorUI] Toast not available:', message, type);
+    }
   }
 
   showSceneListModal(): void {

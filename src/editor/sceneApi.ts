@@ -62,6 +62,12 @@ export interface TileInstance {
   components: TileComponents;
 }
 
+export interface EdgeInstance {
+  tiles: [[number, number], [number, number]];
+  type: string;
+  properties?: Record<string, unknown>;
+}
+
 export interface SceneData {
   version: string;
   id: string;
@@ -78,6 +84,7 @@ export interface SceneData {
   terrainTypes: Record<string, TerrainTypeInstance>;
   ownerTags: Record<string, OwnerTagInstance>;
   tiles: TileInstance[];
+  edges?: EdgeInstance[];
 }
 
 export async function listScenes(): Promise<SceneListItem[]> {
@@ -126,12 +133,23 @@ export async function loadScene(id: string): Promise<SceneData> {
   }
   
   const base = `/scenarios/${id}`;
-  const [manifest, terrainTypes, ownerTags, tiles] = await Promise.all([
+  const timestamp = Date.now();
+  
+  const edgesPromise = fetch(`${base}/edges.json?t=${timestamp}`).then(r => { 
+    if (!r.ok) return undefined; 
+    return r.json(); 
+  }).catch(() => undefined);
+  
+  const [manifest, terrainTypes, ownerTags, tiles, edges] = await Promise.all([
     fetch(`${base}/manifest.json`).then(r => { if (!r.ok) throw new Error('manifest not found'); return r.json(); }),
     fetch(`${base}/terrain_types.json`).then(r => { if (!r.ok) throw new Error('terrain_types not found'); return r.json(); }),
     fetch(`${base}/owner_tags.json`).then(r => { if (!r.ok) throw new Error('owner_tags not found'); return r.json(); }),
-    fetch(`${base}/tiles.json`).then(r => { if (!r.ok) throw new Error('tiles not found'); return r.json(); })
+    fetch(`${base}/tiles.json`).then(r => { if (!r.ok) throw new Error('tiles not found'); return r.json(); }),
+    edgesPromise
   ]);
+
+  console.log('[sceneApi] After Promise.all, edges type:', typeof edges, 'value:', edges);
+  console.log('[sceneApi] Is array:', Array.isArray(edges), 'Length:', edges?.length);
 
   const sceneData: SceneData = {
     version: manifest.version,
@@ -144,7 +162,8 @@ export async function loadScene(id: string): Promise<SceneData> {
     settings: manifest.settings,
     terrainTypes: terrainTypes as Record<string, TerrainTypeInstance>,
     ownerTags: ownerTags as Record<string, OwnerTagInstance>,
-    tiles: tiles as TileInstance[]
+    tiles: tiles as TileInstance[],
+    edges: edges as EdgeInstance[] | undefined
   };
 
   return sceneData;

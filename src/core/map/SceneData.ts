@@ -101,6 +101,12 @@ export interface TileInstance {
   components: TileComponents;
 }
 
+export interface EdgeInstance {
+  tiles: [[number, number], [number, number]];
+  type: string;
+  properties?: Record<string, unknown>;
+}
+
 export interface SceneData {
   version: string;
   id: string;
@@ -117,6 +123,7 @@ export interface SceneData {
   terrainTypes: Record<string, TerrainTypeInstance>;
   ownerTags: Record<string, OwnerTagInstance>;
   tiles: TileInstance[];
+  edges?: EdgeInstance[];
 }
 
 export function hexToRgb(hex: string): { r: number; g: number; b: number } {

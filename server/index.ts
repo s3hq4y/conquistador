@@ -73,17 +73,19 @@ app.get('/api/scenes/:id', async (req, res) => {
     const sceneId = req.params.id;
     const scenePath = path.join(SCENES_DIR, sceneId);
     
-    const [manifestData, terrainData, ownerData, tilesData] = await Promise.all([
+    const [manifestData, terrainData, ownerData, tilesData, edgesData] = await Promise.all([
       fs.readFile(path.join(scenePath, 'manifest.json'), 'utf-8'),
       fs.readFile(path.join(scenePath, 'terrain_types.json'), 'utf-8'),
       fs.readFile(path.join(scenePath, 'owner_tags.json'), 'utf-8'),
-      fs.readFile(path.join(scenePath, 'tiles.json'), 'utf-8')
+      fs.readFile(path.join(scenePath, 'tiles.json'), 'utf-8'),
+      fs.readFile(path.join(scenePath, 'edges.json'), 'utf-8').catch(() => '[]')
     ]);
     
     const manifest = JSON.parse(manifestData);
     const terrainTypes = JSON.parse(terrainData);
     const ownerTags = JSON.parse(ownerData);
     const tiles = JSON.parse(tilesData);
+    const edges = JSON.parse(edgesData);
     
     res.json({
       success: true,
@@ -91,7 +93,8 @@ app.get('/api/scenes/:id', async (req, res) => {
         ...manifest,
         terrainTypes,
         ownerTags,
-        tiles
+        tiles,
+        edges
       }
     });
   } catch (error) {
@@ -101,7 +104,7 @@ app.get('/api/scenes/:id', async (req, res) => {
 
 app.post('/api/scenes', async (req, res) => {
   try {
-    const { id, name, description, author, settings, terrainTypes, ownerTags, tiles } = req.body;
+    const { id, name, description, author, settings, terrainTypes, ownerTags, tiles, edges } = req.body;
     
     const sceneId = id || `scene_${Date.now()}`;
     const scenePath = path.join(SCENES_DIR, sceneId);
@@ -129,7 +132,8 @@ app.post('/api/scenes', async (req, res) => {
       fs.writeFile(path.join(scenePath, 'manifest.json'), JSON.stringify(manifest, null, 2)),
       fs.writeFile(path.join(scenePath, 'terrain_types.json'), JSON.stringify(terrainTypes || [], null, 2)),
       fs.writeFile(path.join(scenePath, 'owner_tags.json'), JSON.stringify(ownerTags || [], null, 2)),
-      fs.writeFile(path.join(scenePath, 'tiles.json'), JSON.stringify(tiles || [], null, 2))
+      fs.writeFile(path.join(scenePath, 'tiles.json'), JSON.stringify(tiles || [], null, 2)),
+      fs.writeFile(path.join(scenePath, 'edges.json'), JSON.stringify(edges || [], null, 2))
     ]);
     
     res.json({ success: true, sceneId, message: 'Scene saved successfully' });
@@ -142,7 +146,7 @@ app.post('/api/scenes', async (req, res) => {
 app.put('/api/scenes/:id', async (req, res) => {
   try {
     const sceneId = req.params.id;
-    const { name, description, author, settings, terrainTypes, ownerTags, tiles } = req.body;
+    const { name, description, author, settings, terrainTypes, ownerTags, tiles, edges } = req.body;
     
     const scenePath = path.join(SCENES_DIR, sceneId);
     
@@ -164,7 +168,8 @@ app.put('/api/scenes/:id', async (req, res) => {
       fs.writeFile(path.join(scenePath, 'manifest.json'), JSON.stringify(updatedManifest, null, 2)),
       fs.writeFile(path.join(scenePath, 'terrain_types.json'), JSON.stringify(terrainTypes || [], null, 2)),
       fs.writeFile(path.join(scenePath, 'owner_tags.json'), JSON.stringify(ownerTags || [], null, 2)),
-      fs.writeFile(path.join(scenePath, 'tiles.json'), JSON.stringify(tiles || [], null, 2))
+      fs.writeFile(path.join(scenePath, 'tiles.json'), JSON.stringify(tiles || [], null, 2)),
+      fs.writeFile(path.join(scenePath, 'edges.json'), JSON.stringify(edges || [], null, 2))
     ]);
     
     res.json({ success: true, message: 'Scene updated successfully' });

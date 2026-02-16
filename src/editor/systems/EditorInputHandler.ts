@@ -3,16 +3,19 @@ import type { MapSystem } from '../../core/systems';
 import type { EditorTools } from './EditorTools';
 import type { EditorTool } from './types';
 import type { DebugEdgeSystem } from './DebugEdgeSystem';
+import type { EdgeEditorSystem } from './EdgeEditorSystem';
 
 export class EditorInputHandler {
   private engine: GameEngine;
   private mapSystem: MapSystem | null;
   private tools: EditorTools | null;
   private debugEdgeSystem: DebugEdgeSystem | null = null;
+  private edgeEditorSystem: EdgeEditorSystem | null = null;
   
   private isPainting: boolean = false;
   private lastPaintedTile: string | null = null;
   private hoveredTileKey: string | null = null;
+  private currentTool: EditorTool = 'select';
 
   constructor(engine: GameEngine, mapSystem: MapSystem | null, tools: EditorTools | null) {
     this.engine = engine;
@@ -30,6 +33,10 @@ export class EditorInputHandler {
 
   setDebugEdgeSystem(debugEdgeSystem: DebugEdgeSystem | null): void {
     this.debugEdgeSystem = debugEdgeSystem;
+  }
+
+  setEdgeEditorSystem(edgeEditorSystem: EdgeEditorSystem | null): void {
+    this.edgeEditorSystem = edgeEditorSystem;
   }
 
   setup(): void {
@@ -53,6 +60,16 @@ export class EditorInputHandler {
     window.addEventListener('keydown', (e) => this.handleKeyDown(e));
   }
 
+  private updateToolState(tool: EditorTool): void {
+    if (tool === this.currentTool) return;
+    
+    this.currentTool = tool;
+    
+    if (this.edgeEditorSystem) {
+      this.edgeEditorSystem.setEnabled(tool === 'river');
+    }
+  }
+
   private handleMouseMove(e: MouseEvent): void {
     if (!this.mapSystem || !this.mapSystem.isCustomMode()) return;
 
@@ -64,6 +81,10 @@ export class EditorInputHandler {
 
     if (tileKey !== this.hoveredTileKey) {
       this.hoveredTileKey = tileKey;
+    }
+
+    if (this.tools) {
+      this.updateToolState(this.tools.getCurrentTool());
     }
 
     if (this.isPainting && this.tools && (this.tools.getCurrentTool() === 'paint' || this.tools.getCurrentTool() === 'drag_paint' || this.tools.getCurrentTool() === 'erase')) {
@@ -81,12 +102,21 @@ export class EditorInputHandler {
     const grid = this.mapSystem.getGrid();
     const hexPos = grid.pixelToHex(worldPos.x, worldPos.z);
 
+    this.updateToolState(this.tools.getCurrentTool());
+
     if (this.debugEdgeSystem && this.debugEdgeSystem.isEnabled()) {
       this.debugEdgeSystem.handleTileClick(hexPos.q, hexPos.r);
       return;
     }
 
     const tool = this.tools.getCurrentTool();
+
+    if (tool === 'river') {
+      if (this.edgeEditorSystem) {
+        this.edgeEditorSystem.handleTileClick(hexPos.q, hexPos.r);
+      }
+      return;
+    }
 
     if (this.tools.getCurrentTool() === 'select') {
       this.tools.selectTile(hexPos.q, hexPos.r, e.ctrlKey || e.metaKey);
@@ -118,12 +148,14 @@ export class EditorInputHandler {
       'g': 'fill',
       'e': 'erase',
       'a': 'add',
-      'd': 'drag_paint'
+      'd': 'drag_paint',
+      'r': 'river'
     };
 
     const tool = toolKeys[e.key.toLowerCase()];
     if (tool) {
       this.tools.setCurrentTool(tool);
+      this.updateToolState(tool);
       return;
     }
 

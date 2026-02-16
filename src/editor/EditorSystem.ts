@@ -1,7 +1,7 @@
-import { GameSystem, MapSystem } from '../core/systems';
+import { GameSystem, MapSystem, EdgeSystem } from '../core/systems';
 import type { GameEngine } from '../core/engine';
 import { EditorUI } from './EditorUI';
-import { EditorInputHandler, EditorTools, SceneManager, DebugEdgeSystem } from './systems';
+import { EditorInputHandler, EditorTools, SceneManager, DebugEdgeSystem, EdgeEditorSystem } from './systems';
 export type { EditorTool, PaintMode } from './systems';
 
 export class EditorSystem extends GameSystem {
@@ -11,6 +11,8 @@ export class EditorSystem extends GameSystem {
   private tools: EditorTools | null = null;
   private sceneManager: SceneManager | null = null;
   private debugEdgeSystem: DebugEdgeSystem | null = null;
+  private edgeSystem: EdgeSystem | null = null;
+  private edgeEditorSystem: EdgeEditorSystem | null = null;
 
   constructor(engine: GameEngine) {
     super(engine);
@@ -21,11 +23,24 @@ export class EditorSystem extends GameSystem {
     
     this.tools = new EditorTools(this.mapSystem, null);
     this.sceneManager = new SceneManager(this.mapSystem, null);
+    
     this.debugEdgeSystem = new DebugEdgeSystem();
     this.debugEdgeSystem.setMapSystem(this.mapSystem);
     this.debugEdgeSystem.setApp(this.engine.getApplication());
+    
+    this.edgeSystem = new EdgeSystem();
+    this.edgeSystem.setMapSystem(this.mapSystem);
+    this.edgeSystem.setApp(this.engine.getApplication());
+    
+    this.sceneManager.setEdgeSystem(this.edgeSystem);
+    
+    this.edgeEditorSystem = new EdgeEditorSystem();
+    this.edgeEditorSystem.setMapSystem(this.mapSystem);
+    this.edgeEditorSystem.setEdgeSystem(this.edgeSystem);
+    
     this.inputHandler = new EditorInputHandler(this.engine, this.mapSystem, this.tools);
     this.inputHandler.setDebugEdgeSystem(this.debugEdgeSystem);
+    this.inputHandler.setEdgeEditorSystem(this.edgeEditorSystem);
     
     this.inputHandler.setup();
     this.createUI();
@@ -36,11 +51,17 @@ export class EditorSystem extends GameSystem {
 
   dispose(): void {
     this.debugEdgeSystem?.dispose();
+    this.edgeEditorSystem?.dispose();
+    this.edgeSystem?.dispose();
     this.removeUI();
   }
 
   getDebugEdgeSystem(): DebugEdgeSystem | null {
     return this.debugEdgeSystem;
+  }
+
+  getEdgeSystem(): EdgeSystem | null {
+    return this.edgeSystem;
   }
 
   private createUI(): void {
