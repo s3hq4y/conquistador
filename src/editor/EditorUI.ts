@@ -14,6 +14,7 @@ export interface EditorUIState {
   sceneDescription: Ref<string>;
   terrains: Ref<TerrainTypeDefinition[]>;
   owners: Ref<OwnerTagDefinition[]>;
+  debugMode: Ref<boolean>;
 }
 
 export class EditorUI {
@@ -35,7 +36,8 @@ export class EditorUI {
       sceneName: ref(''),
       sceneDescription: ref(''),
       terrains: ref<TerrainTypeDefinition[]>([]),
-      owners: ref<OwnerTagDefinition[]>([])
+      owners: ref<OwnerTagDefinition[]>([]),
+      debugMode: ref<boolean>(false)
     };
   }
 
@@ -48,6 +50,7 @@ export class EditorUI {
       onImport: (file: File) => void;
       onAddTerrain: (terrain: { id: string; name: string; color: string }) => void;
       onAddOwner: (owner: { id: string; name: string; color: string }) => void;
+      onDebugModeChange?: (enabled: boolean) => void;
     }
   ): void {
     this.container = document.createElement('div');
@@ -133,5 +136,13 @@ export class EditorUI {
 
   showSceneListModal(): void {
     this.editorPanelInstance?.showSceneListModal?.();
+  }
+
+  isDebugMode(): boolean {
+    return this.state.debugMode.value;
+  }
+
+  setDebugMode(enabled: boolean): void {
+    this.state.debugMode.value = enabled;
   }
 }

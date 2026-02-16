@@ -2,11 +2,13 @@ import type { GameEngine } from '../../core/engine';
 import type { MapSystem } from '../../core/systems';
 import type { EditorTools } from './EditorTools';
 import type { EditorTool } from './types';
+import type { DebugEdgeSystem } from './DebugEdgeSystem';
 
 export class EditorInputHandler {
   private engine: GameEngine;
   private mapSystem: MapSystem | null;
   private tools: EditorTools | null;
+  private debugEdgeSystem: DebugEdgeSystem | null = null;
   
   private isPainting: boolean = false;
   private lastPaintedTile: string | null = null;
@@ -24,6 +26,10 @@ export class EditorInputHandler {
 
   setMapSystem(mapSystem: MapSystem | null): void {
     this.mapSystem = mapSystem;
+  }
+
+  setDebugEdgeSystem(debugEdgeSystem: DebugEdgeSystem | null): void {
+    this.debugEdgeSystem = debugEdgeSystem;
   }
 
   setup(): void {
@@ -74,6 +80,11 @@ export class EditorInputHandler {
     const worldPos = camera.screenToWorld(e.clientX, e.clientY);
     const grid = this.mapSystem.getGrid();
     const hexPos = grid.pixelToHex(worldPos.x, worldPos.z);
+
+    if (this.debugEdgeSystem && this.debugEdgeSystem.isEnabled()) {
+      this.debugEdgeSystem.handleTileClick(hexPos.q, hexPos.r);
+      return;
+    }
 
     const tool = this.tools.getCurrentTool();
 

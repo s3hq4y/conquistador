@@ -21,6 +21,7 @@ interface EditorContext {
     onImport: (file: File) => void;
     onAddTerrain: (terrain: { id: string; name: string; color: string }) => void;
     onAddOwner: (owner: { id: string; name: string; color: string }) => void;
+    onDebugModeChange?: (enabled: boolean) => void;
   };
 }
 
@@ -114,6 +115,14 @@ const handleAddTerrain = (terrain: { id: string; name: string; color: string }) 
 const handleAddOwner = (owner: { id: string; name: string; color: string }) => {
   callbacks.onAddOwner(owner);
   showAddOwner.value = false;
+};
+
+const handleDebugModeChange = () => {
+  const newMode = !state.debugMode.value;
+  state.debugMode.value = newMode;
+  if (callbacks.onDebugModeChange) {
+    callbacks.onDebugModeChange(newMode);
+  }
 };
 
 const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
@@ -225,6 +234,19 @@ defineExpose({
     </div>
 
     <div v-show="activePanel === 'help'" class="panel-content">
+      <div class="section">
+        <label class="section-label">调试工具</label>
+        <button
+          :class="['debug-toggle-btn', { active: state.debugMode.value }]"
+          @click="handleDebugModeChange"
+        >
+          {{ state.debugMode.value ? '🔧 调试模式: 开启' : '🔧 调试模式: 关闭' }}
+        </button>
+        <div v-if="state.debugMode.value" class="debug-hint">
+          点击两个相邻地块查看公共边
+        </div>
+      </div>
+
       <div class="help-content">
         <div class="shortcut-row">
           <kbd>Q</kbd> 选择
@@ -469,6 +491,34 @@ defineExpose({
   font-size: 11px;
   color: var(--editor-text-muted);
   line-height: 1.6;
+}
+
+.debug-toggle-btn {
+  width: 100%;
+  padding: 10px;
+  background: var(--editor-bg-secondary);
+  border: 1px solid var(--editor-border-secondary);
+  border-radius: var(--editor-radius-md);
+  color: var(--editor-text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--editor-transition);
+}
+
+.debug-toggle-btn.active {
+  background: var(--editor-warning-bg, #f59e0b);
+  border-color: var(--editor-warning-border, #d97706);
+  color: white;
+}
+
+.debug-hint {
+  margin-top: 8px;
+  padding: 8px;
+  background: var(--editor-bg-tertiary);
+  border-radius: var(--editor-radius-sm);
+  font-size: 11px;
+  color: var(--editor-text-muted);
+  text-align: center;
 }
 
 .shortcut-row {

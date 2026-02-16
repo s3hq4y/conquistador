@@ -144,4 +144,40 @@ export class HexGrid {
 
     return { minQ, maxQ, minR, maxR };
   }
+
+  getSharedEdge(tileA: Tile, tileB: Tile): { edgeA: number; edgeB: number } | null {
+    const directions = [
+      [1, 0], [1, -1], [0, -1],
+      [-1, 0], [-1, 1], [0, 1]
+    ];
+
+    const directionToEdge: { [key: number]: number } = {
+      0: 1,
+      1: 0,
+      2: 5,
+      3: 4,
+      4: 3,
+      5: 2
+    };
+
+    const dq = tileB.q - tileA.q;
+    const dr = tileB.r - tileA.r;
+
+    for (let i = 0; i < directions.length; i++) {
+      if (directions[i][0] === dq && directions[i][1] === dr) {
+        const edgeA = directionToEdge[i];
+        const edgeB = directionToEdge[(i + 3) % 6];
+        return {
+          edgeA,
+          edgeB
+        };
+      }
+    }
+
+    return null;
+  }
+
+  areNeighbors(tileA: Tile, tileB: Tile): boolean {
+    return this.getDistance(tileA, tileB) === 1;
+  }
 }

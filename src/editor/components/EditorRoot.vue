@@ -22,6 +22,8 @@ if (!context) {
   throw new Error('EditorRoot must be used within EditorUI');
 }
 
+provide(EditorUIStateKey, context);
+
 const activePanel = ref<ActivePanelType>('tools');
 
 provide(ActivePanelKey, activePanel);

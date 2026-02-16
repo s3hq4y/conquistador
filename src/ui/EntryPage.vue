@@ -11,6 +11,10 @@ const handleStart = (mode: GameMode) => {
   gameStore.setGameMode(mode);
   router.push('/game');
 };
+
+const goToBeta = () => {
+  router.push('/beta');
+};
 </script>
 
 <template>
@@ -32,7 +36,16 @@ const handleStart = (mode: GameMode) => {
           </div>
           <span class="text-stone-400 font-light tracking-widest text-sm uppercase">Conquistador</span>
         </div>
-        <div class="text-stone-600 text-xs tracking-wider">v1.0.0</div>
+        <div class="flex items-center gap-4">
+          <button 
+            @click="goToBeta"
+            class="group flex items-center gap-2 px-4 py-2 bg-amber-900/20 border border-amber-800/30 hover:border-amber-700/50 rounded-lg transition-all duration-300"
+          >
+            <span class="px-2 py-0.5 text-[10px] font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded">BETA</span>
+            <span class="text-amber-400 text-sm group-hover:text-amber-300 transition-colors">功能测试</span>
+          </button>
+          <div class="text-stone-600 text-xs tracking-wider">v1.0.0</div>
+        </div>
       </header>
 
       <main class="flex-1 flex items-center justify-center px-8">

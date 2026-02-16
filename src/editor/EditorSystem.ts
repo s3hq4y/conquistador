@@ -1,7 +1,7 @@
 import { GameSystem, MapSystem } from '../core/systems';
 import type { GameEngine } from '../core/engine';
 import { EditorUI } from './EditorUI';
-import { EditorInputHandler, EditorTools, SceneManager } from './systems';
+import { EditorInputHandler, EditorTools, SceneManager, DebugEdgeSystem } from './systems';
 export type { EditorTool, PaintMode } from './systems';
 
 export class EditorSystem extends GameSystem {
@@ -10,6 +10,7 @@ export class EditorSystem extends GameSystem {
   private inputHandler: EditorInputHandler | null = null;
   private tools: EditorTools | null = null;
   private sceneManager: SceneManager | null = null;
+  private debugEdgeSystem: DebugEdgeSystem | null = null;
 
   constructor(engine: GameEngine) {
     super(engine);
@@ -20,7 +21,11 @@ export class EditorSystem extends GameSystem {
     
     this.tools = new EditorTools(this.mapSystem, null);
     this.sceneManager = new SceneManager(this.mapSystem, null);
+    this.debugEdgeSystem = new DebugEdgeSystem();
+    this.debugEdgeSystem.setMapSystem(this.mapSystem);
+    this.debugEdgeSystem.setApp(this.engine.getApplication());
     this.inputHandler = new EditorInputHandler(this.engine, this.mapSystem, this.tools);
+    this.inputHandler.setDebugEdgeSystem(this.debugEdgeSystem);
     
     this.inputHandler.setup();
     this.createUI();
@@ -30,7 +35,12 @@ export class EditorSystem extends GameSystem {
   }
 
   dispose(): void {
+    this.debugEdgeSystem?.dispose();
     this.removeUI();
+  }
+
+  getDebugEdgeSystem(): DebugEdgeSystem | null {
+    return this.debugEdgeSystem;
   }
 
   private createUI(): void {
@@ -65,6 +75,9 @@ export class EditorSystem extends GameSystem {
       },
       onAddOwner: (owner) => {
         this.sceneManager?.addOwnerTag(owner);
+      },
+      onDebugModeChange: (enabled: boolean) => {
+        this.debugEdgeSystem?.setEnabled(enabled);
       }
     });
 

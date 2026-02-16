@@ -81,6 +81,16 @@ export interface SceneData {
 }
 
 export async function listScenes(): Promise<SceneListItem[]> {
+  try {
+    const resp = await fetch('/api/scenes');
+    const data = await resp.json();
+    if (data.success && data.scenes) {
+      return data.scenes;
+    }
+  } catch (e) {
+    console.warn('Failed to fetch scenes from API, falling back to static files');
+  }
+  
   const modules = import.meta.glob('/public/scenarios/*/manifest.json', { as: 'json' }) as Record<string, () => Promise<any>>;
   const scenes: SceneListItem[] = [];
   for (const p of Object.keys(modules)) {
@@ -100,11 +110,21 @@ export async function listScenes(): Promise<SceneListItem[]> {
       // ignore individual manifest load errors
     }
   }
+  
   return scenes;
 }
 
 export async function loadScene(id: string): Promise<SceneData> {
-  // Try to load scene files from /scenarios/<id>/
+  try {
+    const resp = await fetch(`/api/scenes/${id}`);
+    const data = await resp.json();
+    if (data.success && data.scene) {
+      return data.scene as SceneData;
+    }
+  } catch (e) {
+    console.warn('Failed to load scene from API, falling back to static files');
+  }
+  
   const base = `/scenarios/${id}`;
   const [manifest, terrainTypes, ownerTags, tiles] = await Promise.all([
     fetch(`${base}/manifest.json`).then(r => { if (!r.ok) throw new Error('manifest not found'); return r.json(); }),
@@ -131,65 +151,36 @@ export async function loadScene(id: string): Promise<SceneData> {
 }
 
 export async function saveScene(scene: SceneData): Promise<string> {
-  // Frontend cannot write into the public folder on the server without a backend.
-  // Try to POST to backend if available, otherwise persist in localStorage as a fallback.
-  try {
-    const resp = await fetch('/api/scenes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(scene)
-    });
-    const data = await resp.json();
-    if (data && data.success) return data.sceneId;
-  } catch (e) {
-    // ignore and fallback
+  const resp = await fetch('/api/scenes', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(scene)
+  });
+  const data = await resp.json();
+  if (data && data.success) {
+    return data.sceneId;
   }
-
-  const id = scene.id || `local-${Date.now()}`;
-  localStorage.setItem(`scenarios:${id}`, JSON.stringify(scene));
-  // update index
-  const idxRaw = localStorage.getItem('scenarios:index');
-  const idx = idxRaw ? JSON.parse(idxRaw) as SceneListItem[] : [];
-  idx.push({ id, name: scene.name, description: scene.description || '', author: scene.author || 'Local', modifiedAt: scene.modifiedAt || new Date().toISOString() });
-  localStorage.setItem('scenarios:index', JSON.stringify(idx));
-  return id;
+  throw new Error(data.error || 'Failed to save scene');
 }
 
 export async function updateScene(id: string, scene: Partial<SceneData>): Promise<void> {
-  try {
-    const resp = await fetch(`/api/scenes/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(scene)
-    });
-    const data = await resp.json();
-    if (data && data.success) return;
-  } catch (e) {
-    // fallback to localStorage
+  const resp = await fetch(`/api/scenes/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(scene)
+  });
+  const data = await resp.json();
+  if (data && data.success) {
+    return;
   }
-
-  const key = `scenarios:${id}`;
-  const raw = localStorage.getItem(key);
-  if (!raw) throw new Error('scene not found in local fallback');
-  const existing = JSON.parse(raw) as SceneData;
-  const merged = { ...existing, ...scene } as SceneData;
-  localStorage.setItem(key, JSON.stringify(merged));
+  throw new Error(data.error || 'Failed to update scene');
 }
 
 export async function deleteScene(id: string): Promise<void> {
-  try {
-    const resp = await fetch(`/api/scenes/${id}`, { method: 'DELETE' });
-    const data = await resp.json();
-    if (data && data.success) return;
-  } catch (e) {
-    // fallback to localStorage
+  const resp = await fetch(`/api/scenes/${id}`, { method: 'DELETE' });
+  const data = await resp.json();
+  if (data && data.success) {
+    return;
   }
-
-  localStorage.removeItem(`scenarios:${id}`);
-  const idxRaw = localStorage.getItem('scenarios:index');
-  if (idxRaw) {
-    const idx = JSON.parse(idxRaw) as SceneListItem[];
-    const filtered = idx.filter(s => s.id !== id);
-    localStorage.setItem('scenarios:index', JSON.stringify(filtered));
-  }
+  throw new Error(data.error || 'Failed to delete scene');
 }

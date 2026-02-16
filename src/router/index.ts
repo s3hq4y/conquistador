@@ -11,6 +11,21 @@ const routes: RouteRecordRaw[] = [
     path: '/game',
     name: 'game',
     component: () => import('../ui/GamePage.vue')
+  },
+  {
+    path: '/beta',
+    name: 'beta',
+    component: () => import('../beta/BetaEntryPage.vue')
+  },
+  {
+    path: '/beta/pathfinding',
+    name: 'beta-pathfinding',
+    component: () => import('../beta/completed/pathfinding/BetaPage.vue')
+  },
+  {
+    path: '/beta/movement-range',
+    name: 'beta-movement-range',
+    component: () => import('../beta/movement-range/BetaPage.vue')
   }
 ];
 
