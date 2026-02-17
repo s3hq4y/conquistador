@@ -66,7 +66,7 @@ export class EditorInputHandler {
     this.currentTool = tool;
     
     if (this.edgeEditorSystem) {
-      this.edgeEditorSystem.setEnabled(tool === 'river');
+      this.edgeEditorSystem.setEnabled(tool === 'edge');
     }
   }
 
@@ -111,7 +111,7 @@ export class EditorInputHandler {
 
     const tool = this.tools.getCurrentTool();
 
-    if (tool === 'river') {
+    if (tool === 'edge') {
       if (this.edgeEditorSystem) {
         this.edgeEditorSystem.handleTileClick(hexPos.q, hexPos.r);
       }
@@ -149,7 +149,7 @@ export class EditorInputHandler {
       'e': 'erase',
       'a': 'add',
       'd': 'drag_paint',
-      'r': 'river'
+      'x': 'edge'
     };
 
     const tool = toolKeys[e.key.toLowerCase()];

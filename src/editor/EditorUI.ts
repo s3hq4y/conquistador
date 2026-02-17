@@ -1,7 +1,7 @@
 import { createApp, ref, type Ref } from 'vue';
 import EditorRoot from './components/EditorRoot.vue';
 import type { EditorTool, PaintMode } from './EditorSystem';
-import type { TerrainTypeDefinition, OwnerTagDefinition } from '../core/map';
+import type { TerrainTypeDefinition, OwnerTagDefinition, EdgeType } from '../core/map';
 
 export const EditorUIStateKey = Symbol('EditorUIState');
 
@@ -9,6 +9,7 @@ export interface EditorUIState {
   currentTool: Ref<EditorTool>;
   currentTerrainId: Ref<string>;
   currentOwnerId: Ref<string>;
+  currentEdgeType: Ref<EdgeType>;
   paintMode: Ref<PaintMode>;
   sceneName: Ref<string>;
   sceneDescription: Ref<string>;
@@ -32,6 +33,7 @@ export class EditorUI {
       currentTool: ref<EditorTool>('paint'),
       currentTerrainId: ref('plains'),
       currentOwnerId: ref('neutral'),
+      currentEdgeType: ref<EdgeType>('river'),
       paintMode: ref<PaintMode>('both'),
       sceneName: ref(''),
       sceneDescription: ref(''),
@@ -51,6 +53,7 @@ export class EditorUI {
       onAddTerrain: (terrain: { id: string; name: string; color: string }) => void;
       onAddOwner: (owner: { id: string; name: string; color: string }) => void;
       onDebugModeChange?: (enabled: boolean) => void;
+      onEdgeTypeChange?: (type: string) => void;
     }
   ): void {
     this.container = document.createElement('div');
@@ -120,6 +123,14 @@ export class EditorUI {
 
   setCurrentOwnerId(id: string): void {
     this.state.currentOwnerId.value = id;
+  }
+
+  getCurrentEdgeType(): EdgeType {
+    return this.state.currentEdgeType.value;
+  }
+
+  setCurrentEdgeType(type: EdgeType): void {
+    this.state.currentEdgeType.value = type;
   }
 
   getPaintMode(): PaintMode {

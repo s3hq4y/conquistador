@@ -99,6 +99,9 @@ export class EditorSystem extends GameSystem {
       },
       onDebugModeChange: (enabled: boolean) => {
         this.debugEdgeSystem?.setEnabled(enabled);
+      },
+      onEdgeTypeChange: (type: string) => {
+        this.edgeEditorSystem?.setCurrentEdgeType(type);
       }
     });
 

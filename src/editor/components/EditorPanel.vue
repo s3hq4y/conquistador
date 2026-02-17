@@ -20,12 +20,14 @@ interface EditorCallbacks {
   onAddTerrain: (terrain: { id: string; name: string; color: string }) => void;
   onAddOwner: (owner: { id: string; name: string; color: string }) => void;
   onDebugModeChange?: (enabled: boolean) => void;
+  onEdgeTypeChange?: (type: string) => void;
 }
 
 const defaultState: EditorUIState = {
   currentTool: ref<EditorTool>('paint'),
   currentTerrainId: ref('plains'),
   currentOwnerId: ref('neutral'),
+  currentEdgeType: ref('river'),
   paintMode: ref<PaintMode>('both'),
   sceneName: ref(''),
   sceneDescription: ref(''),
@@ -72,6 +74,13 @@ watch(() => state.sceneDescription.value, (val) => { localSceneDescription.value
 
 const handleToolChange = (tool: EditorTool) => {
   state.currentTool.value = tool;
+};
+
+const handleEdgeTypeChange = (type: string) => {
+  state.currentEdgeType.value = type;
+  if (callbacks.onEdgeTypeChange) {
+    callbacks.onEdgeTypeChange(type);
+  }
 };
 
 const handleTerrainSelect = (id: string) => {
@@ -177,6 +186,7 @@ defineExpose({
       <ToolButtons
         :current-tool="state.currentTool.value"
         @update:currentTool="handleToolChange"
+        @update:edgeType="handleEdgeTypeChange"
       />
 
       <div class="section">
