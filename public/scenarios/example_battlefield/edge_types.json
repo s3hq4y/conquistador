@@ -1,0 +1,26 @@
+{
+  "river": {
+    "color": { "r": 0.2, "g": 0.5, "b": 0.8 },
+    "width": 0.15,
+    "alpha": 0.8,
+    "layers": 3
+  },
+  "barrier": {
+    "color": { "r": 0.8, "g": 0.3, "b": 0.2 },
+    "width": 0.12,
+    "alpha": 0.9,
+    "layers": 4
+  },
+  "road": {
+    "color": { "r": 0.6, "g": 0.5, "b": 0.3 },
+    "width": 0.18,
+    "alpha": 0.7,
+    "layers": 2
+  },
+  "wall": {
+    "color": { "r": 0.5, "g": 0.5, "b": 0.5 },
+    "width": 0.1,
+    "alpha": 1.0,
+    "layers": 5
+  }
+}

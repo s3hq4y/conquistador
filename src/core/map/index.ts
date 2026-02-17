@@ -15,7 +15,8 @@ export type {
   Icon,
   IconDefinition,
   IconType,
-  EdgeInstance
+  EdgeInstance,
+  EdgeTypeInstance
 } from './SceneData';
 export { 
   createEmptyScene,
@@ -31,4 +32,4 @@ export {
   iconToString
 } from './SceneData';
 export type { EdgeData, EdgeType, EdgeConfig } from './Edge';
-export { EDGE_CONFIGS, createEdgeKey, edgeTypeFromString } from './Edge';
+export { DEFAULT_EDGE_CONFIGS, createEdgeKey, getEdgeConfig, setEdgeConfigs } from './Edge';

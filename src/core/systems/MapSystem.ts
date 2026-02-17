@@ -1,5 +1,5 @@
 import { GameSystem } from './GameSystem';
-import { HexGrid, Tile, SceneData, TerrainTypeDefinition, OwnerTagDefinition, createEmptyScene, DEFAULT_TERRAIN_TYPES, DEFAULT_OWNER_TAGS, terrainInstanceToDefinition, ownerInstanceToDefinition } from '../map';
+import { HexGrid, Tile, SceneData, TerrainTypeDefinition, OwnerTagDefinition, createEmptyScene, DEFAULT_TERRAIN_TYPES, DEFAULT_OWNER_TAGS, terrainInstanceToDefinition, ownerInstanceToDefinition, setEdgeConfigs } from '../map';
 import type { GameEngine } from '../engine';
 import { HexTile } from '../../components/HexTile';
 
@@ -234,6 +234,10 @@ export class MapSystem extends GameSystem {
       Object.entries(data.ownerTags).forEach(([id, instance]) => {
         this.ownerTags.set(id, ownerInstanceToDefinition(id, instance));
       });
+      
+      if (data.edgeTypes) {
+        setEdgeConfigs(data.edgeTypes as Record<string, { color: { r: number; g: number; b: number }; width: number; alpha: number; layers: number }>);
+      }
       
       this.hexSize = data.settings.hexSize;
       this.grid = new HexGrid(10, this.hexSize);

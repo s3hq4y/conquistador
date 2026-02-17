@@ -124,6 +124,14 @@ export interface SceneData {
   ownerTags: Record<string, OwnerTagInstance>;
   tiles: TileInstance[];
   edges?: EdgeInstance[];
+  edgeTypes?: Record<string, EdgeTypeInstance>;
+}
+
+export interface EdgeTypeInstance {
+  color: { r: number; g: number; b: number };
+  width: number;
+  alpha: number;
+  layers: number;
 }
 
 export function hexToRgb(hex: string): { r: number; g: number; b: number } {

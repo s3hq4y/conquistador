@@ -1,6 +1,7 @@
 import type { MapSystem, EdgeSystem } from '../../core/systems';
 import type { EditorUI } from '../EditorUI';
 import type { SceneData, TerrainTypeDefinition, OwnerTagDefinition } from '../../core/map';
+import { debugConfig } from '../../core/config';
 import * as sceneApi from '../sceneApi';
 
 export class SceneManager {
@@ -33,32 +34,46 @@ export class SceneManager {
 
   async saveSceneToServer(): Promise<void> {
     if (!this.mapSystem) {
-      console.warn('[SceneManager] No mapSystem, cannot save');
+      if (debugConfig.editor.sceneManager) {
+        console.warn('[SceneManager] No mapSystem, cannot save');
+      }
       return;
     }
     
     try {
       const sceneData = this.mapSystem.getSceneData();
       
-      console.log('[SceneManager] edgeSystem exists:', !!this.edgeSystem);
-      console.log('[SceneManager] Saving scene, edges count:', this.edgeSystem ? this.edgeSystem.toInstances().length : 0);
+      if (debugConfig.editor.sceneManager) {
+        console.log('[SceneManager] edgeSystem exists:', !!this.edgeSystem);
+        console.log('[SceneManager] Saving scene, edges count:', this.edgeSystem ? this.edgeSystem.toInstances().length : 0);
+      }
       
       if (this.edgeSystem) {
         const instances = this.edgeSystem.toInstances();
-        console.log('[SceneManager] Edge instances:', instances);
+        if (debugConfig.editor.sceneManager) {
+          console.log('[SceneManager] Edge instances:', instances);
+        }
         sceneData.edges = instances;
-        console.log('[SceneManager] Edges to save:', JSON.stringify(sceneData.edges));
+        if (debugConfig.editor.sceneManager) {
+          console.log('[SceneManager] Edges to save:', JSON.stringify(sceneData.edges));
+        }
       } else {
-        console.warn('[SceneManager] edgeSystem is null!');
+        if (debugConfig.editor.sceneManager) {
+          console.warn('[SceneManager] edgeSystem is null!');
+        }
       }
       
       if (this.currentSceneId) {
         await sceneApi.updateScene(this.currentSceneId, sceneData);
-        console.log('Scene updated:', this.currentSceneId);
+        if (debugConfig.editor.sceneManager) {
+          console.log('Scene updated:', this.currentSceneId);
+        }
       } else {
         const sceneId = await sceneApi.saveScene(sceneData);
         this.currentSceneId = sceneId;
-        console.log('Scene saved:', sceneId);
+        if (debugConfig.editor.sceneManager) {
+          console.log('Scene saved:', sceneId);
+        }
       }
       
       this.editorUI?.showToast('场景已保存', 'success');
@@ -72,14 +87,18 @@ export class SceneManager {
     if (!this.mapSystem) return false;
     
     try {
-      console.log('[SceneManager] Loading scene:', sceneId);
+      if (debugConfig.editor.sceneManager) {
+        console.log('[SceneManager] Loading scene:', sceneId);
+      }
       const sceneData = await sceneApi.loadScene(sceneId);
-      console.log('[SceneManager] Full sceneData:', { 
-        hasEdges: 'edges' in sceneData, 
-        edgesValue: sceneData.edges,
-        edgesType: typeof sceneData.edges 
-      });
-      console.log('[SceneManager] Loaded scene data, edges:', sceneData.edges?.length || 0);
+      if (debugConfig.editor.sceneManager) {
+        console.log('[SceneManager] Full sceneData:', { 
+          hasEdges: 'edges' in sceneData, 
+          edgesValue: sceneData.edges,
+          edgesType: typeof sceneData.edges 
+        });
+        console.log('[SceneManager] Loaded scene data, edges:', sceneData.edges?.length || 0);
+      }
       
       const success = this.mapSystem.loadSceneData(sceneData);
       
@@ -88,12 +107,18 @@ export class SceneManager {
         
         if (this.edgeSystem) {
           const edges = sceneData.edges;
-          console.log('[SceneManager] Edge data:', edges);
+          if (debugConfig.editor.sceneManager) {
+            console.log('[SceneManager] Edge data:', edges);
+          }
           if (edges && edges.length > 0) {
-            console.log('[SceneManager] Loading edges:', JSON.stringify(edges));
+            if (debugConfig.editor.sceneManager) {
+              console.log('[SceneManager] Loading edges:', JSON.stringify(edges));
+            }
             this.edgeSystem.loadFromInstances(edges);
           } else {
-            console.log('[SceneManager] No edges to load');
+            if (debugConfig.editor.sceneManager) {
+              console.log('[SceneManager] No edges to load');
+            }
           }
         }
         

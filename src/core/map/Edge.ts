@@ -1,4 +1,4 @@
-export type EdgeType = 'river' | 'barrier' | 'road' | 'wall';
+export type EdgeType = string;
 
 export interface EdgeData {
   tileA: { q: number; r: number };
@@ -14,7 +14,7 @@ export interface EdgeConfig {
   layers: number;
 }
 
-export const EDGE_CONFIGS: Record<EdgeType, EdgeConfig> = {
+export const DEFAULT_EDGE_CONFIGS: Record<string, EdgeConfig> = {
   river: {
     color: { r: 0.2, g: 0.5, b: 0.8 },
     width: 0.15,
@@ -41,17 +41,20 @@ export const EDGE_CONFIGS: Record<EdgeType, EdgeConfig> = {
   }
 };
 
+let edgeConfigs: Record<string, EdgeConfig> = { ...DEFAULT_EDGE_CONFIGS };
+
+export function getEdgeConfig(type: EdgeType): EdgeConfig {
+  return edgeConfigs[type] || DEFAULT_EDGE_CONFIGS.river;
+}
+
+export function setEdgeConfigs(configs: Record<string, EdgeConfig>): void {
+  edgeConfigs = { ...DEFAULT_EDGE_CONFIGS, ...configs };
+}
+
 export function createEdgeKey(tileA: { q: number; r: number }, tileB: { q: number; r: number }): string {
   const keys = [
     `${tileA.q},${tileA.r}`,
     `${tileB.q},${tileB.r}`
   ].sort();
   return `${keys[0]}|${keys[1]}`;
-}
-
-export function edgeTypeFromString(type: string): EdgeType {
-  if (['river', 'barrier', 'road', 'wall'].includes(type)) {
-    return type as EdgeType;
-  }
-  return 'river';
 }

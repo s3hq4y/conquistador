@@ -1,13 +1,13 @@
 import * as pc from 'playcanvas';
 import type { MapSystem } from './MapSystem';
 import { Tile } from '../map';
+import { debugConfig } from '../config';
 import { 
   EdgeData, 
   EdgeType, 
   EdgeConfig,
-  EDGE_CONFIGS,
-  createEdgeKey,
-  edgeTypeFromString
+  getEdgeConfig,
+  createEdgeKey
 } from '../map/Edge';
 import type { EdgeInstance } from '../map/SceneData';
 
@@ -49,9 +49,13 @@ export class EdgeSystem {
   }
 
   addEdge(tileA: Tile, tileB: Tile, type: EdgeType, properties?: Record<string, unknown>): boolean {
-    console.log('[EdgeSystem] addEdge called:', tileA.getKey(), tileB.getKey(), type);
+    if (debugConfig.editor.edgeSystem) {
+      console.log('[EdgeSystem] addEdge called:', tileA.getKey(), tileB.getKey(), type);
+    }
     if (!this.mapSystem) {
-      console.warn('[EdgeSystem] No mapSystem');
+      if (debugConfig.editor.edgeSystem) {
+        console.warn('[EdgeSystem] No mapSystem');
+      }
       return false;
     }
 
@@ -63,19 +67,27 @@ export class EdgeSystem {
     }
 
     const key = createEdgeKey(tileA, tileB);
-    console.log('[EdgeSystem] Edge key:', key);
+    if (debugConfig.editor.edgeSystem) {
+      console.log('[EdgeSystem] Edge key:', key);
+    }
     
     if (this.edges.has(key)) {
-      console.warn('[EdgeSystem] Edge already exists:', key);
+      if (debugConfig.editor.edgeSystem) {
+        console.warn('[EdgeSystem] Edge already exists:', key);
+      }
       return false;
     }
 
     const sharedEdge = grid.getSharedEdge(tileA, tileB);
     if (!sharedEdge) {
-      console.warn('[EdgeSystem] No shared edge found');
+      if (debugConfig.editor.edgeSystem) {
+        console.warn('[EdgeSystem] No shared edge found');
+      }
       return false;
     }
-    console.log('[EdgeSystem] Shared edge:', sharedEdge);
+    if (debugConfig.editor.edgeSystem) {
+      console.log('[EdgeSystem] Shared edge:', sharedEdge);
+    }
 
     const edgeData: EdgeData = {
       tileA: { q: tileA.q, r: tileA.r },
@@ -85,7 +97,9 @@ export class EdgeSystem {
     };
 
     this.edges.set(key, edgeData);
-    console.log('[EdgeSystem] Edge added, total edges:', this.edges.size);
+    if (debugConfig.editor.edgeSystem) {
+      console.log('[EdgeSystem] Edge added, total edges:', this.edges.size);
+    }
     this.renderEdge(edgeData, sharedEdge.edgeA, sharedEdge.edgeB);
 
     return true;
@@ -116,7 +130,9 @@ export class EdgeSystem {
   }
 
   loadFromInstances(instances: EdgeInstance[]): void {
-    console.log('[EdgeSystem] loadFromInstances called, count:', instances.length);
+    if (debugConfig.editor.edgeSystem) {
+      console.log('[EdgeSystem] loadFromInstances called, count:', instances.length);
+    }
     this.clearAllEdges();
     
     for (const instance of instances) {
@@ -124,19 +140,23 @@ export class EdgeSystem {
       const tileB = { q: instance.tiles[1][0], r: instance.tiles[1][1] };
       const key = createEdgeKey(tileA, tileB);
       
-      console.log('[EdgeSystem] Loading edge:', key, instance.type);
+      if (debugConfig.editor.edgeSystem) {
+        console.log('[EdgeSystem] Loading edge:', key, instance.type);
+      }
       
       const edgeData: EdgeData = {
         tileA,
         tileB,
-        type: edgeTypeFromString(instance.type),
+        type: instance.type,
         properties: instance.properties
       };
       
       this.edges.set(key, edgeData);
     }
     
-    console.log('[EdgeSystem] Total edges loaded:', this.edges.size);
+    if (debugConfig.editor.edgeSystem) {
+      console.log('[EdgeSystem] Total edges loaded:', this.edges.size);
+    }
     this.renderAllEdges();
   }
 
@@ -171,7 +191,7 @@ export class EdgeSystem {
 
     const grid = this.mapSystem.getGrid();
     const hexSize = grid.getHexSize();
-    const config = EDGE_CONFIGS[edge.type];
+    const config = getEdgeConfig(edge.type);
 
     const posA = grid.hexToPixel(edge.tileA.q, edge.tileA.r);
     const posB = grid.hexToPixel(edge.tileB.q, edge.tileB.r);

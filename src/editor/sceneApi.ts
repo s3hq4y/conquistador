@@ -12,6 +12,9 @@ export interface LocalizedString {
   [lang: string]: string;
 }
 
+import { debugConfig } from '../core/config';
+import type { EdgeTypeInstance } from '../core/map';
+
 export type IconType = 'emoji' | 'svg' | 'image';
 
 export interface IconDefinition {
@@ -85,6 +88,7 @@ export interface SceneData {
   ownerTags: Record<string, OwnerTagInstance>;
   tiles: TileInstance[];
   edges?: EdgeInstance[];
+  edgeTypes?: Record<string, EdgeTypeInstance>;
 }
 
 export async function listScenes(): Promise<SceneListItem[]> {
@@ -140,16 +144,25 @@ export async function loadScene(id: string): Promise<SceneData> {
     return r.json(); 
   }).catch(() => undefined);
   
-  const [manifest, terrainTypes, ownerTags, tiles, edges] = await Promise.all([
+  const edgeTypesPromise = fetch(`${base}/edge_types.json?t=${timestamp}`).then(r => {
+    if (!r.ok) return undefined;
+    return r.json();
+  }).catch(() => undefined);
+  
+  const [manifest, terrainTypes, ownerTags, tiles, edges, edgeTypes] = await Promise.all([
     fetch(`${base}/manifest.json`).then(r => { if (!r.ok) throw new Error('manifest not found'); return r.json(); }),
     fetch(`${base}/terrain_types.json`).then(r => { if (!r.ok) throw new Error('terrain_types not found'); return r.json(); }),
     fetch(`${base}/owner_tags.json`).then(r => { if (!r.ok) throw new Error('owner_tags not found'); return r.json(); }),
     fetch(`${base}/tiles.json`).then(r => { if (!r.ok) throw new Error('tiles not found'); return r.json(); }),
-    edgesPromise
+    edgesPromise,
+    edgeTypesPromise
   ]);
 
-  console.log('[sceneApi] After Promise.all, edges type:', typeof edges, 'value:', edges);
-  console.log('[sceneApi] Is array:', Array.isArray(edges), 'Length:', edges?.length);
+  if (debugConfig.editor.sceneApi) {
+    console.log('[sceneApi] After Promise.all, edges type:', typeof edges, 'value:', edges);
+    console.log('[sceneApi] Is array:', Array.isArray(edges), 'Length:', edges?.length);
+    console.log('[sceneApi] edgeTypes:', edgeTypes);
+  }
 
   const sceneData: SceneData = {
     version: manifest.version,
@@ -163,7 +176,8 @@ export async function loadScene(id: string): Promise<SceneData> {
     terrainTypes: terrainTypes as Record<string, TerrainTypeInstance>,
     ownerTags: ownerTags as Record<string, OwnerTagInstance>,
     tiles: tiles as TileInstance[],
-    edges: edges as EdgeInstance[] | undefined
+    edges: edges as EdgeInstance[] | undefined,
+    edgeTypes: edgeTypes as Record<string, EdgeTypeInstance> | undefined
   };
 
   return sceneData;
