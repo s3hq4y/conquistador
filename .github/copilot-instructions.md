@@ -45,17 +45,33 @@
     - 邻居关系：使用 `HexGrid.areNeighbors(tileA, tileB)` 判断两个地块是否相邻
     - 国家边境：在 `MapSystem.calculateBorderEdges()` 中计算地块的边境边，参考 `src/core/systems/MapSystem.ts:313-340`
     - 边境渲染：多层梯形网格渐变渲染，参考 `src/components/HexTile.ts` 中的 `createBorderTrapezoids()` 方法
+    - **边（Edge）系统**：
+      - ECS 架构：边元素使用 Entity-Component-System 模式，由 `EdgeSystem` (`src/core/systems/EdgeSystem.ts`) 管理
+      - 边类型定义：支持 `river`（河流）、`barrier`（屏障）、`road`（道路）、`wall`（城墙）
+      - 边渲染配置：通过 `getEdgeConfig(type)` 获取配置，使用 `setEdgeConfigs(configs)` 动态设置
+      - 边持久化：边数据保存在 `edges.json`，格式为 `EdgeInstance[]`
+      - 边类型配置：场景可自定义边的渲染样式，定义在 `edge_types.json`
 
 - **开发与调试提示（针对 AI 代理）**：
   - 若需要同时查看前后端日志，运行 `npm run dev:all`（或分别运行 `npm run dev` 与 `npm run server`）。后端会打印每个请求的时间/路径（见 `server/index.ts` 的中间件）。
   - 直接调试游戏循环或系统逻辑时，查阅 `src/core/engine/GameEngine.ts`（游戏循环、`update(dt)` 流程）与各 `systems/*` 的 `update` 实现。
-  - 编辑场景数据时优先使用 `public/scenarios/*` 下的示例结构：`manifest.json`, `terrain_types.json`, `owner_tags.json`, `tiles.json`。API 接口期望这些字段。
+  - 编辑场景数据时优先使用 `public/scenarios/*` 下的示例结构：`manifest.json`, `terrain_types.json`, `owner_tags.json`, `tiles.json`, `edges.json`, `edge_types.json`。API 接口期望这些字段。
   - 调试公共边显示时，可使用编辑器的调试模式（在帮助面板中开启），点击两个相邻地块查看公共边
+  - **调试日志**：编辑器的边相关日志可通过 URL 参数启用：
+    - `?debug=edge` - EdgeSystem 日志
+    - `?debug=scene` - SceneManager 日志
+    - `?debug=api` - sceneApi 日志
+    - `?debug=all` - 全部日志
 
 - **代码修改注意事项**：
   - 保持系统初始化与帧更新分离（不要在 `initialize()` 中执行每帧逻辑）。
   - 渲染层 API 是显式的：添加/删除实体应通过 `Renderer` 提供的 layer 实体（`getTileLayer()` 等）。
   - 不要移动 canvas 元素 id（`gameCanvas`），前端启动流程依赖该 id。
+  - **数据配置分离原则**：程序代码应与数据配置分离
+    - 地形类型、地块拥有者、边类型等数据应放在场景/存档 JSON 文件中（`terrain_types.json`、`owner_tags.json`、`edge_types.json`）
+    - 程序只提供数据接口（如 `getTerrainDefinition()`、`getEdgeConfig()`）和加载函数（`setTerrainTypes()`、`setEdgeConfigs()`）
+    - 场景加载时从 JSON 文件读取数据并通过接口注入到系统中
+    - 默认配置仅作为回退（`DEFAULT_TERRAIN_TYPES`、`DEFAULT_EDGE_CONFIGS`）
 
 - **快速例子片段**（可供 AI 参考）：
   - 启动引擎：`startGame(mode)` 在 `src/main.ts`。
