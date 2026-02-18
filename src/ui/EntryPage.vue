@@ -4,8 +4,13 @@ import { useI18n } from 'vue-i18n';
 import { useGameStore, type GameMode } from '../stores/game';
 
 const router = useRouter();
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const gameStore = useGameStore();
+
+const availableLocales = [
+  { code: 'zh-CN', label: '简体中文' },
+  { code: 'en-US', label: 'English' }
+];
 
 const handleStart = (mode: GameMode) => {
   gameStore.setGameMode(mode);
@@ -14,6 +19,10 @@ const handleStart = (mode: GameMode) => {
 
 const goToBeta = () => {
   router.push('/beta');
+};
+
+const switchLocale = (newLocale: string) => {
+  locale.value = newLocale;
 };
 </script>
 
@@ -37,12 +46,27 @@ const goToBeta = () => {
           <span class="text-stone-400 font-light tracking-widest text-sm uppercase">Conquistador</span>
         </div>
         <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2">
+            <button 
+              v-for="loc in availableLocales"
+              :key="loc.code"
+              @click="switchLocale(loc.code)"
+              :class="[
+                'px-3 py-1.5 text-xs font-medium rounded transition-colors',
+                locale === loc.code 
+                  ? 'bg-amber-700 text-amber-100' 
+                  : 'text-stone-400 hover:text-stone-300 hover:bg-stone-800/50'
+              ]"
+            >
+              {{ loc.label }}
+            </button>
+          </div>
           <button 
             @click="goToBeta"
             class="group flex items-center gap-2 px-4 py-2 bg-amber-900/20 border border-amber-800/30 hover:border-amber-700/50 rounded-lg transition-all duration-300"
           >
             <span class="px-2 py-0.5 text-[10px] font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded">BETA</span>
-            <span class="text-amber-400 text-sm group-hover:text-amber-300 transition-colors">功能测试</span>
+            <span class="text-amber-400 text-sm group-hover:text-amber-300 transition-colors">{{ t('common.beta') }}</span>
           </button>
           <div class="text-stone-600 text-xs tracking-wider">v1.0.0</div>
         </div>
@@ -86,10 +110,10 @@ const goToBeta = () => {
                 </div>
                 <div class="text-left flex-1">
                   <h3 class="text-stone-200 font-light tracking-wider text-lg mb-1">
-                    游戏模式
+                    {{ t('entry.buttons.gameMode') }}
                   </h3>
                   <p class="text-stone-600 text-sm font-light">
-                    加载示例场景开始游戏
+                    {{ t('entry.descriptions.gameMode') }}
                   </p>
                 </div>
                 <svg class="w-5 h-5 text-stone-700 group-hover:text-amber-700 group-hover:translate-x-1 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,7 +138,7 @@ const goToBeta = () => {
                     {{ t('entry.buttons.randomMap') }}
                   </h3>
                   <p class="text-stone-600 text-sm font-light">
-                    程序化生成独特地形
+                    {{ t('entry.descriptions.randomMap') }}
                   </p>
                 </div>
                 <svg class="w-5 h-5 text-stone-700 group-hover:text-amber-700 group-hover:translate-x-1 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -139,7 +163,7 @@ const goToBeta = () => {
                     {{ t('entry.buttons.customMap') }}
                   </h3>
                   <p class="text-stone-600 text-sm font-light">
-                    从零开始构建你的世界
+                    {{ t('entry.descriptions.customMap') }}
                   </p>
                 </div>
                 <svg class="w-5 h-5 text-stone-700 group-hover:text-amber-700 group-hover:translate-x-1 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -155,13 +179,13 @@ const goToBeta = () => {
         <div class="flex items-center gap-6">
           <div class="flex items-center gap-2">
             <div class="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></div>
-            <span class="text-xs tracking-wider">Ready</span>
+            <span class="text-xs tracking-wider">{{ t('common.ready') }}</span>
           </div>
         </div>
         <div class="text-xs tracking-wider text-stone-700">
-          <span class="text-stone-600">ESC</span> Menu
+          <span class="text-stone-600">{{ t('common.esc') }}</span> {{ t('common.menu') }}
           <span class="mx-2 text-stone-800">|</span>
-          <span class="text-stone-600">Scroll</span> Zoom
+          <span class="text-stone-600">{{ t('common.scroll') }}</span> {{ t('common.zoom') }}
         </div>
       </footer>
     </div>

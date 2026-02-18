@@ -1,10 +1,21 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useGameStore, type OwnerStates } from '../stores/game';
 
 const router = useRouter();
+const { t, locale } = useI18n();
 const gameStore = useGameStore();
+
+const availableLocales = [
+  { code: 'zh-CN', label: '简体中文' },
+  { code: 'en-US', label: 'English' }
+];
+
+const switchLocale = (newLocale: string) => {
+  locale.value = newLocale;
+};
 
 const showMenu = ref(false);
 const turn = ref(1);
@@ -14,29 +25,13 @@ const ducat = computed(() => gameStore.getResource('ducat'));
 
 const ownerName = computed(() => {
   if (!selectedTile.value) return '';
-  const owners: Record<string, string> = {
-    'neutral': '中立',
-    'player': '玩家',
-    'enemy': '敌方'
-  };
-  return owners[selectedTile.value.owner] || selectedTile.value.owner;
+  return t(`game.${selectedTile.value.owner}`) || selectedTile.value.owner;
 });
 
 const terrainName = computed(() => {
   if (!selectedTile.value) return '';
-  const terrains: Record<string, string> = {
-    'plains': '平原',
-    'forest': '森林',
-    'mountain': '山地',
-    'desert': '沙漠',
-    'shallow_sea': '浅海',
-    'deep_sea': '深海',
-    'barrier_mountain': '屏障山',
-    'swamp': '沼泽',
-    'tundra': '冻原',
-    'volcano': '火山'
-  };
-  return terrains[selectedTile.value.terrain] || selectedTile.value.terrain;
+  const camelCaseTerrain = selectedTile.value.terrain.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+  return t(`game.${camelCaseTerrain}`) || selectedTile.value.terrain;
 });
 
 const handleEndTurn = () => {
@@ -103,11 +98,27 @@ onUnmounted(() => {
               <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
               </svg>
-              <span>回合 {{ turn }}</span>
+              <span>{{ t('game.turn') }} {{ turn }}</span>
             </div>
           </div>
           
           <div class="h-4 w-px bg-stone-700"></div>
+          
+          <div class="flex items-center gap-2">
+            <button 
+              v-for="loc in availableLocales"
+              :key="loc.code"
+              @click="switchLocale(loc.code)"
+              :class="[
+                'px-2 py-1 text-xs font-medium rounded transition-colors',
+                locale === loc.code 
+                  ? 'bg-amber-700 text-amber-100' 
+                  : 'text-stone-400 hover:text-stone-300 hover:bg-stone-800/50'
+              ]"
+            >
+              {{ loc.label }}
+            </button>
+          </div>
           
           <div class="flex items-center gap-2">
             <div class="w-8 h-8 rounded bg-gradient-to-br from-amber-700 to-amber-900 flex items-center justify-center">
@@ -132,19 +143,19 @@ onUnmounted(() => {
 
     <div v-if="showMenu" class="pointer-events-auto fixed inset-0 bg-stone-950/90 flex items-center justify-center z-50">
       <div class="bg-stone-900 border border-stone-800 rounded-lg p-6 min-w-[300px]">
-        <h2 class="text-stone-200 font-light tracking-wider text-lg mb-6 text-center">游戏菜单</h2>
+        <h2 class="text-stone-200 font-light tracking-wider text-lg mb-6 text-center">{{ t('game.gameMenu') }}</h2>
         <div class="flex flex-col gap-3">
           <button 
             @click="showMenu = false"
             class="px-4 py-3 bg-stone-800/50 border border-stone-700/50 hover:border-amber-800/50 text-stone-300 text-sm tracking-wider transition-colors rounded"
           >
-            继续游戏
+            {{ t('game.continueGame') }}
           </button>
           <button 
             @click="handleBackToMenu"
             class="px-4 py-3 bg-stone-800/50 border border-stone-700/50 hover:border-red-800/50 text-stone-300 text-sm tracking-wider transition-colors rounded"
           >
-            返回主菜单
+            {{ t('game.backToMenu') }}
           </button>
         </div>
       </div>
@@ -153,25 +164,25 @@ onUnmounted(() => {
     <div class="pointer-events-auto">
       <div class="absolute left-4 top-20 w-64 bg-stone-950/80 border border-stone-800/50 rounded-lg overflow-hidden">
         <div class="px-4 py-3 border-b border-stone-800/50">
-          <h3 class="text-stone-300 font-light tracking-wider text-sm">地块信息</h3>
+          <h3 class="text-stone-300 font-light tracking-wider text-sm">{{ t('game.tileInfo') }}</h3>
         </div>
         <div class="p-4">
           <div v-if="selectedTile" class="space-y-3 text-sm">
             <div class="flex justify-between">
-              <span class="text-stone-500">坐标</span>
+              <span class="text-stone-500">{{ t('game.coordinates') }}</span>
               <span class="text-stone-300">{{ selectedTile.q }}, {{ selectedTile.r }}</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-stone-500">地形</span>
+              <span class="text-stone-500">{{ t('game.terrain') }}</span>
               <span class="text-stone-300">{{ terrainName }}</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-stone-500">所有者</span>
+              <span class="text-stone-500">{{ t('game.owner') }}</span>
               <span class="text-stone-300">{{ ownerName }}</span>
             </div>
           </div>
           <div v-else class="text-stone-500 text-sm">
-            点击地块查看详情
+            {{ t('game.tileInfoPlaceholder') }}
           </div>
         </div>
       </div>
@@ -183,7 +194,7 @@ onUnmounted(() => {
           @click="handleEndTurn"
           class="px-6 py-3 bg-gradient-to-r from-amber-800 to-amber-900 hover:from-amber-700 hover:to-amber-800 border border-amber-700/50 text-amber-100 text-sm tracking-wider transition-all rounded shadow-lg shadow-amber-900/30"
         >
-          结束回合
+          {{ t('game.endTurn') }}
         </button>
       </div>
     </div>
@@ -192,7 +203,7 @@ onUnmounted(() => {
       <div class="absolute right-4 top-20 flex flex-col gap-2">
         <button 
           class="w-10 h-10 bg-stone-950/80 border border-stone-800/50 rounded flex items-center justify-center hover:border-amber-800/50 transition-colors"
-          title="放大"
+          :title="t('game.zoomIn')"
         >
           <svg class="w-5 h-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
@@ -200,7 +211,7 @@ onUnmounted(() => {
         </button>
         <button 
           class="w-10 h-10 bg-stone-950/80 border border-stone-800/50 rounded flex items-center justify-center hover:border-amber-800/50 transition-colors"
-          title="缩小"
+          :title="t('game.zoomOut')"
         >
           <svg class="w-5 h-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"></path>
@@ -211,11 +222,11 @@ onUnmounted(() => {
 
     <div class="pointer-events-auto">
       <div class="absolute bottom-4 right-4 text-stone-600 text-xs tracking-wider">
-        <span class="text-stone-500">ESC</span> 菜单
+        <span class="text-stone-500">{{ t('common.esc') }}</span> {{ t('common.menu') }}
         <span class="mx-2 text-stone-700">|</span>
-        <span class="text-stone-500">滚轮</span> 缩放
+        <span class="text-stone-500">{{ t('common.scroll') }}</span> {{ t('common.zoom') }}
         <span class="mx-2 text-stone-700">|</span>
-        <span class="text-stone-500">拖拽</span> 移动
+        <span class="text-stone-500">{{ t('game.drag') }}</span> {{ t('game.move') }}
       </div>
     </div>
   </div>

@@ -5,7 +5,13 @@ export default {
     start: 'Start Game',
     pause: 'Pause',
     resume: 'Resume',
-    reset: 'Reset'
+    reset: 'Reset',
+    beta: 'Beta Testing',
+    ready: 'Ready',
+    esc: 'ESC',
+    menu: 'Menu',
+    scroll: 'Scroll',
+    zoom: 'Zoom'
   },
   entry: {
     title: 'Conquistador',
@@ -17,7 +23,13 @@ export default {
     description: 'Choose a mode to start the game. Supports random map generation or custom creation.',
     buttons: {
       randomMap: 'Generate Random Map',
-      customMap: 'Custom Map'
+      customMap: 'Custom Map',
+      gameMode: 'Game Mode'
+    },
+    descriptions: {
+      gameMode: 'Load example scene to start',
+      randomMap: 'Procedurally generate unique terrain',
+      customMap: 'Build your world from scratch'
     },
     tips: {
       title: 'Tip',
@@ -28,6 +40,30 @@ export default {
   game: {
     terrain: 'Terrain',
     owner: 'Owner',
-    coordinates: 'Coordinates'
+    coordinates: 'Coordinates',
+    neutral: 'Neutral',
+    player: 'Player',
+    enemy: 'Enemy',
+    plains: 'Plains',
+    forest: 'Forest',
+    mountain: 'Mountain',
+    desert: 'Desert',
+    shallowSea: 'Shallow Sea',
+    deepSea: 'Deep Sea',
+    barrierMountain: 'Barrier Mountain',
+    swamp: 'Swamp',
+    tundra: 'Tundra',
+    volcano: 'Volcano',
+    tileInfo: 'Tile Info',
+    tileInfoPlaceholder: 'Click a tile for details',
+    endTurn: 'End Turn',
+    gameMenu: 'Game Menu',
+    continueGame: 'Continue Game',
+    backToMenu: 'Back to Menu',
+    zoomIn: 'Zoom In',
+    zoomOut: 'Zoom Out',
+    drag: 'Drag',
+    move: 'Move',
+    turn: 'Turn'
   }
 };
