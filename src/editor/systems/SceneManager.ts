@@ -1,4 +1,4 @@
-import type { MapSystem, EdgeSystem } from '../../core/systems';
+import type { MapSystem, EdgeSystem, MovementSystem } from '../../core/systems';
 import type { EditorUI } from '../EditorUI';
 import type { SceneData, TerrainTypeDefinition, OwnerTagDefinition } from '../../core/map';
 import { debugConfig } from '../../core/config';
@@ -7,6 +7,7 @@ import * as sceneApi from '../sceneApi';
 export class SceneManager {
   private mapSystem: MapSystem | null;
   private edgeSystem: EdgeSystem | null;
+  private movementSystem: MovementSystem | null;
   private editorUI: EditorUI | null;
   private currentSceneId: string | null = null;
 
@@ -14,6 +15,7 @@ export class SceneManager {
     this.mapSystem = mapSystem;
     this.editorUI = editorUI;
     this.edgeSystem = null;
+    this.movementSystem = null;
   }
 
   setMapSystem(mapSystem: MapSystem | null): void {
@@ -22,6 +24,10 @@ export class SceneManager {
 
   setEdgeSystem(edgeSystem: EdgeSystem | null): void {
     this.edgeSystem = edgeSystem;
+  }
+
+  setMovementSystem(movementSystem: MovementSystem | null): void {
+    this.movementSystem = movementSystem;
   }
 
   setEditorUI(editorUI: EditorUI | null): void {
@@ -60,6 +66,13 @@ export class SceneManager {
       } else {
         if (debugConfig.editor.sceneManager) {
           console.warn('[SceneManager] edgeSystem is null!');
+        }
+      }
+
+      if (this.movementSystem) {
+        sceneData.units = this.movementSystem.getSceneDataUnits();
+        if (debugConfig.editor.sceneManager) {
+          console.log('[SceneManager] Units to save:', JSON.stringify(sceneData.units));
         }
       }
       
@@ -122,6 +135,13 @@ export class SceneManager {
           }
         }
         
+        if (this.movementSystem && sceneData.units) {
+          if (debugConfig.editor.sceneManager) {
+            console.log('[SceneManager] Loading units:', sceneData.units.length);
+          }
+          this.movementSystem.loadFromSceneData(sceneData);
+        }
+        
         this.updateUI();
         this.editorUI?.showToast('场景已加载', 'success');
         return true;
@@ -143,6 +163,10 @@ export class SceneManager {
     
     if (this.edgeSystem) {
       sceneData.edges = this.edgeSystem.toInstances();
+    }
+    
+    if (this.movementSystem) {
+      sceneData.units = this.movementSystem.getSceneDataUnits();
     }
     
     const json = JSON.stringify(sceneData, null, 2);
@@ -172,6 +196,10 @@ export class SceneManager {
           
           if (this.edgeSystem && sceneData.edges) {
             this.edgeSystem.loadFromInstances(sceneData.edges);
+          }
+          
+          if (this.movementSystem && sceneData.units) {
+            this.movementSystem.loadFromSceneData(sceneData);
           }
           
           this.updateUI();

@@ -16,7 +16,9 @@ export type {
   IconDefinition,
   IconType,
   EdgeInstance,
-  EdgeTypeInstance
+  EdgeTypeInstance,
+  TerrainGroups,
+  UnitInstance
 } from './SceneData';
 export { 
   createEmptyScene,

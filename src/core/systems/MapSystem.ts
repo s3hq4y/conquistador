@@ -251,6 +251,9 @@ export class MapSystem extends GameSystem {
       }
 
       this.updateAllBorderStates();
+      
+      this.engine.getEventBus().emit('map:loaded', data);
+      
       return true;
     } catch (error) {
       console.error('Failed to load scene:', error);

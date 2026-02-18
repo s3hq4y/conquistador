@@ -107,6 +107,22 @@ export interface EdgeInstance {
   properties?: Record<string, unknown>;
 }
 
+export interface UnitInstance {
+  id: string;
+  q: number;
+  r: number;
+  owner: string;
+  moves: number;
+  maxMoves: number;
+  unitType?: string;
+}
+
+export interface TerrainGroups {
+  land: string[];
+  sea: string[];
+  air: string[];
+}
+
 export interface SceneData {
   version: string;
   id: string;
@@ -125,6 +141,8 @@ export interface SceneData {
   tiles: TileInstance[];
   edges?: EdgeInstance[];
   edgeTypes?: Record<string, EdgeTypeInstance>;
+  terrainGroups?: TerrainGroups;
+  units?: UnitInstance[];
 }
 
 export interface EdgeTypeInstance {
@@ -209,6 +227,12 @@ export function createEmptyScene(name: string = '新场景'): SceneData {
     },
     terrainTypes: { ...DEFAULT_TERRAIN_TYPES },
     ownerTags: { ...DEFAULT_OWNER_TAGS },
-    tiles: []
+    tiles: [],
+    terrainGroups: {
+      land: ['plains', 'grassland', 'forest', 'hill', 'mountain', 'desert', 'tundra'],
+      sea: ['shallow_sea', 'deep_sea', 'coast'],
+      air: ['plains', 'grassland', 'forest', 'hill', 'mountain', 'desert', 'tundra', 'shallow_sea', 'deep_sea', 'coast']
+    },
+    units: []
   };
 }

@@ -1,9 +1,10 @@
-import type { GameEngine } from '../../core/engine';
-import type { MapSystem } from '../../core/systems';
+import { GameEngine } from '../../core/engine';
+import { MapSystem } from '../../core/systems';
 import type { EditorTools } from './EditorTools';
 import type { EditorTool } from './types';
 import type { DebugEdgeSystem } from './DebugEdgeSystem';
 import type { EdgeEditorSystem } from './EdgeEditorSystem';
+import { debugConfig } from '../../core/config';
 
 export class EditorInputHandler {
   private engine: GameEngine;
@@ -104,12 +105,16 @@ export class EditorInputHandler {
 
     this.updateToolState(this.tools.getCurrentTool());
 
+    const tool = this.tools.getCurrentTool();
+
+    if (debugConfig.editor.editorTools) {
+      console.log('handleMouseDown - current tool:', tool);
+    }
+
     if (this.debugEdgeSystem && this.debugEdgeSystem.isEnabled()) {
       this.debugEdgeSystem.handleTileClick(hexPos.q, hexPos.r);
       return;
     }
-
-    const tool = this.tools.getCurrentTool();
 
     if (tool === 'edge') {
       if (this.edgeEditorSystem) {
@@ -120,6 +125,11 @@ export class EditorInputHandler {
 
     if (this.tools.getCurrentTool() === 'select') {
       this.tools.selectTile(hexPos.q, hexPos.r, e.ctrlKey || e.metaKey);
+    } else if (tool === 'unit') {
+      if (debugConfig.editor.editorTools) {
+        console.log('Unit tool: placing at', hexPos.q, hexPos.r);
+      }
+      this.tools.placeUnit(hexPos.q, hexPos.r);
     } else if (tool === 'paint' || tool === 'drag_paint' || tool === 'erase') {
       this.isPainting = true;
       this.lastPaintedTile = null;
@@ -149,7 +159,8 @@ export class EditorInputHandler {
       'e': 'erase',
       'a': 'add',
       'd': 'drag_paint',
-      'x': 'edge'
+      'x': 'edge',
+      'u': 'unit'
     };
 
     const tool = toolKeys[e.key.toLowerCase()];

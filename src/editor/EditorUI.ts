@@ -2,6 +2,7 @@ import { createApp, ref, type Ref } from 'vue';
 import EditorRoot from './components/EditorRoot.vue';
 import type { EditorTool, PaintMode } from './EditorSystem';
 import type { TerrainTypeDefinition, OwnerTagDefinition, EdgeType } from '../core/map';
+import { debugConfig } from '../core/config';
 
 export const EditorUIStateKey = Symbol('EditorUIState');
 
@@ -10,6 +11,8 @@ export interface EditorUIState {
   currentTerrainId: Ref<string>;
   currentOwnerId: Ref<string>;
   currentEdgeType: Ref<EdgeType>;
+  currentUnitType: Ref<string>;
+  currentUnitMoves: Ref<number>;
   paintMode: Ref<PaintMode>;
   sceneName: Ref<string>;
   sceneDescription: Ref<string>;
@@ -34,6 +37,8 @@ export class EditorUI {
       currentTerrainId: ref('plains'),
       currentOwnerId: ref('neutral'),
       currentEdgeType: ref<EdgeType>('river'),
+      currentUnitType: ref('land'),
+      currentUnitMoves: ref(6),
       paintMode: ref<PaintMode>('both'),
       sceneName: ref(''),
       sceneDescription: ref(''),
@@ -102,10 +107,17 @@ export class EditorUI {
   }
 
   getCurrentTool(): EditorTool {
-    return this.state.currentTool.value;
+    const tool = this.state.currentTool.value;
+    if (debugConfig.editor.editorUI) {
+      console.log('EditorUI.getCurrentTool:', tool);
+    }
+    return tool;
   }
 
   setCurrentTool(tool: EditorTool): void {
+    if (debugConfig.editor.editorUI) {
+      console.log('EditorUI.setCurrentTool:', tool);
+    }
     this.state.currentTool.value = tool;
   }
 
@@ -131,6 +143,22 @@ export class EditorUI {
 
   setCurrentEdgeType(type: EdgeType): void {
     this.state.currentEdgeType.value = type;
+  }
+
+  getCurrentUnitType(): string {
+    return this.state.currentUnitType.value;
+  }
+
+  setCurrentUnitType(type: string): void {
+    this.state.currentUnitType.value = type;
+  }
+
+  getCurrentUnitMoves(): number {
+    return this.state.currentUnitMoves.value;
+  }
+
+  setCurrentUnitMoves(moves: number): void {
+    this.state.currentUnitMoves.value = moves;
   }
 
   getPaintMode(): PaintMode {

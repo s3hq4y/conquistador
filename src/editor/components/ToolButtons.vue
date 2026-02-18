@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import type { EditorTool } from '../EditorSystem';
 import type { EdgeType } from '../../core/map';
+import { debugConfig } from '../../core/config';
 
 defineProps<{
   currentTool: EditorTool;
@@ -19,7 +20,8 @@ const tools: { id: EditorTool; label: string; icon: string }[] = [
   { id: 'erase', label: '擦除', icon: '🗑️' },
   { id: 'add', label: '添加', icon: '➕' },
   { id: 'drag_paint', label: '拖拽', icon: '✋' },
-  { id: 'edge', label: '边编辑', icon: '🔗' }
+  { id: 'edge', label: '边编辑', icon: '🔗' },
+  { id: 'unit', label: '放置单位', icon: '⚔️' }
 ];
 
 const edgeTypes: { id: EdgeType; label: string; icon: string }[] = [
@@ -38,6 +40,9 @@ const currentEdgeLabel = computed(() => {
 });
 
 const handleToolClick = (toolId: EditorTool) => {
+  if (debugConfig.editor.editorUI) {
+    console.log('ToolButtons.handleToolClick:', toolId);
+  }
   emit('update:currentTool', toolId);
 };
 

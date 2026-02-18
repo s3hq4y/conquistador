@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, provide, inject } from 'vue';
+import { ref, provide, inject, watch } from 'vue';
 import EditorPanel from './EditorPanel.vue';
 import BottomNav from './BottomNav.vue';
 import { EditorUIStateKey, type EditorUIState } from '../EditorUI';
@@ -27,6 +27,12 @@ provide(EditorUIStateKey, context);
 const activePanel = ref<ActivePanelType>('tools');
 
 provide(ActivePanelKey, activePanel);
+
+watch(activePanel, (newPanel) => {
+  if (newPanel === 'military') {
+    context.state.currentTool.value = 'unit';
+  }
+});
 
 const editorPanelRef = ref<InstanceType<typeof EditorPanel> | null>(null);
 

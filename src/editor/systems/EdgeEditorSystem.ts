@@ -2,6 +2,7 @@ import type { MapSystem } from '../../core/systems';
 import type { EdgeSystem } from '../../core/systems';
 import type { EdgeType } from '../../core/map';
 import { Tile } from '../../core/map';
+import { debugConfig } from '../../core/config';
 
 export class EdgeEditorSystem {
   private mapSystem: MapSystem | null = null;
@@ -42,7 +43,9 @@ export class EdgeEditorSystem {
 
   handleTileClick(q: number, r: number): boolean {
     if (!this.enabled || !this.mapSystem || !this.edgeSystem) {
-      console.warn('[EdgeEditorSystem] Not ready:', { enabled: this.enabled, hasMapSystem: !!this.mapSystem, hasEdgeSystem: !!this.edgeSystem });
+      if (debugConfig.editor.edgeSystem) {
+        console.warn('[EdgeEditorSystem] Not ready:', { enabled: this.enabled, hasMapSystem: !!this.mapSystem, hasEdgeSystem: !!this.edgeSystem });
+      }
       return false;
     }
 
@@ -50,11 +53,15 @@ export class EdgeEditorSystem {
     const tile = grid.getTile(q, r);
     
     if (!tile) {
-      console.warn('[EdgeEditorSystem] No tile at:', q, r);
+      if (debugConfig.editor.edgeSystem) {
+        console.warn('[EdgeEditorSystem] No tile at:', q, r);
+      }
       return false;
     }
 
-    console.log('[EdgeEditorSystem] Tile clicked:', q, r, 'Selected tiles:', this.selectedTiles.length);
+    if (debugConfig.editor.edgeSystem) {
+      console.log('[EdgeEditorSystem] Tile clicked:', q, r, 'Selected tiles:', this.selectedTiles.length);
+    }
 
     if (this.selectedTiles.length === 0) {
       this.selectedTiles.push(tile);
@@ -73,7 +80,9 @@ export class EdgeEditorSystem {
         this.selectedTiles.push(tile);
         this.highlightTile(tile, true);
         
-        console.log('[EdgeEditorSystem] Adding edge between:', firstTile.getKey(), tile.getKey());
+        if (debugConfig.editor.edgeSystem) {
+          console.log('[EdgeEditorSystem] Adding edge between:', firstTile.getKey(), tile.getKey());
+        }
         this.edgeSystem.toggleEdge(firstTile, tile, this.currentEdgeType);
         
         setTimeout(() => {

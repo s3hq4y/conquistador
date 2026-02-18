@@ -1,4 +1,4 @@
-import { GameSystem, MapSystem, EdgeSystem } from '../core/systems';
+import { GameSystem, MapSystem, EdgeSystem, MovementSystem } from '../core/systems';
 import type { GameEngine } from '../core/engine';
 import { EditorUI } from './EditorUI';
 import { EditorInputHandler, EditorTools, SceneManager, DebugEdgeSystem, EdgeEditorSystem } from './systems';
@@ -6,6 +6,7 @@ export type { EditorTool, PaintMode } from './systems';
 
 export class EditorSystem extends GameSystem {
   private mapSystem: MapSystem | null = null;
+  private movementSystem: MovementSystem | null = null;
   private editorUI: EditorUI | null = null;
   private inputHandler: EditorInputHandler | null = null;
   private tools: EditorTools | null = null;
@@ -20,8 +21,14 @@ export class EditorSystem extends GameSystem {
 
   initialize(): void {
     this.mapSystem = this.engine.getSystems().find(s => s instanceof MapSystem) as MapSystem;
+    this.movementSystem = this.engine.getSystems().find(s => s instanceof MovementSystem) as MovementSystem;
+
+    if (this.movementSystem) {
+      this.movementSystem.setGrid(this.mapSystem.getGrid());
+      this.movementSystem.loadFromSceneData(this.mapSystem.getSceneData());
+    }
     
-    this.tools = new EditorTools(this.mapSystem, null);
+    this.tools = new EditorTools(this.mapSystem, this.movementSystem, null);
     this.sceneManager = new SceneManager(this.mapSystem, null);
     
     this.debugEdgeSystem = new DebugEdgeSystem();
@@ -33,6 +40,7 @@ export class EditorSystem extends GameSystem {
     this.edgeSystem.setApp(this.engine.getApplication());
     
     this.sceneManager.setEdgeSystem(this.edgeSystem);
+    this.sceneManager.setMovementSystem(this.movementSystem);
     
     this.edgeEditorSystem = new EdgeEditorSystem();
     this.edgeEditorSystem.setMapSystem(this.mapSystem);

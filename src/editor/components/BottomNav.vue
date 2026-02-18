@@ -1,13 +1,13 @@
 <script setup lang="ts">
 defineProps<{
-  activePanel: 'tools' | 'info' | 'help';
+  activePanel: 'tools' | 'military' | 'info' | 'help';
 }>();
 
 const emit = defineEmits<{
-  (e: 'update:activePanel', panel: 'tools' | 'info' | 'help'): void;
+  (e: 'update:activePanel', panel: 'tools' | 'military' | 'info' | 'help'): void;
 }>();
 
-const handleNavClick = (panel: 'tools' | 'info' | 'help') => {
+const handleNavClick = (panel: 'tools' | 'military' | 'info' | 'help') => {
   emit('update:activePanel', panel);
 };
 </script>
@@ -20,6 +20,13 @@ const handleNavClick = (panel: 'tools' | 'info' | 'help') => {
     >
       <span class="nav-icon">🛠️</span>
       <span class="nav-label">工具</span>
+    </button>
+    <button
+      :class="['bottom-nav-btn', { active: activePanel === 'military' }]"
+      @click="handleNavClick('military')"
+    >
+      <span class="nav-icon">⚔️</span>
+      <span class="nav-label">军事</span>
     </button>
     <button
       :class="['bottom-nav-btn', { active: activePanel === 'info' }]"

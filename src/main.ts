@@ -1,4 +1,4 @@
-import { GameEngine, MapSystem, CameraControlSystem } from './core';
+import { GameEngine, MapSystem, CameraControlSystem, MovementSystem, UnitRenderSystem } from './core';
 import { EditorSystem } from './editor';
 import { GameModeSystem } from './game';
 import type { GameMode } from './stores/game';
@@ -14,11 +14,15 @@ export async function startGame(mode: GameMode): Promise<void> {
 
   const mapSystem = new MapSystem(engine, 50);
   const cameraControlSystem = new CameraControlSystem(engine);
+  const movementSystem = new MovementSystem(engine);
+  const unitRenderSystem = new UnitRenderSystem(engine);
   const editorSystem = new EditorSystem(engine);
   const gameModeSystem = new GameModeSystem(engine);
 
   engine.addSystem(mapSystem);
   engine.addSystem(cameraControlSystem);
+  engine.addSystem(movementSystem);
+  engine.addSystem(unitRenderSystem);
   
   if (mode === 'GAME') {
     engine.addSystem(gameModeSystem);

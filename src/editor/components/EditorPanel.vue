@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, inject } from 'vue';
+import { ref, watch, inject, computed } from 'vue';
 import ToolButtons from './ToolButtons.vue';
 import TerrainGrid from './TerrainGrid.vue';
 import OwnerGrid from './OwnerGrid.vue';
@@ -7,9 +7,11 @@ import SceneListModal from './SceneListModal.vue';
 import AddTerrainModal from './AddTerrainModal.vue';
 import AddOwnerModal from './AddOwnerModal.vue';
 import type { EditorTool, PaintMode } from '../EditorSystem';
+import type { EdgeType } from '../../core/map';
 import * as sceneApi from '../sceneApi';
 import { EditorUIStateKey, type EditorUIState } from '../EditorUI';
 import { ActivePanelKey, type ActivePanelRef } from './editorSymbols';
+import { debugConfig } from '../../core/config';
 import './editor-vars.css';
 
 interface EditorCallbacks {
@@ -28,6 +30,8 @@ const defaultState: EditorUIState = {
   currentTerrainId: ref('plains'),
   currentOwnerId: ref('neutral'),
   currentEdgeType: ref('river'),
+  currentUnitType: ref('land'),
+  currentUnitMoves: ref(6),
   paintMode: ref<PaintMode>('both'),
   sceneName: ref(''),
   sceneDescription: ref(''),
@@ -59,6 +63,34 @@ const activePanel = inject<ActivePanelRef>(ActivePanelKey, ref('tools'));
 
 const activeTab = ref<'terrain' | 'owner'>('terrain');
 
+const edgeTypes: { id: EdgeType; label: string; icon: string }[] = [
+  { id: 'river', label: '河流', icon: '🌊' },
+  { id: 'barrier', label: '屏障', icon: '🚧' },
+  { id: 'road', label: '道路', icon: '🛤️' },
+  { id: 'wall', label: '城墙', icon: '🏰' }
+];
+
+const currentEdgeType = ref<EdgeType>('river');
+const showEdgeDropdown = ref(false);
+
+const currentEdgeLabel = computed(() => {
+  const found = edgeTypes.find(e => e.id === currentEdgeType.value);
+  return found ? found.label : '河流';
+});
+
+const handleEdgeTypeSelect = (type: EdgeType) => {
+  currentEdgeType.value = type;
+  showEdgeDropdown.value = false;
+  state.currentEdgeType.value = type;
+  if (callbacks.onEdgeTypeChange) {
+    callbacks.onEdgeTypeChange(type);
+  }
+};
+
+const toggleEdgeDropdown = () => {
+  showEdgeDropdown.value = !showEdgeDropdown.value;
+};
+
 const showSceneList = ref(false);
 const showAddTerrain = ref(false);
 const showAddOwner = ref(false);
@@ -73,6 +105,9 @@ watch(() => state.sceneName.value, (val) => { localSceneName.value = val; });
 watch(() => state.sceneDescription.value, (val) => { localSceneDescription.value = val; });
 
 const handleToolChange = (tool: EditorTool) => {
+  if (debugConfig.editor.editorUI) {
+    console.log('EditorPanel.handleToolChange:', tool);
+  }
   state.currentTool.value = tool;
 };
 
@@ -89,6 +124,15 @@ const handleTerrainSelect = (id: string) => {
 
 const handleOwnerSelect = (id: string) => {
   state.currentOwnerId.value = id;
+};
+
+const handleUnitTypeChange = (type: string) => {
+  state.currentUnitType.value = type;
+};
+
+const handleUnitMovesChange = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  state.currentUnitMoves.value = parseInt(target.value) || 6;
 };
 
 const handlePaintModeChange = (mode: PaintMode) => {
@@ -207,6 +251,61 @@ defineExpose({
         </div>
       </div>
 
+      <div v-if="state.currentTool.value === 'edge'" class="section edge-type-section">
+        <label class="section-label">边类型</label>
+        <div class="edge-type-selector">
+          <button
+            class="edge-type-main-btn"
+            @click="toggleEdgeDropdown"
+          >
+            <span class="edge-type-icon">{{ edgeTypes.find(e => e.id === state.currentEdgeType.value)?.icon }}</span>
+            <span class="edge-type-label">{{ currentEdgeLabel }}</span>
+            <span class="edge-type-arrow">▼</span>
+          </button>
+
+          <div v-if="showEdgeDropdown" class="edge-dropdown">
+            <button
+              v-for="edge in edgeTypes"
+              :key="edge.id"
+              :class="['edge-option', { selected: state.currentEdgeType.value === edge.id }]"
+              @click="handleEdgeTypeSelect(edge.id)"
+            >
+              <span class="edge-option-icon">{{ edge.icon }}</span>
+              <span class="edge-option-label">{{ edge.label }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="state.currentTool.value === 'unit'" class="section unit-type-section">
+        <label class="section-label">单位类型</label>
+        <div class="unit-type-buttons">
+          <button
+            :class="['mode-btn', { active: state.currentUnitType.value === 'land' }]"
+            @click="handleUnitTypeChange('land')"
+          >陆地</button>
+          <button
+            :class="['mode-btn', { active: state.currentUnitType.value === 'sea' }]"
+            @click="handleUnitTypeChange('sea')"
+          >海上</button>
+          <button
+            :class="['mode-btn', { active: state.currentUnitType.value === 'air' }]"
+            @click="handleUnitTypeChange('air')"
+          >空中</button>
+        </div>
+
+        <label class="section-label" style="margin-top: 12px;">移动力</label>
+        <input
+          type="range"
+          min="1"
+          max="12"
+          :value="state.currentUnitMoves.value"
+          class="moves-slider"
+          @input="handleUnitMovesChange"
+        >
+        <div class="moves-value">{{ state.currentUnitMoves.value }}</div>
+      </div>
+
       <div class="section">
         <div class="tab-buttons">
           <button
@@ -233,6 +332,44 @@ defineExpose({
           :current-owner-id="state.currentOwnerId.value"
           @select="handleOwnerSelect"
           @add="showAddOwner = true"
+        />
+      </div>
+    </div>
+
+    <div v-show="activePanel === 'military'" class="panel-content">
+      <div class="section">
+        <label class="section-label">单位类型</label>
+        <div class="unit-type-buttons">
+          <button
+            :class="['mode-btn', { active: state.currentUnitType.value === 'land' }]"
+            @click="handleUnitTypeChange('land')"
+          >陆地</button>
+          <button
+            :class="['mode-btn', { active: state.currentUnitType.value === 'sea' }]"
+            @click="handleUnitTypeChange('sea')"
+          >海上</button>
+          <button
+            :class="['mode-btn', { active: state.currentUnitType.value === 'air' }]"
+            @click="handleUnitTypeChange('air')"
+          >空中</button>
+        </div>
+
+        <label class="section-label" style="margin-top: 12px;">移动力</label>
+        <input
+          type="range"
+          min="1"
+          max="12"
+          :value="state.currentUnitMoves.value"
+          class="moves-slider"
+          @input="handleUnitMovesChange"
+        >
+        <div class="moves-value">{{ state.currentUnitMoves.value }}</div>
+
+        <label class="section-label" style="margin-top: 12px;">所属者</label>
+        <OwnerGrid
+          :owners="state.owners.value"
+          :current-owner-id="state.currentOwnerId.value"
+          @select="handleOwnerSelect"
         />
       </div>
     </div>
@@ -620,5 +757,27 @@ kbd {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
+}
+
+.unit-type-section {
+  margin-top: -8px;
+}
+
+.unit-type-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.moves-slider {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.moves-value {
+  text-align: center;
+  font-size: 14px;
+  color: var(--editor-text-primary);
+  margin-top: 4px;
 }
 </style>

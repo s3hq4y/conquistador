@@ -1,14 +1,18 @@
-import type { MapSystem } from '../../core/systems';
+import type { MapSystem, MovementSystem } from '../../core/systems';
 import type { EditorTool, PaintMode } from './types';
 import type { EditorUI } from '../EditorUI';
+import type { UnitInstance } from '../../core/map/SceneData';
+import { debugConfig } from '../../core/config';
 
 export class EditorTools {
   private mapSystem: MapSystem | null;
+  private movementSystem: MovementSystem | null;
   private editorUI: EditorUI | null;
   private selectedTiles: Set<string> = new Set();
 
-  constructor(mapSystem: MapSystem | null, editorUI: EditorUI | null) {
+  constructor(mapSystem: MapSystem | null, movementSystem: MovementSystem | null, editorUI: EditorUI | null) {
     this.mapSystem = mapSystem;
+    this.movementSystem = movementSystem;
     this.editorUI = editorUI;
   }
 
@@ -16,12 +20,20 @@ export class EditorTools {
     this.mapSystem = mapSystem;
   }
 
+  setMovementSystem(movementSystem: MovementSystem | null): void {
+    this.movementSystem = movementSystem;
+  }
+
   setEditorUI(editorUI: EditorUI | null): void {
     this.editorUI = editorUI;
   }
 
   getCurrentTool(): EditorTool {
-    return this.editorUI?.getCurrentTool() ?? 'paint';
+    const tool = this.editorUI?.getCurrentTool() ?? 'paint';
+    if (debugConfig.editor.editorTools) {
+      console.log('EditorTools.getCurrentTool:', tool, 'hasEditorUI:', !!this.editorUI);
+    }
+    return tool;
   }
 
   setCurrentTool(tool: EditorTool): void {
@@ -42,6 +54,14 @@ export class EditorTools {
 
   getPaintMode(): PaintMode {
     return this.editorUI?.getPaintMode() ?? 'both';
+  }
+
+  getCurrentUnitType(): string {
+    return this.editorUI?.getCurrentUnitType() ?? 'land';
+  }
+
+  getCurrentUnitMoves(): number {
+    return this.editorUI?.getCurrentUnitMoves() ?? 6;
   }
 
   selectTile(q: number, r: number, addToSelection: boolean): void {
@@ -77,6 +97,11 @@ export class EditorTools {
       return;
     }
 
+    if (tool === 'unit') {
+      this.placeUnit(q, r);
+      return;
+    }
+
     const paintMode = this.getPaintMode();
     const terrainId = this.getCurrentTerrainId();
     const ownerId = this.getCurrentOwnerId();
@@ -87,6 +112,41 @@ export class EditorTools {
     if (paintMode === 'both' || paintMode === 'owner') {
       this.mapSystem.updateTileOwner(q, r, ownerId);
     }
+  }
+
+  placeUnit(q: number, r: number): void {
+    if (!this.movementSystem) return;
+
+    const existing = this.movementSystem.getUnitAt(q, r);
+    if (existing) {
+      this.movementSystem.removeUnit(existing.id);
+      return;
+    }
+
+    const owner = this.getCurrentOwnerId();
+    const unitType = this.getCurrentUnitType();
+    const maxMoves = this.getCurrentUnitMoves();
+
+    const unit: UnitInstance = {
+      id: `unit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      q,
+      r,
+      owner,
+      moves: maxMoves,
+      maxMoves,
+      unitType
+    };
+
+    this.movementSystem.addUnit(unit);
+  }
+
+  removeUnitAt(q: number, r: number): boolean {
+    if (!this.movementSystem) return false;
+    const unit = this.movementSystem.getUnitAt(q, r);
+    if (unit) {
+      return this.movementSystem.removeUnit(unit.id);
+    }
+    return false;
   }
 
   fillArea(startQ: number, startR: number): void {

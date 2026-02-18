@@ -71,6 +71,22 @@ export interface EdgeInstance {
   properties?: Record<string, unknown>;
 }
 
+export interface UnitInstance {
+  id: string;
+  q: number;
+  r: number;
+  owner: string;
+  moves: number;
+  maxMoves: number;
+  unitType?: string;
+}
+
+export interface TerrainGroups {
+  land: string[];
+  sea: string[];
+  air: string[];
+}
+
 export interface SceneData {
   version: string;
   id: string;
@@ -89,6 +105,8 @@ export interface SceneData {
   tiles: TileInstance[];
   edges?: EdgeInstance[];
   edgeTypes?: Record<string, EdgeTypeInstance>;
+  terrainGroups?: TerrainGroups;
+  units?: UnitInstance[];
 }
 
 export async function listScenes(): Promise<SceneListItem[]> {
@@ -149,19 +167,33 @@ export async function loadScene(id: string): Promise<SceneData> {
     return r.json();
   }).catch(() => undefined);
   
-  const [manifest, terrainTypes, ownerTags, tiles, edges, edgeTypes] = await Promise.all([
+  const unitsPromise = fetch(`${base}/units.json?t=${timestamp}`).then(r => { 
+    if (!r.ok) return undefined; 
+    return r.json(); 
+  }).catch(() => undefined);
+  
+  const terrainGroupsPromise = fetch(`${base}/terrain_groups.json?t=${timestamp}`).then(r => { 
+    if (!r.ok) return undefined; 
+    return r.json(); 
+  }).catch(() => undefined);
+  
+  const [manifest, terrainTypes, ownerTags, tiles, edges, edgeTypes, units, terrainGroups] = await Promise.all([
     fetch(`${base}/manifest.json`).then(r => { if (!r.ok) throw new Error('manifest not found'); return r.json(); }),
     fetch(`${base}/terrain_types.json`).then(r => { if (!r.ok) throw new Error('terrain_types not found'); return r.json(); }),
     fetch(`${base}/owner_tags.json`).then(r => { if (!r.ok) throw new Error('owner_tags not found'); return r.json(); }),
     fetch(`${base}/tiles.json`).then(r => { if (!r.ok) throw new Error('tiles not found'); return r.json(); }),
     edgesPromise,
-    edgeTypesPromise
+    edgeTypesPromise,
+    unitsPromise,
+    terrainGroupsPromise
   ]);
 
   if (debugConfig.editor.sceneApi) {
     console.log('[sceneApi] After Promise.all, edges type:', typeof edges, 'value:', edges);
     console.log('[sceneApi] Is array:', Array.isArray(edges), 'Length:', edges?.length);
     console.log('[sceneApi] edgeTypes:', edgeTypes);
+    console.log('[sceneApi] units:', units);
+    console.log('[sceneApi] terrainGroups:', terrainGroups);
   }
 
   const sceneData: SceneData = {
@@ -177,7 +209,9 @@ export async function loadScene(id: string): Promise<SceneData> {
     ownerTags: ownerTags as Record<string, OwnerTagInstance>,
     tiles: tiles as TileInstance[],
     edges: edges as EdgeInstance[] | undefined,
-    edgeTypes: edgeTypes as Record<string, EdgeTypeInstance> | undefined
+    edgeTypes: edgeTypes as Record<string, EdgeTypeInstance> | undefined,
+    units: units as UnitInstance[] | undefined,
+    terrainGroups: terrainGroups as TerrainGroups | undefined
   };
 
   return sceneData;

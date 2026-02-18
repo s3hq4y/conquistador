@@ -3,6 +3,8 @@ export interface DebugConfig {
     edgeSystem: boolean;
     sceneManager: boolean;
     sceneApi: boolean;
+    editorTools: boolean;
+    editorUI: boolean;
   };
 }
 
@@ -17,7 +19,9 @@ function getDebugFromUrl(): Partial<DebugConfig['editor']> {
     return {
       edgeSystem: modules.includes('edge') || modules.includes('all'),
       sceneManager: modules.includes('scene') || modules.includes('all'),
-      sceneApi: modules.includes('api') || modules.includes('all')
+      sceneApi: modules.includes('api') || modules.includes('all'),
+      editorTools: modules.includes('tools') || modules.includes('all'),
+      editorUI: modules.includes('ui') || modules.includes('all')
     };
   }
   
@@ -30,7 +34,9 @@ export const debugConfig: DebugConfig = {
   editor: {
     edgeSystem: urlDebug.edgeSystem ?? false,
     sceneManager: urlDebug.sceneManager ?? false,
-    sceneApi: urlDebug.sceneApi ?? false
+    sceneApi: urlDebug.sceneApi ?? false,
+    editorTools: urlDebug.editorTools ?? false,
+    editorUI: urlDebug.editorUI ?? false
   }
 };
 
@@ -38,4 +44,6 @@ export function setEditorDebug(enabled: boolean): void {
   debugConfig.editor.edgeSystem = enabled;
   debugConfig.editor.sceneManager = enabled;
   debugConfig.editor.sceneApi = enabled;
+  debugConfig.editor.editorTools = enabled;
+  debugConfig.editor.editorUI = enabled;
 }
