@@ -1,6 +1,9 @@
 [
   {
-    "pos": [-4, 0],
+    "pos": [
+      -4,
+      0
+    ],
     "components": {
       "terrain": "shallow_sea",
       "owner": "neutral",
@@ -10,7 +13,10 @@
     }
   },
   {
-    "pos": [-4, 1],
+    "pos": [
+      -4,
+      1
+    ],
     "components": {
       "terrain": "shallow_sea",
       "owner": "neutral",
@@ -20,7 +26,10 @@
     }
   },
   {
-    "pos": [-4, 2],
+    "pos": [
+      -4,
+      2
+    ],
     "components": {
       "terrain": "plains",
       "owner": "enemy",
@@ -30,7 +39,10 @@
     }
   },
   {
-    "pos": [-4, 3],
+    "pos": [
+      -4,
+      3
+    ],
     "components": {
       "terrain": "plains",
       "owner": "enemy",
@@ -40,7 +52,10 @@
     }
   },
   {
-    "pos": [-4, 4],
+    "pos": [
+      -4,
+      4
+    ],
     "components": {
       "terrain": "forest",
       "owner": "enemy",
@@ -50,7 +65,10 @@
     }
   },
   {
-    "pos": [-3, -1],
+    "pos": [
+      -3,
+      -1
+    ],
     "components": {
       "terrain": "shallow_sea",
       "owner": "neutral",
@@ -60,7 +78,10 @@
     }
   },
   {
-    "pos": [-3, 0],
+    "pos": [
+      -3,
+      0
+    ],
     "components": {
       "terrain": "shallow_sea",
       "owner": "neutral",
@@ -70,7 +91,10 @@
     }
   },
   {
-    "pos": [-3, 1],
+    "pos": [
+      -3,
+      1
+    ],
     "components": {
       "terrain": "plains",
       "owner": "enemy",
@@ -80,7 +104,10 @@
     }
   },
   {
-    "pos": [-3, 2],
+    "pos": [
+      -3,
+      2
+    ],
     "components": {
       "terrain": "forest",
       "owner": "enemy",
@@ -90,7 +117,10 @@
     }
   },
   {
-    "pos": [-3, 3],
+    "pos": [
+      -3,
+      3
+    ],
     "components": {
       "terrain": "forest",
       "owner": "enemy",
@@ -100,7 +130,10 @@
     }
   },
   {
-    "pos": [-3, 4],
+    "pos": [
+      -3,
+      4
+    ],
     "components": {
       "terrain": "forest",
       "owner": "enemy",
@@ -110,7 +143,10 @@
     }
   },
   {
-    "pos": [-2, -2],
+    "pos": [
+      -2,
+      -2
+    ],
     "components": {
       "terrain": "shallow_sea",
       "owner": "neutral",
@@ -120,7 +156,10 @@
     }
   },
   {
-    "pos": [-2, -1],
+    "pos": [
+      -2,
+      -1
+    ],
     "components": {
       "terrain": "shallow_sea",
       "owner": "neutral",
@@ -130,7 +169,10 @@
     }
   },
   {
-    "pos": [-2, 0],
+    "pos": [
+      -2,
+      0
+    ],
     "components": {
       "terrain": "plains",
       "owner": "neutral",
@@ -140,7 +182,10 @@
     }
   },
   {
-    "pos": [-2, 1],
+    "pos": [
+      -2,
+      1
+    ],
     "components": {
       "terrain": "plains",
       "owner": "neutral",
@@ -150,7 +195,10 @@
     }
   },
   {
-    "pos": [-2, 2],
+    "pos": [
+      -2,
+      2
+    ],
     "components": {
       "terrain": "plains",
       "owner": "neutral",
@@ -160,7 +208,10 @@
     }
   },
   {
-    "pos": [-2, 3],
+    "pos": [
+      -2,
+      3
+    ],
     "components": {
       "terrain": "plains",
       "owner": "neutral",
@@ -170,7 +221,10 @@
     }
   },
   {
-    "pos": [-2, 4],
+    "pos": [
+      -2,
+      4
+    ],
     "components": {
       "terrain": "forest",
       "owner": "neutral",
@@ -180,7 +234,10 @@
     }
   },
   {
-    "pos": [-1, -3],
+    "pos": [
+      -1,
+      -3
+    ],
     "components": {
       "terrain": "shallow_sea",
       "owner": "neutral",
@@ -190,7 +247,10 @@
     }
   },
   {
-    "pos": [-1, -2],
+    "pos": [
+      -1,
+      -2
+    ],
     "components": {
       "terrain": "shallow_sea",
       "owner": "neutral",
@@ -200,7 +260,10 @@
     }
   },
   {
-    "pos": [-1, -1],
+    "pos": [
+      -1,
+      -1
+    ],
     "components": {
       "terrain": "plains",
       "owner": "neutral",
@@ -210,7 +273,10 @@
     }
   },
   {
-    "pos": [-1, 0],
+    "pos": [
+      -1,
+      0
+    ],
     "components": {
       "terrain": "plains",
       "owner": "neutral",
@@ -220,7 +286,10 @@
     }
   },
   {
-    "pos": [-1, 1],
+    "pos": [
+      -1,
+      1
+    ],
     "components": {
       "terrain": "plains",
       "owner": "neutral",
@@ -230,7 +299,10 @@
     }
   },
   {
-    "pos": [-1, 2],
+    "pos": [
+      -1,
+      2
+    ],
     "components": {
       "terrain": "plains",
       "owner": "neutral",
@@ -240,7 +312,10 @@
     }
   },
   {
-    "pos": [-1, 3],
+    "pos": [
+      -1,
+      3
+    ],
     "components": {
       "terrain": "forest",
       "owner": "neutral",
@@ -250,7 +325,10 @@
     }
   },
   {
-    "pos": [-1, 4],
+    "pos": [
+      -1,
+      4
+    ],
     "components": {
       "terrain": "plains",
       "owner": "neutral",
@@ -260,7 +338,10 @@
     }
   },
   {
-    "pos": [0, -4],
+    "pos": [
+      0,
+      -4
+    ],
     "components": {
       "terrain": "shallow_sea",
       "owner": "neutral",
@@ -270,7 +351,10 @@
     }
   },
   {
-    "pos": [0, -3],
+    "pos": [
+      0,
+      -3
+    ],
     "components": {
       "terrain": "shallow_sea",
       "owner": "neutral",
@@ -280,7 +364,10 @@
     }
   },
   {
-    "pos": [0, -2],
+    "pos": [
+      0,
+      -2
+    ],
     "components": {
       "terrain": "plains",
       "owner": "neutral",
@@ -290,7 +377,10 @@
     }
   },
   {
-    "pos": [0, -1],
+    "pos": [
+      0,
+      -1
+    ],
     "components": {
       "terrain": "plains",
       "owner": "neutral",
@@ -300,9 +390,12 @@
     }
   },
   {
-    "pos": [0, 0],
+    "pos": [
+      0,
+      0
+    ],
     "components": {
-      "terrain": "plains",
+      "terrain": "mountain",
       "owner": "neutral",
       "building": null,
       "district": null,
@@ -310,9 +403,12 @@
     }
   },
   {
-    "pos": [0, 1],
+    "pos": [
+      0,
+      1
+    ],
     "components": {
-      "terrain": "plains",
+      "terrain": "mountain",
       "owner": "neutral",
       "building": null,
       "district": null,
@@ -320,9 +416,12 @@
     }
   },
   {
-    "pos": [0, 2],
+    "pos": [
+      0,
+      2
+    ],
     "components": {
-      "terrain": "plains",
+      "terrain": "mountain",
       "owner": "neutral",
       "building": null,
       "district": null,
@@ -330,7 +429,10 @@
     }
   },
   {
-    "pos": [0, 3],
+    "pos": [
+      0,
+      3
+    ],
     "components": {
       "terrain": "forest",
       "owner": "neutral",
@@ -340,7 +442,10 @@
     }
   },
   {
-    "pos": [0, 4],
+    "pos": [
+      0,
+      4
+    ],
     "components": {
       "terrain": "plains",
       "owner": "neutral",
@@ -350,7 +455,10 @@
     }
   },
   {
-    "pos": [1, -4],
+    "pos": [
+      1,
+      -4
+    ],
     "components": {
       "terrain": "shallow_sea",
       "owner": "neutral",
@@ -360,7 +468,10 @@
     }
   },
   {
-    "pos": [1, -3],
+    "pos": [
+      1,
+      -3
+    ],
     "components": {
       "terrain": "shallow_sea",
       "owner": "neutral",
@@ -370,7 +481,10 @@
     }
   },
   {
-    "pos": [1, -2],
+    "pos": [
+      1,
+      -2
+    ],
     "components": {
       "terrain": "plains",
       "owner": "neutral",
@@ -380,7 +494,10 @@
     }
   },
   {
-    "pos": [1, -1],
+    "pos": [
+      1,
+      -1
+    ],
     "components": {
       "terrain": "plains",
       "owner": "neutral",
@@ -390,7 +507,10 @@
     }
   },
   {
-    "pos": [1, 0],
+    "pos": [
+      1,
+      0
+    ],
     "components": {
       "terrain": "plains",
       "owner": "neutral",
@@ -400,7 +520,10 @@
     }
   },
   {
-    "pos": [1, 1],
+    "pos": [
+      1,
+      1
+    ],
     "components": {
       "terrain": "plains",
       "owner": "neutral",
@@ -410,7 +533,10 @@
     }
   },
   {
-    "pos": [1, 2],
+    "pos": [
+      1,
+      2
+    ],
     "components": {
       "terrain": "plains",
       "owner": "neutral",
@@ -420,7 +546,10 @@
     }
   },
   {
-    "pos": [1, 3],
+    "pos": [
+      1,
+      3
+    ],
     "components": {
       "terrain": "forest",
       "owner": "neutral",
@@ -430,7 +559,10 @@
     }
   },
   {
-    "pos": [2, -4],
+    "pos": [
+      2,
+      -4
+    ],
     "components": {
       "terrain": "shallow_sea",
       "owner": "neutral",
@@ -440,7 +572,10 @@
     }
   },
   {
-    "pos": [2, -3],
+    "pos": [
+      2,
+      -3
+    ],
     "components": {
       "terrain": "shallow_sea",
       "owner": "neutral",
@@ -450,7 +585,10 @@
     }
   },
   {
-    "pos": [2, -2],
+    "pos": [
+      2,
+      -2
+    ],
     "components": {
       "terrain": "plains",
       "owner": "neutral",
@@ -460,7 +598,10 @@
     }
   },
   {
-    "pos": [2, -1],
+    "pos": [
+      2,
+      -1
+    ],
     "components": {
       "terrain": "plains",
       "owner": "neutral",
@@ -470,7 +611,10 @@
     }
   },
   {
-    "pos": [2, 0],
+    "pos": [
+      2,
+      0
+    ],
     "components": {
       "terrain": "plains",
       "owner": "neutral",
@@ -480,7 +624,10 @@
     }
   },
   {
-    "pos": [2, 1],
+    "pos": [
+      2,
+      1
+    ],
     "components": {
       "terrain": "plains",
       "owner": "neutral",
@@ -490,7 +637,10 @@
     }
   },
   {
-    "pos": [2, 2],
+    "pos": [
+      2,
+      2
+    ],
     "components": {
       "terrain": "plains",
       "owner": "neutral",
@@ -500,7 +650,10 @@
     }
   },
   {
-    "pos": [3, -4],
+    "pos": [
+      3,
+      -4
+    ],
     "components": {
       "terrain": "shallow_sea",
       "owner": "neutral",
@@ -510,7 +663,10 @@
     }
   },
   {
-    "pos": [3, -3],
+    "pos": [
+      3,
+      -3
+    ],
     "components": {
       "terrain": "shallow_sea",
       "owner": "neutral",
@@ -520,7 +676,10 @@
     }
   },
   {
-    "pos": [3, -2],
+    "pos": [
+      3,
+      -2
+    ],
     "components": {
       "terrain": "plains",
       "owner": "player",
@@ -530,17 +689,10 @@
     }
   },
   {
-    "pos": [3, -1],
-    "components": {
-      "terrain": "forest",
-      "owner": "player",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
-  },
-  {
-    "pos": [3, 0],
+    "pos": [
+      3,
+      -1
+    ],
     "components": {
       "terrain": "plains",
       "owner": "player",
@@ -550,7 +702,10 @@
     }
   },
   {
-    "pos": [3, 1],
+    "pos": [
+      3,
+      0
+    ],
     "components": {
       "terrain": "plains",
       "owner": "player",
@@ -560,7 +715,23 @@
     }
   },
   {
-    "pos": [4, -4],
+    "pos": [
+      3,
+      1
+    ],
+    "components": {
+      "terrain": "plains",
+      "owner": "player",
+      "building": null,
+      "district": null,
+      "deposit": null
+    }
+  },
+  {
+    "pos": [
+      4,
+      -4
+    ],
     "components": {
       "terrain": "shallow_sea",
       "owner": "neutral",
@@ -570,7 +741,10 @@
     }
   },
   {
-    "pos": [4, -3],
+    "pos": [
+      4,
+      -3
+    ],
     "components": {
       "terrain": "shallow_sea",
       "owner": "neutral",
@@ -580,7 +754,10 @@
     }
   },
   {
-    "pos": [4, -2],
+    "pos": [
+      4,
+      -2
+    ],
     "components": {
       "terrain": "plains",
       "owner": "player",
@@ -590,7 +767,10 @@
     }
   },
   {
-    "pos": [4, -1],
+    "pos": [
+      4,
+      -1
+    ],
     "components": {
       "terrain": "plains",
       "owner": "player",
@@ -600,7 +780,10 @@
     }
   },
   {
-    "pos": [4, 0],
+    "pos": [
+      4,
+      0
+    ],
     "components": {
       "terrain": "forest",
       "owner": "player",

@@ -250,13 +250,7 @@ export class MovementSystem extends GameSystem {
     const path = this.findPath(unitId, q, r);
     if (!path || path.length === 0) return false;
 
-    let totalCost = 0;
-    for (const node of path) {
-      const cost = this.getTerrainMovementCost(
-        this.grid?.getTile(node.q, node.r)?.terrain || 'plains'
-      );
-      totalCost += cost;
-    }
+    const totalCost = path[path.length - 1].cost;
 
     if (totalCost > unit.moves) return false;
 

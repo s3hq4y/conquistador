@@ -14,6 +14,8 @@ export class HexTile {
   private selected: boolean = false;
   private hovered: boolean = false;
   private borderEntities: pc.Entity[] = [];
+  private reachableHighlight: pc.Entity | null = null;
+  private selectedBorderEntities: pc.Entity[] = [];
   private ownerDef: OwnerTagDefinition | null = null;
   private borderEdges: number[] = [];
   private hexSize: number = 0;
@@ -142,7 +144,7 @@ export class HexTile {
     return mesh;
   }
 
-  private createBorderTrapezoids(edgeIndex: number, ownerColor: pc.Color): pc.Entity[] {
+  private createBorderTrapezoids(edgeIndex: number, ownerColor: pc.Color, overrideAlpha?: number): pc.Entity[] {
     const entities: pc.Entity[] = [];
     
     const p0 = this.getHexCorner(edgeIndex);
@@ -177,7 +179,7 @@ export class HexTile {
     
     for (let k = 1; k <= layers; k++) {
       const offset = k * step;
-      const alpha = HexTile.BORDER_ALPHA_START * (1 - (k - 1) / layers);
+      const alpha = overrideAlpha !== undefined ? overrideAlpha : HexTile.BORDER_ALPHA_START * (1 - (k - 1) / layers);
       
       const a0x = p0.x + nx * offset;
       const a0z = p0.z + nz * offset;
@@ -276,7 +278,11 @@ export class HexTile {
 
   setSelected(selected: boolean): void {
     this.selected = selected;
-    this.updateEmissive();
+    if (selected) {
+      this.showSelectedBorder();
+    } else {
+      this.hideSelectedBorder();
+    }
   }
 
   setHovered(hovered: boolean): void {
@@ -313,6 +319,63 @@ export class HexTile {
     this.ensureBorderEntities();
   }
 
+  setReachableHighlight(enabled: boolean): void {
+    if (!this.graphicsDevice) return;
+
+    if (enabled && !this.reachableHighlight) {
+      const material = new pc.StandardMaterial();
+      material.diffuse = new pc.Color(0, 0.8, 0);
+      material.useLighting = false;
+      material.emissive = new pc.Color(0, 0.8, 0);
+      material.emissiveIntensity = 0.5;
+      material.opacity = 0.3;
+      material.blendType = pc.BLEND_NORMAL;
+      material.depthWrite = false;
+      material.update();
+
+      const geometry = new pc.CylinderGeometry({
+        radius: this.hexSize * 0.85,
+        height: 1,
+        heightSegments: 1,
+        capSegments: 6
+      });
+      const mesh = pc.Mesh.fromGeometry(this.graphicsDevice, geometry);
+      const meshInstance = new pc.MeshInstance(mesh, material);
+
+      this.reachableHighlight = new pc.Entity(`Reachable_${this.tile.q}_${this.tile.r}`);
+      this.reachableHighlight.addComponent('render', {
+        meshInstances: [meshInstance],
+        castShadows: false,
+        receiveShadows: false
+      });
+      this.reachableHighlight.setLocalPosition(0, 1.5, 0);
+      this.entity.addChild(this.reachableHighlight);
+    } else if (!enabled && this.reachableHighlight) {
+      this.reachableHighlight.destroy();
+      this.reachableHighlight = null;
+    }
+  }
+
+  private showSelectedBorder(): void {
+    this.hideSelectedBorder();
+    if (!this.graphicsDevice) return;
+
+    const selectedColor = new pc.Color(1, 1, 0);
+
+    for (let edgeIndex = 0; edgeIndex < 6; edgeIndex++) {
+      const trapezoids = this.createBorderTrapezoids(edgeIndex, selectedColor, 0.7);
+      trapezoids.forEach(entity => {
+        this.entity.addChild(entity);
+        this.selectedBorderEntities.push(entity);
+      });
+    }
+  }
+
+  private hideSelectedBorder(): void {
+    this.selectedBorderEntities.forEach(entity => entity.destroy());
+    this.selectedBorderEntities = [];
+  }
+
   getTile(): Tile {
     return this.tile;
   }
@@ -323,6 +386,11 @@ export class HexTile {
 
   destroy(): void {
     this.clearBorderEntities();
+    this.hideSelectedBorder();
+    if (this.reachableHighlight) {
+      this.reachableHighlight.destroy();
+      this.reachableHighlight = null;
+    }
     this.entity.destroy();
   }
 }

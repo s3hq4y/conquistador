@@ -9,6 +9,7 @@ export class UnitRenderSystem extends GameSystem {
   private mapSystem: MapSystem | null = null;
   private movementSystem: MovementSystem | null = null;
   private unitEntities: Map<string, pc.Entity> = new Map();
+  private unitMovesText: Map<string, pc.Entity> = new Map();
   private app: pc.Application | null = null;
   private unitLayer: pc.Entity | null = null;
   private selectedUnitId: string | null = null;
@@ -64,6 +65,7 @@ export class UnitRenderSystem extends GameSystem {
   private clearAllUnits(): void {
     this.unitEntities.forEach(entity => entity.destroy());
     this.unitEntities.clear();
+    this.unitMovesText.clear();
   }
 
   private onUnitAdded(unit: UnitInstance): void {
@@ -75,6 +77,7 @@ export class UnitRenderSystem extends GameSystem {
     if (entity) {
       entity.destroy();
       this.unitEntities.delete(unit.id);
+      this.unitMovesText.delete(unit.id);
     }
   }
 
@@ -85,10 +88,32 @@ export class UnitRenderSystem extends GameSystem {
       const pos = grid.hexToPixel(data.to.q, data.to.r);
       entity.setLocalPosition(pos.x, 5, pos.y);
     }
+    this.updateUnitMovesDisplay(data.unit.id);
   }
 
   private onMovesReset(): void {
     this.clearHighlights();
+    this.updateAllUnitMovesDisplay();
+  }
+
+  private updateUnitMovesDisplay(unitId: string): void {
+    if (!this.movementSystem) return;
+    
+    const unit = this.movementSystem.getUnit(unitId);
+    const movesText = this.unitMovesText.get(unitId);
+    
+    if (unit && movesText && movesText.element) {
+      movesText.element.text = `${unit.moves}/${unit.maxMoves}`;
+    }
+  }
+
+  private updateAllUnitMovesDisplay(): void {
+    if (!this.movementSystem) return;
+    
+    const units = this.movementSystem.getUnits();
+    for (const unit of units) {
+      this.updateUnitMovesDisplay(unit.id);
+    }
   }
 
   renderAllUnits(): void {
@@ -122,7 +147,7 @@ export class UnitRenderSystem extends GameSystem {
       type: 'cylinder',
     });
     (cylinder.render as any).material = material;
-    cylinder.setLocalScale(8, 3, 8);
+    cylinder.setLocalScale(35, 5, 35);
     entity.addChild(cylinder);
 
     const textEntity = new pc.Entity();
@@ -155,6 +180,7 @@ export class UnitRenderSystem extends GameSystem {
 
     this.unitLayer.addChild(entity);
     this.unitEntities.set(unit.id, entity);
+    this.unitMovesText.set(unit.id, movesText);
   }
 
   selectUnit(unitId: string | null): void {
@@ -162,12 +188,22 @@ export class UnitRenderSystem extends GameSystem {
     this.clearHighlights();
 
     if (unitId && this.movementSystem && this.mapSystem) {
-      this.reachableTiles = this.movementSystem.computeReachableTiles(unitId);
+      const reachable = this.movementSystem.computeReachableTiles(unitId);
+      this.reachableTiles = new Set(reachable);
       this.highlightReachableTiles();
     }
   }
 
   private clearHighlights(): void {
+    if (!this.mapSystem) return;
+
+    for (const key of this.reachableTiles) {
+      const tileEntities = this.mapSystem.getTileEntities();
+      const hexTile = tileEntities.get(key);
+      if (hexTile) {
+        hexTile.setReachableHighlight(false);
+      }
+    }
     this.reachableTiles.clear();
   }
 
@@ -178,7 +214,7 @@ export class UnitRenderSystem extends GameSystem {
       const tileEntities = this.mapSystem.getTileEntities();
       const hexTile = tileEntities.get(key);
       if (hexTile) {
-        hexTile.setBorderState(true, 0, [0, 1, 2, 3, 4, 5]);
+        hexTile.setReachableHighlight(true);
       }
     }
   }

@@ -40,7 +40,10 @@ const terrainName = computed(() => {
 });
 
 const handleEndTurn = () => {
-  turn.value++;
+  if (window.__endTurn) {
+    window.__endTurn();
+    turn.value++;
+  }
 };
 
 const handleBackToMenu = () => {
@@ -57,6 +60,10 @@ const handleCanvasClick = (event: MouseEvent) => {
   const y = event.clientY - rect.top;
   
   console.log('Canvas clicked at:', x, y);
+};
+
+const handleTurnEnded = (newTurn: number) => {
+  turn.value = newTurn;
 };
 
 onMounted(() => {

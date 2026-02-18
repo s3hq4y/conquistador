@@ -1,6 +1,4 @@
-import { GameEngine, MapSystem, CameraControlSystem, MovementSystem, UnitRenderSystem } from './core';
-import { EditorSystem } from './editor';
-import { GameModeSystem } from './game';
+import { setupGame } from './GameSetup';
 import type { GameMode } from './stores/game';
 
 export async function startGame(mode: GameMode): Promise<void> {
@@ -10,39 +8,5 @@ export async function startGame(mode: GameMode): Promise<void> {
     return;
   }
 
-  const engine = new GameEngine(canvas);
-
-  const mapSystem = new MapSystem(engine, 50);
-  const cameraControlSystem = new CameraControlSystem(engine);
-  const movementSystem = new MovementSystem(engine);
-  const unitRenderSystem = new UnitRenderSystem(engine);
-  const editorSystem = new EditorSystem(engine);
-  const gameModeSystem = new GameModeSystem(engine);
-
-  engine.addSystem(mapSystem);
-  engine.addSystem(cameraControlSystem);
-  engine.addSystem(movementSystem);
-  engine.addSystem(unitRenderSystem);
-  
-  if (mode === 'GAME') {
-    engine.addSystem(gameModeSystem);
-  } else {
-    engine.addSystem(editorSystem);
-  }
-
-  engine.start();
-
-  requestAnimationFrame(() => {
-    if (mode === 'GAME') {
-      editorSystem.hideUI();
-    } else if (mode === 'RANDOM') {
-      mapSystem.generateRandomMap();
-      editorSystem.hideUI();
-    } else if (mode === 'CUSTOM') {
-      mapSystem.startCustomMap();
-      editorSystem.showUI();
-    }
-  });
-
-  console.log('Game started successfully (mode=', mode, ')');
+  setupGame(canvas, mode);
 }

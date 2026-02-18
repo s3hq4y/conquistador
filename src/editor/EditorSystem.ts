@@ -35,9 +35,8 @@ export class EditorSystem extends GameSystem {
     this.debugEdgeSystem.setMapSystem(this.mapSystem);
     this.debugEdgeSystem.setApp(this.engine.getApplication());
     
-    this.edgeSystem = new EdgeSystem();
+    this.edgeSystem = new EdgeSystem(this.engine);
     this.edgeSystem.setMapSystem(this.mapSystem);
-    this.edgeSystem.setApp(this.engine.getApplication());
     
     this.sceneManager.setEdgeSystem(this.edgeSystem);
     this.sceneManager.setMovementSystem(this.movementSystem);

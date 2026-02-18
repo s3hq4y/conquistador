@@ -2,6 +2,8 @@ import * as pc from 'playcanvas';
 import type { MapSystem } from './MapSystem';
 import { Tile } from '../map';
 import { debugConfig } from '../config';
+import { GameSystem } from './GameSystem';
+import type { GameEngine } from '../engine';
 import { 
   EdgeData, 
   EdgeType, 
@@ -11,14 +13,20 @@ import {
 } from '../map/Edge';
 import type { EdgeInstance } from '../map/SceneData';
 
-export class EdgeSystem {
+export class EdgeSystem extends GameSystem {
   private mapSystem: MapSystem | null = null;
   private app: pc.Application | null = null;
   private graphicsDevice: pc.GraphicsDevice | null = null;
   private edges: Map<string, EdgeData> = new Map();
   private edgeEntities: Map<string, pc.Entity[]> = new Map();
 
-  constructor() {
+  constructor(engine: GameEngine) {
+    super(engine);
+  }
+
+  initialize(): void {
+    this.app = this.engine.getApplication();
+    this.graphicsDevice = this.app.graphicsDevice;
   }
 
   setMapSystem(mapSystem: MapSystem | null): void {
@@ -394,6 +402,9 @@ export class EdgeSystem {
 
   clear(): void {
     this.clearAllEdges();
+  }
+
+  update(_dt: number): void {
   }
 
   dispose(): void {
