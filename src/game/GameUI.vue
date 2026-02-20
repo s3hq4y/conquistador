@@ -87,6 +87,46 @@ const handleCanvasClick = (event: MouseEvent) => {
   console.log('Canvas clicked at:', x, y);
 };
 
+const handleTurnEnded = () => {
+  turn.value = gameEventStore.currentTurn;
+};
+
+const handlePlayerChanged = () => {
+  showPlayerSwitch.value = true;
+  setTimeout(() => {
+    showPlayerSwitch.value = false;
+  }, 2000);
+};
+
+const handleCombatExecuted = (event: CustomEvent) => {
+  const result = event.detail;
+  if (!result) return;
+  
+  combatLog.value.push({
+    message: `战斗: 攻击方造成 ${result.damage} 伤害, 防守方造成 ${result.defenderDamage} 伤害`,
+    type: 'combat'
+  });
+  if (combatLog.value.length > 5) {
+    combatLog.value.shift();
+  }
+
+  combatResult.value = {
+    show: true,
+    attackerDamage: result.damage,
+    defenderDamage: result.defenderDamage,
+    attackerDied: result.attackerDied,
+    defenderDied: result.defenderDied,
+    attackerId: result.attackerId,
+    defenderId: result.defenderId
+  };
+
+  setTimeout(() => {
+    if (combatResult.value) {
+      combatResult.value.show = false;
+    }
+  }, 3000);
+};
+
 watch(() => gameEventStore.currentTurn, (newTurn) => {
   turn.value = newTurn;
 });
@@ -204,6 +244,10 @@ onMounted(() => {
   window.__setOwnerStates = (states: OwnerStates) => {
     gameStore.setOwnerStates(states);
   };
+
+  window.addEventListener('turn:ended', handleTurnEnded as any);
+  window.addEventListener('player:changed', handlePlayerChanged as any);
+  window.addEventListener('combat:executed', handleCombatExecuted as any);
 });
 
 onUnmounted(() => {
@@ -213,6 +257,9 @@ onUnmounted(() => {
   }
   
   window.__setOwnerStates = undefined;
+  window.removeEventListener('turn:ended', handleTurnEnded as any);
+  window.removeEventListener('player:changed', handlePlayerChanged as any);
+  window.removeEventListener('combat:executed', handleCombatExecuted as any);
 });
 </script>
 
@@ -220,6 +267,7 @@ onUnmounted(() => {
   <div class="fixed inset-0 pointer-events-none">
     <div class="pointer-events-auto">
       <div class="absolute top-0 left-0 right-0 h-12 bg-stone-950/80 border-b border-stone-800/50 flex items-center justify-between px-4">
+
         <div class="flex items-center gap-4">
           <div class="flex items-center gap-2">
             <span class="text-amber-400">🪙</span>
