@@ -22,11 +22,15 @@ export default {
     },
     description: '选择启动模式开始游戏，支持随机生成地图或自定义创建',
     buttons: {
+      singlePlayer: '单人模式',
+      hotseat: '热座模式',
       randomMap: '生成随机地图',
       customMap: '自定义地图',
       gameMode: '游戏模式'
     },
     descriptions: {
+      singlePlayer: '与AI或其他玩家对战',
+      hotseat: '多人轮流在同一台设备上游玩',
       gameMode: '加载示例场景开始游戏',
       randomMap: '程序化生成独特地形',
       customMap: '从零开始构建你的世界'
@@ -35,7 +39,12 @@ export default {
       title: '小提示',
       content: '自定义模式下，点击已有地块的空边可添加新地块'
     },
-    keyboard: '按 {key} 打开菜单'
+    keyboard: '按 {key} 打开菜单',
+    playerSetup: '玩家设置',
+    playerSetupHint: '设置参与游戏的玩家',
+    addPlayer: '添加玩家',
+    startGame: '开始游戏',
+    back: '返回'
   },
   game: {
     terrain: '地形',
@@ -64,6 +73,10 @@ export default {
     zoomOut: '缩小',
     drag: '拖拽',
     move: '移动',
-    turn: '回合'
+    turn: '回合',
+    hotseat: '热座',
+    playerSwitch: '切换玩家',
+    playerSwitchHint: '请将设备交给下一位玩家',
+    combatLog: '战斗日志'
   }
 };

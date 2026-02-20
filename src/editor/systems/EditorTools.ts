@@ -1,13 +1,15 @@
 import type { MapSystem, MovementSystem } from '../../core/systems';
 import type { EditorTool, PaintMode } from './types';
-import type { EditorUI } from '../EditorUI';
+import type { EditorUI, SelectedUnit } from '../EditorUI';
 import type { UnitInstance } from '../../core/map/SceneData';
+import { TraitManager } from '../../core/traits';
 import { debugConfig } from '../../core/config';
 
 export class EditorTools {
   private mapSystem: MapSystem | null;
   private movementSystem: MovementSystem | null;
   private editorUI: EditorUI | null;
+  private traitManager: TraitManager | null = null;
   private selectedTiles: Set<string> = new Set();
 
   constructor(mapSystem: MapSystem | null, movementSystem: MovementSystem | null, editorUI: EditorUI | null) {
@@ -26,6 +28,10 @@ export class EditorTools {
 
   setEditorUI(editorUI: EditorUI | null): void {
     this.editorUI = editorUI;
+  }
+
+  setTraitManager(traitManager: TraitManager | null): void {
+    this.traitManager = traitManager;
   }
 
   getCurrentTool(): EditorTool {
@@ -56,12 +62,8 @@ export class EditorTools {
     return this.editorUI?.getPaintMode() ?? 'both';
   }
 
-  getCurrentUnitType(): string {
-    return this.editorUI?.getCurrentUnitType() ?? 'land';
-  }
-
-  getCurrentUnitMoves(): number {
-    return this.editorUI?.getCurrentUnitMoves() ?? 6;
+  getSelectedTraits(): string[] {
+    return this.editorUI?.getSelectedTraits() ?? [];
   }
 
   selectTile(q: number, r: number, addToSelection: boolean): void {
@@ -75,6 +77,32 @@ export class EditorTools {
       this.selectedTiles.delete(tileKey);
     } else {
       this.selectedTiles.add(tileKey);
+    }
+
+    this.selectUnitAt(q, r);
+  }
+
+  selectUnitAt(q: number, r: number): void {
+    if (!this.movementSystem || !this.editorUI) return;
+
+    const unit = this.movementSystem.getUnitAt(q, r);
+    if (unit) {
+      const stats = this.traitManager 
+        ? this.traitManager.calculateStats(unit.traits)
+        : { hp: 0, attack: 0, defense: 0, movement: 0, range: 0 };
+      
+      const selectedUnit: SelectedUnit = {
+        id: unit.id,
+        q: unit.q,
+        r: unit.r,
+        owner: unit.owner,
+        traits: unit.traits,
+        hp: unit.hp,
+        stats
+      };
+      this.editorUI.setSelectedUnit(selectedUnit);
+    } else {
+      this.editorUI.clearSelectedUnit();
     }
   }
 
@@ -124,17 +152,19 @@ export class EditorTools {
     }
 
     const owner = this.getCurrentOwnerId();
-    const unitType = this.getCurrentUnitType();
-    const maxMoves = this.getCurrentUnitMoves();
+    const traits = this.getSelectedTraits();
+
+    if (traits.length === 0) {
+      return;
+    }
 
     const unit: UnitInstance = {
       id: `unit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       q,
       r,
       owner,
-      moves: maxMoves,
-      maxMoves,
-      unitType
+      traits,
+      hp: 100
     };
 
     this.movementSystem.addUnit(unit);

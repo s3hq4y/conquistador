@@ -15,6 +15,7 @@ export class HexTile {
   private hovered: boolean = false;
   private borderEntities: pc.Entity[] = [];
   private reachableHighlight: pc.Entity | null = null;
+  private attackableHighlight: pc.Entity | null = null;
   private selectedBorderEntities: pc.Entity[] = [];
   private ownerDef: OwnerTagDefinition | null = null;
   private borderEdges: number[] = [];
@@ -356,6 +357,43 @@ export class HexTile {
     }
   }
 
+  setAttackableHighlight(enabled: boolean): void {
+    if (!this.graphicsDevice) return;
+
+    if (enabled && !this.attackableHighlight) {
+      const material = new pc.StandardMaterial();
+      material.diffuse = new pc.Color(1, 0.2, 0);
+      material.useLighting = false;
+      material.emissive = new pc.Color(1, 0.2, 0);
+      material.emissiveIntensity = 0.5;
+      material.opacity = 0.4;
+      material.blendType = pc.BLEND_NORMAL;
+      material.depthWrite = false;
+      material.update();
+
+      const geometry = new pc.CylinderGeometry({
+        radius: this.hexSize * 0.85,
+        height: 1,
+        heightSegments: 1,
+        capSegments: 6
+      });
+      const mesh = pc.Mesh.fromGeometry(this.graphicsDevice, geometry);
+      const meshInstance = new pc.MeshInstance(mesh, material);
+
+      this.attackableHighlight = new pc.Entity(`Attackable_${this.tile.q}_${this.tile.r}`);
+      this.attackableHighlight.addComponent('render', {
+        meshInstances: [meshInstance],
+        castShadows: false,
+        receiveShadows: false
+      });
+      this.attackableHighlight.setLocalPosition(0, 1.5, 0);
+      this.entity.addChild(this.attackableHighlight);
+    } else if (!enabled && this.attackableHighlight) {
+      this.attackableHighlight.destroy();
+      this.attackableHighlight = null;
+    }
+  }
+
   private showSelectedBorder(): void {
     this.hideSelectedBorder();
     if (!this.graphicsDevice) return;
@@ -390,6 +428,10 @@ export class HexTile {
     if (this.reachableHighlight) {
       this.reachableHighlight.destroy();
       this.reachableHighlight = null;
+    }
+    if (this.attackableHighlight) {
+      this.attackableHighlight.destroy();
+      this.attackableHighlight = null;
     }
     this.entity.destroy();
   }

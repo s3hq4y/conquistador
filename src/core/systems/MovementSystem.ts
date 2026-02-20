@@ -2,6 +2,7 @@ import { GameSystem } from './GameSystem';
 import { HexGrid, SceneData, TerrainGroups } from '../map';
 import type { GameEngine } from '../engine';
 import type { UnitInstance } from '../map/SceneData';
+import { TraitManager } from '../traits';
 
 export type UnitType = 'land' | 'sea' | 'air';
 export type { UnitInstance } from '../map/SceneData';
@@ -12,6 +13,11 @@ export interface MovementNode {
   cost: number;
 }
 
+interface UnitState {
+  moves: number;
+  maxMoves: number;
+}
+
 export class MovementSystem extends GameSystem {
   private grid: HexGrid | null = null;
   private terrainGroups: TerrainGroups = {
@@ -20,7 +26,9 @@ export class MovementSystem extends GameSystem {
     air: ['plains', 'grassland', 'forest', 'hill', 'mountain', 'desert', 'tundra', 'shallow_sea', 'deep_sea', 'coast']
   };
   private units: Map<string, UnitInstance> = new Map();
+  private unitStates: Map<string, UnitState> = new Map();
   private reachableCache: Map<string, Set<string>> = new Map();
+  private traitManager: TraitManager | null = null;
 
   private movementCosts: Record<string, number> = {
     plains: 2,
@@ -43,6 +51,14 @@ export class MovementSystem extends GameSystem {
     this.engine.getEventBus().on('map:loaded', (...args: unknown[]) => this.onMapLoaded(args[0] as SceneData));
   }
 
+  setTraitManager(manager: TraitManager): void {
+    this.traitManager = manager;
+  }
+
+  getTraitManager(): TraitManager | null {
+    return this.traitManager;
+  }
+
   private onMapLoaded(sceneData: SceneData): void {
     const mapSystem = this.engine.getSystems().find(s => s.constructor.name === 'MapSystem') as any;
     if (mapSystem && mapSystem.getGrid) {
@@ -56,11 +72,37 @@ export class MovementSystem extends GameSystem {
       this.terrainGroups = data.terrainGroups;
     }
     this.units.clear();
+    this.unitStates.clear();
     if (data.units) {
       data.units.forEach(unit => {
         this.units.set(unit.id, { ...unit });
+        const maxMoves = this.calculateMovement(unit.traits);
+        this.unitStates.set(unit.id, { moves: maxMoves, maxMoves });
       });
     }
+  }
+
+  private calculateMovement(traits: string[]): number {
+    if (this.traitManager) {
+      const stats = this.traitManager.calculateStats(traits);
+      return stats.movement ?? 6;
+    }
+    return 6;
+  }
+
+  private getUnitState(id: string): UnitState {
+    let state = this.unitStates.get(id);
+    if (!state) {
+      const unit = this.units.get(id);
+      if (unit) {
+        const maxMoves = this.calculateMovement(unit.traits);
+        state = { moves: maxMoves, maxMoves };
+        this.unitStates.set(id, state);
+      } else {
+        state = { moves: 6, maxMoves: 6 };
+      }
+    }
+    return state;
   }
 
   update(_dt: number): void {
@@ -69,6 +111,7 @@ export class MovementSystem extends GameSystem {
   dispose(): void {
     this.engine.getEventBus().off('map:loaded', (...args: unknown[]) => this.onMapLoaded(args[0] as SceneData));
     this.units.clear();
+    this.unitStates.clear();
     this.reachableCache.clear();
   }
 
@@ -99,6 +142,8 @@ export class MovementSystem extends GameSystem {
 
   addUnit(unit: UnitInstance): void {
     this.units.set(unit.id, { ...unit });
+    const maxMoves = this.calculateMovement(unit.traits);
+    this.unitStates.set(unit.id, { moves: maxMoves, maxMoves });
     this.invalidateCache();
     this.engine.getEventBus().emit('unit:added', unit);
   }
@@ -107,6 +152,7 @@ export class MovementSystem extends GameSystem {
     const unit = this.units.get(id);
     if (unit) {
       this.units.delete(id);
+      this.unitStates.delete(id);
       this.invalidateCache();
       this.engine.getEventBus().emit('unit:removed', unit);
       return true;
@@ -124,16 +170,17 @@ export class MovementSystem extends GameSystem {
   }
 
   useUnitMoves(id: string, cost: number): boolean {
-    const unit = this.units.get(id);
-    if (!unit || unit.moves < cost) return false;
-    unit.moves -= cost;
+    const state = this.getUnitState(id);
+    if (!state || state.moves < cost) return false;
+    state.moves -= cost;
     this.invalidateCache();
     return true;
   }
 
   resetAllMoves(): void {
-    for (const unit of this.units.values()) {
-      unit.moves = unit.maxMoves;
+    for (const [id] of this.units) {
+      const state = this.getUnitState(id);
+      state.moves = state.maxMoves;
     }
     this.invalidateCache();
     this.engine.getEventBus().emit('units:movesReset', null);
@@ -144,12 +191,13 @@ export class MovementSystem extends GameSystem {
   }
 
   getUnitType(unit: UnitInstance): UnitType {
-    return (unit as any).unitType as UnitType || 'land';
-  }
-
-  setUnitType(unit: UnitInstance, type: UnitType): void {
-    (unit as any).unitType = type;
-    this.invalidateCache();
+    if (this.traitManager) {
+      const allTraits = this.traitManager.getUnitAllTraitIds(unit.traits);
+      if (allTraits.includes('cavalry')) return 'land';
+      if (allTraits.includes('archer')) return 'land';
+      if (allTraits.includes('infantry')) return 'land';
+    }
+    return 'land';
   }
 
   canEnterTerrain(terrain: string, unitType: UnitType): boolean {
@@ -168,7 +216,8 @@ export class MovementSystem extends GameSystem {
     }
 
     const unit = this.units.get(unitId);
-    if (!unit || !this.grid || unit.moves <= 0) {
+    const state = this.getUnitState(unitId);
+    if (!unit || !this.grid || state.moves <= 0) {
       return new Set();
     }
 
@@ -189,7 +238,7 @@ export class MovementSystem extends GameSystem {
       if (visited.has(currentKey)) continue;
       visited.add(currentKey);
 
-      if (current.cost > unit.moves) continue;
+      if (current.cost > state.moves) continue;
       if (current.cost > 0) {
         reachable.add(currentKey);
       }
@@ -210,7 +259,7 @@ export class MovementSystem extends GameSystem {
         const existingDist = dist.get(neighborKey);
         if (existingDist === undefined || newCost < existingDist) {
           dist.set(neighborKey, newCost);
-          if (newCost <= unit.moves) {
+          if (newCost <= state.moves) {
             queue.push({ q: neighbor.q, r: neighbor.r, cost: newCost });
           }
         }
@@ -223,7 +272,8 @@ export class MovementSystem extends GameSystem {
 
   canMoveTo(unitId: string, q: number, r: number): boolean {
     const unit = this.units.get(unitId);
-    if (!unit || unit.moves <= 0) return false;
+    const state = this.getUnitState(unitId);
+    if (!unit || state.moves <= 0) return false;
 
     const targetTile = this.grid?.getTile(q, r);
     if (!targetTile) return false;
@@ -240,6 +290,7 @@ export class MovementSystem extends GameSystem {
 
   moveTo(unitId: string, q: number, r: number): boolean {
     const unit = this.units.get(unitId);
+    const state = this.getUnitState(unitId);
     if (!unit) return false;
 
     const targetTile = this.grid?.getTile(q, r);
@@ -252,13 +303,13 @@ export class MovementSystem extends GameSystem {
 
     const totalCost = path[path.length - 1].cost;
 
-    if (totalCost > unit.moves) return false;
+    if (totalCost > state.moves) return false;
 
     const oldQ = unit.q;
     const oldR = unit.r;
     unit.q = q;
     unit.r = r;
-    unit.moves -= totalCost;
+    state.moves -= totalCost;
 
     this.invalidateCache();
     this.engine.getEventBus().emit('unit:moved', { unit, from: { q: oldQ, r: oldR }, to: { q, r }, cost: totalCost });
@@ -267,6 +318,7 @@ export class MovementSystem extends GameSystem {
 
   private findPath(unitId: string, targetQ: number, targetR: number): MovementNode[] | null {
     const unit = this.units.get(unitId);
+    const state = this.getUnitState(unitId);
     if (!unit || !this.grid) return null;
 
     const unitType = this.getUnitType(unit);
@@ -290,7 +342,7 @@ export class MovementSystem extends GameSystem {
       if (visited.has(currentKey)) continue;
       visited.add(currentKey);
 
-      if (current.cost > unit.moves) continue;
+      if (current.cost > state.moves) continue;
       if (currentKey === targetKey) break;
 
       const neighbors = this.grid.getNeighbors(current.q, current.r);
@@ -306,7 +358,7 @@ export class MovementSystem extends GameSystem {
         const moveCost = this.getTerrainMovementCost(neighbor.terrain);
         const newCost = current.cost + moveCost;
 
-        if (newCost > unit.moves) continue;
+        if (newCost > state.moves) continue;
 
         const existingDist = dist.get(neighborKey);
         if (existingDist === undefined || newCost < existingDist) {
@@ -336,5 +388,13 @@ export class MovementSystem extends GameSystem {
 
   getSceneDataUnits(): UnitInstance[] {
     return Array.from(this.units.values());
+  }
+
+  getUnitMoves(id: string): number {
+    return this.getUnitState(id).moves;
+  }
+
+  getUnitMaxMoves(id: string): number {
+    return this.getUnitState(id).maxMoves;
   }
 }

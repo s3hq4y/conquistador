@@ -76,9 +76,8 @@ export interface UnitInstance {
   q: number;
   r: number;
   owner: string;
-  moves: number;
-  maxMoves: number;
-  unitType?: string;
+  traits: string[];
+  hp: number;
 }
 
 export interface TerrainGroups {

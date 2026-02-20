@@ -2,22 +2,35 @@ import { createApp, ref, type Ref } from 'vue';
 import EditorRoot from './components/EditorRoot.vue';
 import type { EditorTool, PaintMode } from './EditorSystem';
 import type { TerrainTypeDefinition, OwnerTagDefinition, EdgeType } from '../core/map';
+import type { Trait, TraitTypeDefinition, UnitStats } from '../core/traits';
 import { debugConfig } from '../core/config';
 
 export const EditorUIStateKey = Symbol('EditorUIState');
+
+export interface SelectedUnit {
+  id: string;
+  q: number;
+  r: number;
+  owner: string;
+  traits: string[];
+  hp: number;
+  stats: UnitStats;
+}
 
 export interface EditorUIState {
   currentTool: Ref<EditorTool>;
   currentTerrainId: Ref<string>;
   currentOwnerId: Ref<string>;
   currentEdgeType: Ref<EdgeType>;
-  currentUnitType: Ref<string>;
-  currentUnitMoves: Ref<number>;
+  selectedTraits: Ref<string[]>;
   paintMode: Ref<PaintMode>;
   sceneName: Ref<string>;
   sceneDescription: Ref<string>;
   terrains: Ref<TerrainTypeDefinition[]>;
   owners: Ref<OwnerTagDefinition[]>;
+  traits: Ref<Record<string, Trait>>;
+  traitTypes: Ref<Record<string, TraitTypeDefinition>>;
+  selectedUnit: Ref<SelectedUnit | null>;
   debugMode: Ref<boolean>;
 }
 
@@ -37,13 +50,15 @@ export class EditorUI {
       currentTerrainId: ref('plains'),
       currentOwnerId: ref('neutral'),
       currentEdgeType: ref<EdgeType>('river'),
-      currentUnitType: ref('land'),
-      currentUnitMoves: ref(6),
+      selectedTraits: ref<string[]>([]),
       paintMode: ref<PaintMode>('both'),
       sceneName: ref(''),
       sceneDescription: ref(''),
       terrains: ref<TerrainTypeDefinition[]>([]),
       owners: ref<OwnerTagDefinition[]>([]),
+      traits: ref<Record<string, Trait>>({}),
+      traitTypes: ref<Record<string, TraitTypeDefinition>>({}),
+      selectedUnit: ref<SelectedUnit | null>(null),
       debugMode: ref<boolean>(false)
     };
   }
@@ -98,6 +113,14 @@ export class EditorUI {
     this.state.owners.value = owners;
   }
 
+  setTraits(traits: Record<string, Trait>): void {
+    this.state.traits.value = traits;
+  }
+
+  setTraitTypes(traitTypes: Record<string, TraitTypeDefinition>): void {
+    this.state.traitTypes.value = traitTypes;
+  }
+
   setSceneName(name: string): void {
     this.state.sceneName.value = name;
   }
@@ -145,20 +168,12 @@ export class EditorUI {
     this.state.currentEdgeType.value = type;
   }
 
-  getCurrentUnitType(): string {
-    return this.state.currentUnitType.value;
+  getSelectedTraits(): string[] {
+    return [...this.state.selectedTraits.value];
   }
 
-  setCurrentUnitType(type: string): void {
-    this.state.currentUnitType.value = type;
-  }
-
-  getCurrentUnitMoves(): number {
-    return this.state.currentUnitMoves.value;
-  }
-
-  setCurrentUnitMoves(moves: number): void {
-    this.state.currentUnitMoves.value = moves;
+  setSelectedTraits(traits: string[]): void {
+    this.state.selectedTraits.value = [...traits];
   }
 
   getPaintMode(): PaintMode {
@@ -187,5 +202,17 @@ export class EditorUI {
 
   setDebugMode(enabled: boolean): void {
     this.state.debugMode.value = enabled;
+  }
+
+  getSelectedUnit(): SelectedUnit | null {
+    return this.state.selectedUnit.value;
+  }
+
+  setSelectedUnit(unit: SelectedUnit | null): void {
+    this.state.selectedUnit.value = unit;
+  }
+
+  clearSelectedUnit(): void {
+    this.state.selectedUnit.value = null;
   }
 }

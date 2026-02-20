@@ -1,7 +1,16 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 
+export type GameType = 'single' | 'hotseat';
 export type GameMode = 'GAME' | 'RANDOM' | 'CUSTOM';
+
+export interface PlayerInfo {
+  id: string;
+  name: string;
+  color: string;
+  isLocal: boolean;
+  isAI: boolean;
+}
 
 export interface OwnerState {
   resources: Record<string, number>;
@@ -13,10 +22,17 @@ export interface OwnerStates {
 
 export const useGameStore = defineStore('game', () => {
   const gameMode = ref<GameMode | null>(null);
+  const gameType = ref<GameType | null>(null);
   const isGameStarted = ref(false);
   const isPaused = ref(false);
+  const players = ref<PlayerInfo[]>([]);
+  const currentPlayerIndex = ref(0);
   const currentOwner = ref<string>('player');
   const ownerStates = ref<OwnerStates>({});
+
+  const currentPlayer = computed(() => players.value[currentPlayerIndex.value] || null);
+  const isHotseat = computed(() => gameType.value === 'hotseat');
+  const isSingle = computed(() => gameType.value === 'single');
 
   const isPlaying = computed(() => isGameStarted.value && !isPaused.value);
 
@@ -25,6 +41,28 @@ export const useGameStore = defineStore('game', () => {
   function setGameMode(mode: GameMode) {
     gameMode.value = mode;
     isGameStarted.value = true;
+  }
+
+  function setGameType(type: GameType) {
+    gameType.value = type;
+  }
+
+  function setPlayers(newPlayers: PlayerInfo[]) {
+    players.value = newPlayers;
+    if (newPlayers.length > 0) {
+      currentPlayerIndex.value = 0;
+      currentOwner.value = newPlayers[0].id;
+    }
+  }
+
+  function nextPlayer() {
+    if (players.value.length === 0) return;
+    currentPlayerIndex.value = (currentPlayerIndex.value + 1) % players.value.length;
+    currentOwner.value = players.value[currentPlayerIndex.value].id;
+  }
+
+  function getCurrentPlayerId(): string {
+    return players.value[currentPlayerIndex.value]?.id || '';
   }
 
   function pauseGame() {
@@ -37,8 +75,11 @@ export const useGameStore = defineStore('game', () => {
 
   function resetGame() {
     gameMode.value = null;
+    gameType.value = null;
     isGameStarted.value = false;
     isPaused.value = false;
+    players.value = [];
+    currentPlayerIndex.value = 0;
     currentOwner.value = 'player';
     ownerStates.value = {};
   }
@@ -74,13 +115,23 @@ export const useGameStore = defineStore('game', () => {
 
   return {
     gameMode,
+    gameType,
     isGameStarted,
     isPaused,
     isPlaying,
+    players,
+    currentPlayerIndex,
+    currentPlayer,
     currentOwner,
     ownerStates,
     currentOwnerState,
+    isHotseat,
+    isSingle,
     setGameMode,
+    setGameType,
+    setPlayers,
+    nextPlayer,
+    getCurrentPlayerId,
     pauseGame,
     resumeGame,
     resetGame,

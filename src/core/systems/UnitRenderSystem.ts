@@ -99,11 +99,12 @@ export class UnitRenderSystem extends GameSystem {
   private updateUnitMovesDisplay(unitId: string): void {
     if (!this.movementSystem) return;
     
-    const unit = this.movementSystem.getUnit(unitId);
     const movesText = this.unitMovesText.get(unitId);
     
-    if (unit && movesText && movesText.element) {
-      movesText.element.text = `${unit.moves}/${unit.maxMoves}`;
+    if (movesText && movesText.element) {
+      const moves = this.movementSystem.getUnitMoves(unitId);
+      const maxMoves = this.movementSystem.getUnitMaxMoves(unitId);
+      movesText.element.text = `${moves}/${maxMoves}`;
     }
   }
 
@@ -126,7 +127,7 @@ export class UnitRenderSystem extends GameSystem {
   }
 
   private renderUnit(unit: UnitInstance): void {
-    if (!this.app || !this.mapSystem || !this.unitLayer) return;
+    if (!this.app || !this.mapSystem || !this.unitLayer || !this.movementSystem) return;
 
     const grid = this.mapSystem.getGrid();
     const pos = grid.hexToPixel(unit.q, unit.r);
@@ -164,10 +165,12 @@ export class UnitRenderSystem extends GameSystem {
     textEntity.setLocalScale(0.05, 0.05, 0.05);
     entity.addChild(textEntity);
 
+    const moves = this.movementSystem.getUnitMoves(unit.id);
+    const maxMoves = this.movementSystem.getUnitMaxMoves(unit.id);
     const movesText = new pc.Entity();
     movesText.addComponent('element', {
       type: 'text',
-      text: `${unit.moves}/${unit.maxMoves}`,
+      text: `${moves}/${maxMoves}`,
       fontSize: 12,
       color: new pc.Color(1, 1, 0),
       width: 50,
