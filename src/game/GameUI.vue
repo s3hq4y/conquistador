@@ -1,12 +1,31 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useGameStore, type OwnerStates, type PlayerInfo } from '../stores/game';
+import { useGameEventStore } from '../stores/gameEvent';
+
+interface UnitStats {
+  hp?: number;
+  attack?: number;
+  defense?: number;
+  movement?: number;
+  range?: number;
+}
+
+interface UnitInfo {
+  id: string;
+  q: number;
+  r: number;
+  owner: string;
+  traits: string[];
+  hp: number;
+}
 
 const router = useRouter();
 const { t, locale } = useI18n();
 const gameStore = useGameStore();
+const gameEventStore = useGameEventStore();
 
 const availableLocales = [
   { code: 'zh-CN', label: '简体中文' },
@@ -22,6 +41,9 @@ const turn = ref(1);
 const selectedTile = ref<{ q: number; r: number; terrain: string; owner: string } | null>(null);
 const combatLog = ref<{ message: string; type: string }[]>([]);
 const showPlayerSwitch = ref(false);
+const selectedUnit = ref<{ unit: UnitInfo; stats: UnitStats } | null>(null);
+const showUnitInfo = ref(false);
+const combatResult = ref<{ show: boolean; attackerDamage: number; defenderDamage: number; attackerDied: boolean; defenderDied: boolean; attackerId: string; defenderId: string } | null>(null);
 
 const ducat = computed(() => gameStore.getResource('ducat'));
 
@@ -65,26 +87,113 @@ const handleCanvasClick = (event: MouseEvent) => {
   console.log('Canvas clicked at:', x, y);
 };
 
-const handleTurnEnded = (newTurn: number) => {
+watch(() => gameEventStore.currentTurn, (newTurn) => {
   turn.value = newTurn;
-};
+});
 
-const handlePlayerChanged = (_data: { playerId: string; player: PlayerInfo | null }) => {
+watch(() => gameEventStore.currentPlayerId, () => {
   showPlayerSwitch.value = true;
   setTimeout(() => {
     showPlayerSwitch.value = false;
   }, 2000);
-};
+});
 
-const handleCombatExecuted = (data: { attackerId: string; defenderId: string; result: any }) => {
+watch(() => gameEventStore.combatResult, (result) => {
+  if (!result) return;
+  
   combatLog.value.push({
-    message: `战斗: 攻击方造成 ${data.result.defenderHpLost} 伤害, 防守方造成 ${data.result.attackerHpLost} 伤害`,
+    message: `战斗: 攻击方造成 ${result.damage} 伤害, 防守方造成 ${result.defenderDamage} 伤害`,
     type: 'combat'
   });
   if (combatLog.value.length > 5) {
     combatLog.value.shift();
   }
+
+  combatResult.value = {
+    show: true,
+    attackerDamage: result.damage,
+    defenderDamage: result.defenderDamage,
+    attackerDied: !result.attackerSurvived,
+    defenderDied: !result.defenderSurvived,
+    attackerId: result.attackerId,
+    defenderId: result.defenderId
+  };
+
+  setTimeout(() => {
+    if (combatResult.value) {
+      combatResult.value.show = false;
+    }
+    gameEventStore.clearCombatResult();
+  }, 2000);
+});
+
+watch(() => gameEventStore.selectedUnit, (unit) => {
+  if (!unit) {
+    selectedUnit.value = null;
+    showUnitInfo.value = false;
+    return;
+  }
+  
+  selectedUnit.value = {
+    unit: {
+      id: unit.id,
+      q: 0,
+      r: 0,
+      owner: unit.owner,
+      traits: unit.traits || [],
+      hp: unit.hp
+    },
+    stats: gameEventStore.unitStats || {
+      hp: unit.hp,
+      attack: 0,
+      defense: 0,
+      movement: 0,
+      range: 1
+    }
+  };
+  showUnitInfo.value = true;
+});
+
+const closeCombatResult = () => {
+  if (combatResult.value) {
+    combatResult.value.show = false;
+  }
+  gameEventStore.clearCombatResult();
 };
+
+const closeUnitInfo = () => {
+  showUnitInfo.value = false;
+  selectedUnit.value = null;
+  gameEventStore.clearSelection();
+};
+
+const ownerColors: Record<string, string> = {
+  neutral: '#808080',
+  player: '#268ceb',
+  enemy: '#eb3838'
+};
+
+const ownerNames: Record<string, string> = {
+  neutral: '中立',
+  player: '玩家',
+  enemy: '敌人'
+};
+
+const unitOwnerColor = computed(() => {
+  if (!selectedUnit.value) return '#808080';
+  return ownerColors[selectedUnit.value.unit.owner] || '#808080';
+});
+
+const unitOwnerName = computed(() => {
+  if (!selectedUnit.value) return '';
+  return ownerNames[selectedUnit.value.unit.owner] || selectedUnit.value.unit.owner;
+});
+
+const hpPercent = computed(() => {
+  if (!selectedUnit.value) return 0;
+  const maxHp = selectedUnit.value.stats.hp || 100;
+  return Math.round((selectedUnit.value.unit.hp / maxHp) * 100);
+});
 
 onMounted(() => {
   const canvas = document.getElementById('gameCanvas');
@@ -95,10 +204,6 @@ onMounted(() => {
   window.__setOwnerStates = (states: OwnerStates) => {
     gameStore.setOwnerStates(states);
   };
-
-  window.addEventListener('turn:ended', handleTurnEnded as any);
-  window.addEventListener('player:changed', handlePlayerChanged as any);
-  window.addEventListener('combat:executed', handleCombatExecuted as any);
 });
 
 onUnmounted(() => {
@@ -108,9 +213,6 @@ onUnmounted(() => {
   }
   
   window.__setOwnerStates = undefined;
-  window.removeEventListener('turn:ended', handleTurnEnded as any);
-  window.removeEventListener('player:changed', handlePlayerChanged as any);
-  window.removeEventListener('combat:executed', handleCombatExecuted as any);
 });
 </script>
 
@@ -253,6 +355,116 @@ onUnmounted(() => {
         <div class="p-2 max-h-32 overflow-y-auto">
           <div v-for="(log, index) in combatLog" :key="index" class="text-xs text-stone-400 py-1">
             {{ log.message }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="combatResult && combatResult.show" class="pointer-events-auto fixed inset-0 flex items-center justify-center z-50">
+      <div class="absolute inset-0 bg-black/50" @click="closeCombatResult"></div>
+      <div class="relative bg-stone-900 border border-amber-700/50 rounded-xl p-6 min-w-[320px] shadow-2xl shadow-amber-900/30 animate-pulse-once">
+        <div class="text-center">
+          <div class="text-amber-500 text-lg font-medium mb-4">⚔️ 战斗结果 ⚔️</div>
+          
+          <div class="flex items-center justify-center gap-4 mb-4">
+            <div class="text-center">
+              <div class="text-red-400 text-2xl font-bold">-{{ combatResult.attackerDamage }}</div>
+              <div class="text-stone-500 text-xs mt-1">攻击方受伤</div>
+            </div>
+            <div class="text-stone-600 text-xl">VS</div>
+            <div class="text-center">
+              <div class="text-red-400 text-2xl font-bold">-{{ combatResult.defenderDamage }}</div>
+              <div class="text-stone-500 text-xs mt-1">防守方受伤</div>
+            </div>
+          </div>
+
+          <div v-if="combatResult.defenderDied" class="mb-4">
+            <div class="text-green-400 text-lg font-medium animate-bounce">🏆 防守方被击败!</div>
+          </div>
+          <div v-if="combatResult.attackerDied" class="mb-4">
+            <div class="text-red-400 text-lg font-medium animate-bounce">💀 攻击方被击败!</div>
+          </div>
+
+          <div class="text-stone-500 text-xs mt-4">
+            正在继续...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="showUnitInfo && selectedUnit" class="pointer-events-auto">
+      <div class="absolute right-4 top-20 w-72 bg-stone-950/90 border border-stone-800/50 rounded-lg overflow-hidden z-30">
+        <div class="px-4 py-3 border-b border-stone-800/50 flex items-center justify-between">
+          <h3 class="text-stone-300 font-light tracking-wider text-sm">{{ t('game.unitInfo') || '单位信息' }}</h3>
+          <button @click="closeUnitInfo" class="text-stone-500 hover:text-stone-300 text-lg">×</button>
+        </div>
+        <div class="p-4">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 rounded-lg flex items-center justify-center text-2xl" :style="{ backgroundColor: unitOwnerColor }">
+              ⚔️
+            </div>
+            <div>
+              <div class="text-stone-200 font-medium text-sm">{{ selectedUnit.unit.id.slice(0, 16) }}...</div>
+              <div class="flex items-center gap-2 mt-1">
+                <span class="w-2 h-2 rounded-full" :style="{ backgroundColor: unitOwnerColor }"></span>
+                <span class="text-stone-400 text-xs">{{ unitOwnerName }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <div class="flex justify-between text-xs text-stone-500 mb-1">
+              <span>生命值</span>
+              <span class="text-stone-300">{{ selectedUnit.unit.hp }} / {{ selectedUnit.stats.hp || 100 }}</span>
+            </div>
+            <div class="h-2 bg-stone-800 rounded-full overflow-hidden">
+              <div 
+                class="h-full transition-all duration-300"
+                :class="{
+                  'bg-green-500': hpPercent > 60,
+                  'bg-yellow-500': hpPercent > 30 && hpPercent <= 60,
+                  'bg-red-500': hpPercent <= 30
+                }"
+                :style="{ width: `${hpPercent}%` }"
+              ></div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 mb-4">
+            <div class="bg-stone-800/50 rounded p-2 text-center">
+              <div class="text-amber-400 text-lg">⚔️</div>
+              <div class="text-stone-200 font-medium">{{ selectedUnit.stats.attack || 0 }}</div>
+              <div class="text-stone-500 text-xs">攻击</div>
+            </div>
+            <div class="bg-stone-800/50 rounded p-2 text-center">
+              <div class="text-blue-400 text-lg">🛡️</div>
+              <div class="text-stone-200 font-medium">{{ selectedUnit.stats.defense || 0 }}</div>
+              <div class="text-stone-500 text-xs">防御</div>
+            </div>
+            <div class="bg-stone-800/50 rounded p-2 text-center">
+              <div class="text-green-400 text-lg">🎯</div>
+              <div class="text-stone-200 font-medium">{{ selectedUnit.stats.range || 1 }}</div>
+              <div class="text-stone-500 text-xs">射程</div>
+            </div>
+          </div>
+
+          <div>
+            <div class="text-xs text-stone-500 mb-2">特性</div>
+            <div class="flex flex-wrap gap-1">
+              <span 
+                v-for="trait in selectedUnit.unit.traits" 
+                :key="trait"
+                class="px-2 py-1 bg-stone-800/50 rounded text-xs text-stone-400"
+              >
+                {{ trait }}
+              </span>
+            </div>
+          </div>
+
+          <div class="mt-3 pt-3 border-t border-stone-800/50">
+            <div class="text-xs text-stone-500">
+              位置: Q:{{ selectedUnit.unit.q }}, R:{{ selectedUnit.unit.r }}
+            </div>
           </div>
         </div>
       </div>

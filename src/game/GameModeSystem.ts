@@ -4,9 +4,11 @@ import { MapSystem, MovementSystem, UnitRenderSystem, EdgeSystem } from '../core
 import type { SceneData } from '../core/map';
 import type { OwnerStates } from '../stores/game';
 import { useGameStore } from '../stores/game';
+import { useGameEventStore } from '../stores/gameEvent';
 import { CombatSystem } from '../core/traits/CombatSystem';
 import { TraitManager } from '../core/traits/TraitManager';
 import type { UnitInstance } from '../core/map';
+import { debug } from '../core/utils/debug';
 
 declare global {
   interface Window {
@@ -26,6 +28,7 @@ export class GameModeSystem extends GameSystem {
   private traitManager: TraitManager | null = null;
   private attackableTiles: Set<string> = new Set();
   private gameStore = useGameStore();
+  private gameEventStore = useGameEventStore();
 
   constructor(engine: GameEngine) {
     super(engine);
@@ -45,6 +48,22 @@ export class GameModeSystem extends GameSystem {
       this.combatSystem = new CombatSystem(manager);
     });
 
+    const editorSystem = this.engine.getSystems().find(s => s.constructor.name === 'EditorSystem');
+    if (editorSystem) {
+      const traitManagerProp = (editorSystem as any).traitManager;
+      if (traitManagerProp) {
+        this.traitManager = traitManagerProp;
+        this.combatSystem = new CombatSystem(traitManagerProp);
+
+      }
+    }
+
+    if (!this.traitManager) {
+      this.traitManager = new TraitManager();
+      this.combatSystem = new CombatSystem(this.traitManager);
+      console.log('[GameModeSystem] Created new TraitManager');
+    }
+
     this.setupInputHandlers();
 
     window.__endTurn = () => this.endTurn();
@@ -55,7 +74,10 @@ export class GameModeSystem extends GameSystem {
   private setupInputHandlers(): void {
     const eventBus = this.engine.getEventBus();
 
+    console.log('GameModeSystem: Setting up input handlers');
+    
     eventBus.on('mousedown', (...args: unknown[]) => {
+      console.log('GameModeSystem: mousedown event received');
       const e = args[0] as MouseEvent;
       this.handleMouseDown(e);
     });
@@ -82,12 +104,55 @@ export class GameModeSystem extends GameSystem {
         this.clearTileSelection();
         this.clearAttackHighlights();
         this.unitRenderSystem.selectUnit(clickedUnit.id);
-        console.log('Selected own unit:', clickedUnit.id, 'at', hexPos.q, hexPos.r, 'owner:', clickedUnit.owner, 'currentPlayerId:', this.getCurrentPlayerId());
+        debug.selection('Selected own unit:', clickedUnit.id, 'at', hexPos.q, hexPos.r, 'owner:', clickedUnit.owner, 'currentPlayerId:', this.getCurrentPlayerId());
+        
+        const unitStats = this.traitManager ? this.traitManager.calculateStats(clickedUnit.traits) : null;
+        this.gameEventStore.selectUnit({
+          id: clickedUnit.id,
+          type: clickedUnit.traits?.[0] || 'infantry',
+          owner: clickedUnit.owner,
+          hp: clickedUnit.hp,
+          maxHp: clickedUnit.hp,
+          attack: unitStats?.attack || 0,
+          defense: unitStats?.defense || 0,
+          movement: unitStats?.movement || 0,
+          range: unitStats?.range || 1,
+          traits: clickedUnit.traits || []
+        }, {
+          hp: clickedUnit.hp,
+          attack: unitStats?.attack || 0,
+          defense: unitStats?.defense || 0,
+          movement: unitStats?.movement || 0,
+          range: unitStats?.range || 1
+        });
+        
         this.highlightAttackableTiles(clickedUnit);
         return;
-      } else if (this.attackableTiles.has(tileKey)) {
-        this.executeAttack(this.unitRenderSystem.getSelectedUnitId()!, clickedUnit);
-        return;
+      } else {
+        const unitStats = this.traitManager ? this.traitManager.calculateStats(clickedUnit.traits) : null;
+        this.gameEventStore.selectUnit({
+          id: clickedUnit.id,
+          type: clickedUnit.traits?.[0] || 'infantry',
+          owner: clickedUnit.owner,
+          hp: clickedUnit.hp,
+          maxHp: clickedUnit.hp,
+          attack: unitStats?.attack || 0,
+          defense: unitStats?.defense || 0,
+          movement: unitStats?.movement || 0,
+          range: unitStats?.range || 1,
+          traits: clickedUnit.traits || []
+        }, {
+          hp: clickedUnit.hp,
+          attack: unitStats?.attack || 0,
+          defense: unitStats?.defense || 0,
+          movement: unitStats?.movement || 0,
+          range: unitStats?.range || 1
+        });
+        
+        if (this.attackableTiles.has(tileKey)) {
+          this.executeAttack(this.unitRenderSystem.getSelectedUnitId()!, clickedUnit);
+          return;
+        }
       }
     }
 
@@ -96,7 +161,7 @@ export class GameModeSystem extends GameSystem {
     if (reachableTiles.has(tileKey)) {
       const success = this.unitRenderSystem.moveSelectedUnit(hexPos.q, hexPos.r);
       if (success) {
-        console.log('Moved to', hexPos.q, hexPos.r);
+        debug.movement('Moved to', hexPos.q, hexPos.r);
         const selectedId = this.unitRenderSystem.getSelectedUnitId();
         if (selectedId) {
           this.unitRenderSystem.selectUnit(selectedId);
@@ -119,16 +184,16 @@ export class GameModeSystem extends GameSystem {
 
     this.attackableTiles.clear();
     const unitRange = this.getUnitRange(unit);
-    console.log('Unit range:', unitRange, 'for unit:', unit.id);
+    debug.selection('Unit range:', unitRange, 'for unit:', unit.id);
     const unitPos = { q: unit.q, r: unit.r };
 
     for (let q = unitPos.q - unitRange; q <= unitPos.q + unitRange; q++) {
       for (let r = unitPos.r - unitRange; r <= unitPos.r + unitRange; r++) {
         const distance = (Math.abs(q - unitPos.q) + Math.abs(q + r - unitPos.q - unitPos.r) + Math.abs(r - unitPos.r)) / 2;
-        console.log('Checking tile:', q, r, 'distance:', distance);
+        debug.selection('Checking tile:', q, r, 'distance:', distance);
         if (distance <= unitRange && distance > 0) {
           const targetUnit = this.movementSystem.getUnitAt(q, r);
-          console.log('  has unit:', targetUnit?.id, 'owner:', targetUnit?.owner);
+          debug.selection('  has unit:', targetUnit?.id, 'owner:', targetUnit?.owner);
           if (targetUnit && targetUnit.owner !== unit.owner) {
             const tileKey = `${q},${r}`;
             this.attackableTiles.add(tileKey);
@@ -141,7 +206,7 @@ export class GameModeSystem extends GameSystem {
         }
       }
     }
-    console.log('Attackable tiles:', Array.from(this.attackableTiles));
+    debug.selection('Attackable tiles:', Array.from(this.attackableTiles));
   }
 
   private clearAttackHighlights(): void {
@@ -186,29 +251,51 @@ export class GameModeSystem extends GameSystem {
       currentHp: defender.hp
     };
 
-    const result = this.combatSystem.executeCombat(attackerCombatUnit, defenderCombatUnit);
+    this.gameEventStore.startCombat(attackerId, defender.id);
 
-    console.log('Combat result:', result);
-    console.log(`Attacker dealt ${result.defenderHpLost} damage, Defender dealt ${result.attackerHpLost} damage`);
+    setTimeout(() => {
+      const result = this.combatSystem!.executeCombat(attackerCombatUnit, defenderCombatUnit);
 
-    attacker.hp -= result.attackerHpLost;
-    defender.hp -= result.defenderHpLost;
+      debug.combat('Combat result:', result);
+      debug.combat(`Attacker dealt ${result.defenderHpLost} damage, Defender dealt ${result.attackerHpLost} damage`);
 
-    if (attacker.hp <= 0) {
-      this.movementSystem.removeUnit(attackerId);
-      console.log('Attacker died');
-    }
+      attacker.hp -= result.attackerHpLost;
+      defender.hp -= result.defenderHpLost;
 
-    if (defender.hp <= 0) {
-      this.movementSystem.removeUnit(defender.id);
-      console.log('Defender died');
-    }
+      if (this.unitRenderSystem) {
+        if (attacker.hp > 0) {
+          this.unitRenderSystem.updateUnitHpBar(attackerId);
+          this.unitRenderSystem.playDamageAnimation(attackerId);
+        }
+        if (defender.hp > 0) {
+          this.unitRenderSystem.updateUnitHpBar(defender.id);
+          this.unitRenderSystem.playDamageAnimation(defender.id);
+        }
+      }
 
-    if (this.unitRenderSystem) {
-      this.unitRenderSystem.selectUnit(null);
-    }
-    this.clearAttackHighlights();
-    this.engine.getEventBus().emit('combat:executed', { attackerId, defenderId: defender.id, result });
+      if (attacker.hp <= 0) {
+        this.movementSystem!.removeUnit(attackerId);
+        debug.combat('Attacker died');
+      }
+
+      if (defender.hp <= 0) {
+        this.movementSystem!.removeUnit(defender.id);
+        debug.combat('Defender died');
+      }
+
+      if (this.unitRenderSystem) {
+        this.unitRenderSystem.selectUnit(null);
+      }
+      this.clearAttackHighlights();
+      this.gameEventStore.setCombatResult({
+        attackerId,
+        defenderId: defender.id,
+        damage: result.defenderHpLost,
+        defenderDamage: result.attackerHpLost,
+        attackerSurvived: attacker.hp > 0,
+        defenderSurvived: defender.hp > 0
+      });
+    }, 300);
   }
 
   private selectTile(key: string, q: number, r: number): void {
@@ -220,7 +307,7 @@ export class GameModeSystem extends GameSystem {
       const hexTile = tileEntities.get(key);
       if (hexTile) {
         hexTile.setSelected(true);
-        console.log('Selected tile:', q, r);
+        debug.selection('Selected tile:', q, r);
       }
     }
   }
@@ -241,11 +328,8 @@ export class GameModeSystem extends GameSystem {
     
     if (isHotseat) {
       this.gameStore.nextPlayer();
-      console.log('Hotseat: switched to player:', this.gameStore.getCurrentPlayerId());
-      this.engine.getEventBus().emit('player:changed', {
-        playerId: this.gameStore.getCurrentPlayerId(),
-        player: this.gameStore.currentPlayer
-      });
+      debug.ui('Hotseat: switched to player:', this.gameStore.getCurrentPlayerId());
+      this.gameEventStore.setCurrentPlayer(this.gameStore.getCurrentPlayerId());
     } else {
       this.currentTurn++;
     }
@@ -258,8 +342,8 @@ export class GameModeSystem extends GameSystem {
       this.movementSystem.resetAllMoves();
     }
 
-    this.engine.getEventBus().emit('turn:ended', this.currentTurn);
-    console.log('Turn ended. New turn:', this.currentTurn, 'Current player:', this.getCurrentPlayerId());
+    this.gameEventStore.setTurn(this.currentTurn);
+    debug.ui('Turn ended. New turn:', this.currentTurn, 'Current player:', this.getCurrentPlayerId());
   }
 
   getCurrentTurn(): number {
@@ -297,6 +381,12 @@ export class GameModeSystem extends GameSystem {
       
       if (this.movementSystem && sceneData.units) {
         this.movementSystem.loadFromSceneData(sceneData);
+      }
+
+      const traitsData = await fetch('/game_saves/example_battlefield/traits.json').then(r => r.json());
+      if (this.traitManager) {
+        this.traitManager.loadTraitData(traitsData);
+        console.log('Traits loaded:', Object.keys(traitsData.traits).length, 'traits');
       }
       
       if (window.__setOwnerStates) {

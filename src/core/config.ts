@@ -6,9 +6,15 @@ export interface DebugConfig {
     editorTools: boolean;
     editorUI: boolean;
   };
+  game: {
+    combat: boolean;
+    movement: boolean;
+    selection: boolean;
+    ui: boolean;
+  };
 }
 
-function getDebugFromUrl(): Partial<DebugConfig['editor']> {
+function getDebugFromUrl(): Partial<DebugConfig['editor'] & DebugConfig['game']> {
   if (typeof window === 'undefined') return {};
   
   const params = new URLSearchParams(window.location.search);
@@ -21,7 +27,11 @@ function getDebugFromUrl(): Partial<DebugConfig['editor']> {
       sceneManager: modules.includes('scene') || modules.includes('all'),
       sceneApi: modules.includes('api') || modules.includes('all'),
       editorTools: modules.includes('tools') || modules.includes('all'),
-      editorUI: modules.includes('ui') || modules.includes('all')
+      editorUI: modules.includes('ui') || modules.includes('all'),
+      combat: modules.includes('combat') || modules.includes('all'),
+      movement: modules.includes('movement') || modules.includes('all'),
+      selection: modules.includes('selection') || modules.includes('all'),
+      ui: modules.includes('ui') || modules.includes('all')
     };
   }
   
@@ -37,6 +47,12 @@ export const debugConfig: DebugConfig = {
     sceneApi: urlDebug.sceneApi ?? false,
     editorTools: urlDebug.editorTools ?? false,
     editorUI: urlDebug.editorUI ?? false
+  },
+  game: {
+    combat: urlDebug.combat ?? false,
+    movement: urlDebug.movement ?? false,
+    selection: urlDebug.selection ?? false,
+    ui: urlDebug.ui ?? false
   }
 };
 
@@ -46,4 +62,11 @@ export function setEditorDebug(enabled: boolean): void {
   debugConfig.editor.sceneApi = enabled;
   debugConfig.editor.editorTools = enabled;
   debugConfig.editor.editorUI = enabled;
+}
+
+export function setGameDebug(enabled: boolean): void {
+  debugConfig.game.combat = enabled;
+  debugConfig.game.movement = enabled;
+  debugConfig.game.selection = enabled;
+  debugConfig.game.ui = enabled;
 }

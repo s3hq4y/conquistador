@@ -65,7 +65,7 @@
         "attack": 8,
         "defense": 8,
         "movement": 4,
-        "range": 3
+        "range": 2
       },
       "combatBonuses": [
         { "targetTrait": "cavalry", "bonusType": "multiply", "value": 0.8, "description": "弓箭手对骑兵效果减弱" }

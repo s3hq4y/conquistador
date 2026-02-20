@@ -10,6 +10,7 @@ export class UnitRenderSystem extends GameSystem {
   private movementSystem: MovementSystem | null = null;
   private unitEntities: Map<string, pc.Entity> = new Map();
   private unitMovesText: Map<string, pc.Entity> = new Map();
+  private unitHpBars: Map<string, pc.Entity> = new Map();
   private app: pc.Application | null = null;
   private unitLayer: pc.Entity | null = null;
   private selectedUnitId: string | null = null;
@@ -20,6 +21,7 @@ export class UnitRenderSystem extends GameSystem {
   }
 
   initialize(): void {
+    console.log('UnitRenderSystem: Initializing');
     this.app = this.engine.getApplication();
     this.mapSystem = this.engine.getSystems().find(s => s instanceof MapSystem) as MapSystem;
     this.movementSystem = this.engine.getSystems().find(s => s instanceof MovementSystem) as MovementSystem;
@@ -38,7 +40,9 @@ export class UnitRenderSystem extends GameSystem {
     eventBus.on('units:movesReset', () => this.onMovesReset());
     eventBus.on('map:loaded', (...args: unknown[]) => this.onMapLoaded(args[0] as SceneData));
 
+    console.log('UnitRenderSystem: Calling renderAllUnits');
     this.renderAllUnits();
+    console.log('UnitRenderSystem: Initialization complete');
   }
 
   update(_dt: number): void {
@@ -54,21 +58,29 @@ export class UnitRenderSystem extends GameSystem {
 
     this.unitEntities.forEach(entity => entity.destroy());
     this.unitEntities.clear();
+    this.unitMovesText.clear();
+    this.unitHpBars.forEach(entity => entity.destroy());
+    this.unitHpBars.clear();
     this.unitLayer?.destroy();
   }
 
   private onMapLoaded(_sceneData: SceneData): void {
+    console.log('UnitRenderSystem: onMapLoaded called');
     this.clearAllUnits();
     this.renderAllUnits();
   }
 
   private clearAllUnits(): void {
+    console.log('UnitRenderSystem: clearAllUnits called');
     this.unitEntities.forEach(entity => entity.destroy());
     this.unitEntities.clear();
     this.unitMovesText.clear();
+    this.unitHpBars.forEach(entity => entity.destroy());
+    this.unitHpBars.clear();
   }
 
   private onUnitAdded(unit: UnitInstance): void {
+    console.log('UnitRenderSystem: onUnitAdded called for', unit.id);
     this.renderUnit(unit);
   }
 
@@ -78,6 +90,11 @@ export class UnitRenderSystem extends GameSystem {
       entity.destroy();
       this.unitEntities.delete(unit.id);
       this.unitMovesText.delete(unit.id);
+    }
+    const hpBar = this.unitHpBars.get(unit.id);
+    if (hpBar) {
+      hpBar.destroy();
+      this.unitHpBars.delete(unit.id);
     }
   }
 
@@ -181,9 +198,127 @@ export class UnitRenderSystem extends GameSystem {
     movesText.setLocalScale(0.04, 0.04, 0.04);
     entity.addChild(movesText);
 
+    this.createHealthBar(entity, unit);
+
     this.unitLayer.addChild(entity);
     this.unitEntities.set(unit.id, entity);
     this.unitMovesText.set(unit.id, movesText);
+  }
+
+  private createHealthBar(parent: pc.Entity, unit: UnitInstance): void {
+    if (!this.app) return;
+
+    const maxHp = unit.hp || 100;
+    const currentHp = unit.hp || 100;
+    const hpPercent = currentHp / maxHp;
+
+    const hpBarContainer = new pc.Entity(`HPBar_${unit.id}`);
+    hpBarContainer.setLocalPosition(0, -15, 0);
+    hpBarContainer.setLocalScale(0.06, 0.06, 0.06);
+
+    const bgBar = new pc.Entity();
+    bgBar.addComponent('element', {
+      type: 'image',
+      width: 50,
+      height: 6,
+      color: new pc.Color(0.2, 0.2, 0.2),
+      useInput: false
+    });
+    bgBar.setLocalPosition(0, 0, 0);
+    hpBarContainer.addChild(bgBar);
+
+    const fgBar = new pc.Entity();
+    const hpColor = this.getHpColor(hpPercent);
+    fgBar.addComponent('element', {
+      type: 'image',
+      width: Math.floor(48 * hpPercent),
+      height: 4,
+      color: hpColor,
+      useInput: false
+    });
+    fgBar.setLocalPosition(-25 + (24 * hpPercent), 0, 0.01);
+    hpBarContainer.addChild(fgBar);
+
+    parent.addChild(hpBarContainer);
+    this.unitHpBars.set(unit.id, hpBarContainer);
+  }
+
+  private getHpColor(percent: number): pc.Color {
+    if (percent > 0.6) {
+      return new pc.Color(0.2, 0.8, 0.2);
+    } else if (percent > 0.3) {
+      return new pc.Color(0.9, 0.7, 0.2);
+    } else {
+      return new pc.Color(0.9, 0.2, 0.2);
+    }
+  }
+
+  updateUnitHpBar(unitId: string): void {
+    const hpBarContainer = this.unitHpBars.get(unitId);
+    if (!hpBarContainer || !this.movementSystem) return;
+
+    const unit = this.movementSystem.getUnit(unitId);
+    if (!unit) return;
+
+    const maxHp = unit.hp || 100;
+    const currentHp = unit.hp || 100;
+    const hpPercent = Math.max(0, currentHp / maxHp);
+
+    const children = hpBarContainer.children;
+    if (children.length >= 2) {
+      const fgBar = children[1] as pc.Entity;
+      if (fgBar && fgBar.element) {
+        fgBar.element.width = Math.floor(48 * hpPercent);
+        fgBar.element.color = this.getHpColor(hpPercent);
+      }
+    }
+  }
+
+  playDamageAnimation(unitId: string): void {
+    const entity = this.unitEntities.get(unitId);
+    if (!entity) return;
+
+    let flashCount = 0;
+    const flashInterval = setInterval(() => {
+      if (!entity.parent) {
+        clearInterval(flashInterval);
+        return;
+      }
+      
+      const children = entity.children;
+      for (const child of children) {
+        const renderComponent = (child as any).render;
+        if (renderComponent) {
+          const material = renderComponent.material as pc.StandardMaterial;
+          if (material) {
+            if (flashCount % 2 === 0) {
+              material.emissive = new pc.Color(1, 0, 0);
+              material.emissiveIntensity = 1;
+            } else {
+              material.emissive = new pc.Color(0.5, 0.5, 0.5);
+              material.emissiveIntensity = 0.5;
+            }
+            material.update();
+          }
+        }
+      }
+      
+      flashCount++;
+      if (flashCount >= 4) {
+        clearInterval(flashInterval);
+        for (const child of children) {
+          const renderComponent = (child as any).render;
+          if (renderComponent) {
+            const material = renderComponent.material as pc.StandardMaterial;
+            if (material) {
+              material.emissive = new pc.Color(0.5, 0.5, 0.5);
+              material.emissiveIntensity = 0.5;
+              material.update();
+            }
+          }
+        }
+      }
+    }, 100);
   }
 
   selectUnit(unitId: string | null): void {

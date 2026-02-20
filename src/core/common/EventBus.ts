@@ -23,6 +23,7 @@ export class EventBus {
 
   emit(event: string, ...args: unknown[]): void {
     this.eventQueue.push({ event, args });
+    window.dispatchEvent(new CustomEvent(event, { detail: args }));
   }
 
   flush(): void {
