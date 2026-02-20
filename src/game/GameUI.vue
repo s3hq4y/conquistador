@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { useGameStore, type OwnerStates } from '../stores/game';
+import { useGameStore, type OwnerStates, type PlayerInfo } from '../stores/game';
 
 const router = useRouter();
 const { t, locale } = useI18n();
@@ -20,8 +20,13 @@ const switchLocale = (newLocale: string) => {
 const showMenu = ref(false);
 const turn = ref(1);
 const selectedTile = ref<{ q: number; r: number; terrain: string; owner: string } | null>(null);
+const combatLog = ref<{ message: string; type: string }[]>([]);
+const showPlayerSwitch = ref(false);
 
 const ducat = computed(() => gameStore.getResource('ducat'));
+
+const currentPlayer = computed(() => gameStore.currentPlayer);
+const isHotseat = computed(() => gameStore.isHotseat);
 
 const ownerName = computed(() => {
   if (!selectedTile.value) return '';
@@ -37,12 +42,15 @@ const terrainName = computed(() => {
 const handleEndTurn = () => {
   if (window.__endTurn) {
     window.__endTurn();
-    turn.value++;
+    if (!gameStore.isHotseat) {
+      turn.value++;
+    }
   }
 };
 
 const handleBackToMenu = () => {
   showMenu.value = false;
+  gameStore.resetGame();
   router.push('/');
 };
 
@@ -61,6 +69,23 @@ const handleTurnEnded = (newTurn: number) => {
   turn.value = newTurn;
 };
 
+const handlePlayerChanged = (_data: { playerId: string; player: PlayerInfo | null }) => {
+  showPlayerSwitch.value = true;
+  setTimeout(() => {
+    showPlayerSwitch.value = false;
+  }, 2000);
+};
+
+const handleCombatExecuted = (data: { attackerId: string; defenderId: string; result: any }) => {
+  combatLog.value.push({
+    message: `战斗: 攻击方造成 ${data.result.defenderHpLost} 伤害, 防守方造成 ${data.result.attackerHpLost} 伤害`,
+    type: 'combat'
+  });
+  if (combatLog.value.length > 5) {
+    combatLog.value.shift();
+  }
+};
+
 onMounted(() => {
   const canvas = document.getElementById('gameCanvas');
   if (canvas) {
@@ -70,6 +95,10 @@ onMounted(() => {
   window.__setOwnerStates = (states: OwnerStates) => {
     gameStore.setOwnerStates(states);
   };
+
+  window.addEventListener('turn:ended', handleTurnEnded as any);
+  window.addEventListener('player:changed', handlePlayerChanged as any);
+  window.addEventListener('combat:executed', handleCombatExecuted as any);
 });
 
 onUnmounted(() => {
@@ -79,6 +108,9 @@ onUnmounted(() => {
   }
   
   window.__setOwnerStates = undefined;
+  window.removeEventListener('turn:ended', handleTurnEnded as any);
+  window.removeEventListener('player:changed', handlePlayerChanged as any);
+  window.removeEventListener('combat:executed', handleCombatExecuted as any);
 });
 </script>
 
@@ -86,10 +118,21 @@ onUnmounted(() => {
   <div class="fixed inset-0 pointer-events-none">
     <div class="pointer-events-auto">
       <div class="absolute top-0 left-0 right-0 h-12 bg-stone-950/80 border-b border-stone-800/50 flex items-center justify-between px-4">
-        <div class="flex items-center gap-2">
-          <span class="text-amber-400">🪙</span>
-          <span class="text-amber-300 font-mono">{{ ducat }}</span>
-          <span class="text-stone-500 text-xs">ducat</span>
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2">
+            <span class="text-amber-400">🪙</span>
+            <span class="text-amber-300 font-mono">{{ ducat }}</span>
+            <span class="text-stone-500 text-xs">ducat</span>
+          </div>
+          
+          <div v-if="currentPlayer" class="flex items-center gap-2">
+            <div 
+              class="w-4 h-4 rounded-full"
+              :style="{ backgroundColor: currentPlayer.color }"
+            ></div>
+            <span class="text-stone-300 text-sm">{{ currentPlayer.name }}</span>
+            <span v-if="isHotseat" class="text-stone-500 text-xs">({{ t('game.hotseat') }})</span>
+          </div>
         </div>
         
         <div class="flex items-center gap-3">
@@ -161,6 +204,20 @@ onUnmounted(() => {
       </div>
     </div>
 
+    <div v-if="showPlayerSwitch" class="pointer-events-auto fixed inset-0 bg-stone-950/80 flex items-center justify-center z-40">
+      <div class="bg-stone-900 border border-amber-800/50 rounded-lg p-8 text-center">
+        <div class="text-stone-400 text-sm mb-4">{{ t('game.playerSwitch') }}</div>
+        <div v-if="currentPlayer" class="flex items-center justify-center gap-3">
+          <div 
+            class="w-8 h-8 rounded-full"
+            :style="{ backgroundColor: currentPlayer.color }"
+          ></div>
+          <span class="text-xl text-stone-200">{{ currentPlayer.name }}</span>
+        </div>
+        <div class="text-stone-500 text-xs mt-4">{{ t('game.playerSwitchHint') }}</div>
+      </div>
+    </div>
+
     <div class="pointer-events-auto">
       <div class="absolute left-4 top-20 w-64 bg-stone-950/80 border border-stone-800/50 rounded-lg overflow-hidden">
         <div class="px-4 py-3 border-b border-stone-800/50">
@@ -183,6 +240,19 @@ onUnmounted(() => {
           </div>
           <div v-else class="text-stone-500 text-sm">
             {{ t('game.tileInfoPlaceholder') }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pointer-events-auto">
+      <div class="absolute left-4 top-80 w-64 bg-stone-950/80 border border-stone-800/50 rounded-lg overflow-hidden" v-if="combatLog.length > 0">
+        <div class="px-4 py-3 border-b border-stone-800/50">
+          <h3 class="text-stone-300 font-light tracking-wider text-sm">{{ t('game.combatLog') }}</h3>
+        </div>
+        <div class="p-2 max-h-32 overflow-y-auto">
+          <div v-for="(log, index) in combatLog" :key="index" class="text-xs text-stone-400 py-1">
+            {{ log.message }}
           </div>
         </div>
       </div>

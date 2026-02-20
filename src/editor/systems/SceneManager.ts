@@ -1,6 +1,8 @@
 import type { MapSystem, EdgeSystem, MovementSystem } from '../../core/systems';
 import type { EditorUI } from '../EditorUI';
 import type { SceneData, TerrainTypeDefinition, OwnerTagDefinition } from '../../core/map';
+import type { TraitData } from '../../core/traits';
+import { TraitManager } from '../../core/traits';
 import { debugConfig } from '../../core/config';
 import * as sceneApi from '../sceneApi';
 
@@ -9,6 +11,7 @@ export class SceneManager {
   private edgeSystem: EdgeSystem | null;
   private movementSystem: MovementSystem | null;
   private editorUI: EditorUI | null;
+  private traitManager: TraitManager | null = null;
   private currentSceneId: string | null = null;
 
   constructor(mapSystem: MapSystem | null, editorUI: EditorUI | null) {
@@ -32,6 +35,10 @@ export class SceneManager {
 
   setEditorUI(editorUI: EditorUI | null): void {
     this.editorUI = editorUI;
+  }
+
+  setTraitManager(traitManager: TraitManager | null): void {
+    this.traitManager = traitManager;
   }
 
   getCurrentSceneId(): string | null {
@@ -141,6 +148,8 @@ export class SceneManager {
           }
           this.movementSystem.loadFromSceneData(sceneData);
         }
+
+        await this.loadTraits(sceneId);
         
         this.updateUI();
         this.editorUI?.showToast('场景已加载', 'success');
@@ -153,6 +162,35 @@ export class SceneManager {
       console.error('[SceneManager] Failed to load scene:', error);
       this.editorUI?.showToast('加载场景失败', 'error');
       return false;
+    }
+  }
+
+  async loadTraits(sceneId: string): Promise<void> {
+    try {
+      const response = await fetch(`/scenarios/${sceneId}/traits.json`);
+      if (response.ok) {
+        const traitData: TraitData = await response.json();
+        this.editorUI?.setTraits(traitData.traits || {});
+        this.editorUI?.setTraitTypes(traitData.traitTypes || {});
+        if (this.traitManager) {
+          this.traitManager.loadTraitData(traitData);
+        }
+        if (debugConfig.editor.sceneManager) {
+          console.log('[SceneManager] Loaded traits:', Object.keys(traitData.traits || {}).length);
+        }
+      } else {
+        const fallbackResponse = await fetch(`/game_saves/${sceneId}/traits.json`);
+        if (fallbackResponse.ok) {
+          const traitData: TraitData = await fallbackResponse.json();
+          this.editorUI?.setTraits(traitData.traits || {});
+          this.editorUI?.setTraitTypes(traitData.traitTypes || {});
+          if (this.traitManager) {
+            this.traitManager.loadTraitData(traitData);
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('[SceneManager] Failed to load traits:', error);
     }
   }
 

@@ -3,6 +3,8 @@ import { ref, watch, inject, computed } from 'vue';
 import ToolButtons from './ToolButtons.vue';
 import TerrainGrid from './TerrainGrid.vue';
 import OwnerGrid from './OwnerGrid.vue';
+import TraitSelector from './TraitSelector.vue';
+import UnitInfo from './UnitInfo.vue';
 import SceneListModal from './SceneListModal.vue';
 import AddTerrainModal from './AddTerrainModal.vue';
 import AddOwnerModal from './AddOwnerModal.vue';
@@ -30,13 +32,15 @@ const defaultState: EditorUIState = {
   currentTerrainId: ref('plains'),
   currentOwnerId: ref('neutral'),
   currentEdgeType: ref('river'),
-  currentUnitType: ref('land'),
-  currentUnitMoves: ref(6),
+  selectedTraits: ref<string[]>([]),
   paintMode: ref<PaintMode>('both'),
   sceneName: ref(''),
   sceneDescription: ref(''),
   terrains: ref([]),
   owners: ref([]),
+  traits: ref({}),
+  traitTypes: ref({}),
+  selectedUnit: ref(null),
   debugMode: ref(false)
 };
 
@@ -126,13 +130,12 @@ const handleOwnerSelect = (id: string) => {
   state.currentOwnerId.value = id;
 };
 
-const handleUnitTypeChange = (type: string) => {
-  state.currentUnitType.value = type;
+const handleTraitsChange = (traits: string[]) => {
+  state.selectedTraits.value = traits;
 };
 
-const handleUnitMovesChange = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  state.currentUnitMoves.value = parseInt(target.value) || 6;
+const handleCloseUnitInfo = () => {
+  state.selectedUnit.value = null;
 };
 
 const handlePaintModeChange = (mode: PaintMode) => {
@@ -278,32 +281,13 @@ defineExpose({
       </div>
 
       <div v-if="state.currentTool.value === 'unit'" class="section unit-type-section">
-        <label class="section-label">单位类型</label>
-        <div class="unit-type-buttons">
-          <button
-            :class="['mode-btn', { active: state.currentUnitType.value === 'land' }]"
-            @click="handleUnitTypeChange('land')"
-          >陆地</button>
-          <button
-            :class="['mode-btn', { active: state.currentUnitType.value === 'sea' }]"
-            @click="handleUnitTypeChange('sea')"
-          >海上</button>
-          <button
-            :class="['mode-btn', { active: state.currentUnitType.value === 'air' }]"
-            @click="handleUnitTypeChange('air')"
-          >空中</button>
-        </div>
-
-        <label class="section-label" style="margin-top: 12px;">移动力</label>
-        <input
-          type="range"
-          min="1"
-          max="12"
-          :value="state.currentUnitMoves.value"
-          class="moves-slider"
-          @input="handleUnitMovesChange"
-        >
-        <div class="moves-value">{{ state.currentUnitMoves.value }}</div>
+        <label class="section-label">特性选择</label>
+        <TraitSelector
+          :traits="state.traits.value"
+          :trait-types="state.traitTypes.value"
+          :selected-traits="state.selectedTraits.value"
+          @update:selected-traits="handleTraitsChange"
+        />
       </div>
 
       <div class="section">
@@ -337,33 +321,22 @@ defineExpose({
     </div>
 
     <div v-show="activePanel === 'military'" class="panel-content">
-      <div class="section">
-        <label class="section-label">单位类型</label>
-        <div class="unit-type-buttons">
-          <button
-            :class="['mode-btn', { active: state.currentUnitType.value === 'land' }]"
-            @click="handleUnitTypeChange('land')"
-          >陆地</button>
-          <button
-            :class="['mode-btn', { active: state.currentUnitType.value === 'sea' }]"
-            @click="handleUnitTypeChange('sea')"
-          >海上</button>
-          <button
-            :class="['mode-btn', { active: state.currentUnitType.value === 'air' }]"
-            @click="handleUnitTypeChange('air')"
-          >空中</button>
-        </div>
+      <UnitInfo
+        v-if="state.selectedUnit.value"
+        :unit="state.selectedUnit.value"
+        :traits="state.traits.value"
+        :trait-types="state.traitTypes.value"
+        @close="handleCloseUnitInfo"
+      />
 
-        <label class="section-label" style="margin-top: 12px;">移动力</label>
-        <input
-          type="range"
-          min="1"
-          max="12"
-          :value="state.currentUnitMoves.value"
-          class="moves-slider"
-          @input="handleUnitMovesChange"
-        >
-        <div class="moves-value">{{ state.currentUnitMoves.value }}</div>
+      <div class="section">
+        <label class="section-label">特性选择</label>
+        <TraitSelector
+          :traits="state.traits.value"
+          :trait-types="state.traitTypes.value"
+          :selected-traits="state.selectedTraits.value"
+          @update:selected-traits="handleTraitsChange"
+        />
 
         <label class="section-label" style="margin-top: 12px;">所属者</label>
         <OwnerGrid
@@ -761,23 +734,5 @@ kbd {
 
 .unit-type-section {
   margin-top: -8px;
-}
-
-.unit-type-buttons {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
-}
-
-.moves-slider {
-  width: 100%;
-  margin-top: 8px;
-}
-
-.moves-value {
-  text-align: center;
-  font-size: 14px;
-  color: var(--editor-text-primary);
-  margin-top: 4px;
 }
 </style>

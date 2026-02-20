@@ -2,6 +2,7 @@ import { GameSystem, MapSystem, EdgeSystem, MovementSystem } from '../core/syste
 import type { GameEngine } from '../core/engine';
 import { EditorUI } from './EditorUI';
 import { EditorInputHandler, EditorTools, SceneManager, DebugEdgeSystem, EdgeEditorSystem } from './systems';
+import { TraitManager } from '../core/traits';
 export type { EditorTool, PaintMode } from './systems';
 
 export class EditorSystem extends GameSystem {
@@ -14,6 +15,7 @@ export class EditorSystem extends GameSystem {
   private debugEdgeSystem: DebugEdgeSystem | null = null;
   private edgeSystem: EdgeSystem | null = null;
   private edgeEditorSystem: EdgeEditorSystem | null = null;
+  private traitManager: TraitManager | null = null;
 
   constructor(engine: GameEngine) {
     super(engine);
@@ -23,13 +25,18 @@ export class EditorSystem extends GameSystem {
     this.mapSystem = this.engine.getSystems().find(s => s instanceof MapSystem) as MapSystem;
     this.movementSystem = this.engine.getSystems().find(s => s instanceof MovementSystem) as MovementSystem;
 
+    this.traitManager = new TraitManager();
+
     if (this.movementSystem) {
       this.movementSystem.setGrid(this.mapSystem.getGrid());
       this.movementSystem.loadFromSceneData(this.mapSystem.getSceneData());
+      this.movementSystem.setTraitManager(this.traitManager);
     }
     
     this.tools = new EditorTools(this.mapSystem, this.movementSystem, null);
+    this.tools.setTraitManager(this.traitManager);
     this.sceneManager = new SceneManager(this.mapSystem, null);
+    this.sceneManager.setTraitManager(this.traitManager);
     
     this.debugEdgeSystem = new DebugEdgeSystem();
     this.debugEdgeSystem.setMapSystem(this.mapSystem);

@@ -22,11 +22,15 @@ export default {
     },
     description: 'Choose a mode to start the game. Supports random map generation or custom creation.',
     buttons: {
+      singlePlayer: 'Single Player',
+      hotseat: 'Hotseat',
       randomMap: 'Generate Random Map',
       customMap: 'Custom Map',
       gameMode: 'Game Mode'
     },
     descriptions: {
+      singlePlayer: 'Play against AI or other players',
+      hotseat: 'Multiple players take turns on the same device',
       gameMode: 'Load example scene to start',
       randomMap: 'Procedurally generate unique terrain',
       customMap: 'Build your world from scratch'
@@ -35,7 +39,12 @@ export default {
       title: 'Tip',
       content: 'In custom mode, click on empty edges of existing tiles to add new tiles'
     },
-    keyboard: 'Press {key} to open menu'
+    keyboard: 'Press {key} to open menu',
+    playerSetup: 'Player Setup',
+    playerSetupHint: 'Set up players for the game',
+    addPlayer: 'Add Player',
+    startGame: 'Start Game',
+    back: 'Back'
   },
   game: {
     terrain: 'Terrain',
@@ -64,6 +73,10 @@ export default {
     zoomOut: 'Zoom Out',
     drag: 'Drag',
     move: 'Move',
-    turn: 'Turn'
+    turn: 'Turn',
+    hotseat: 'Hotseat',
+    playerSwitch: 'Switch Player',
+    playerSwitchHint: 'Please pass the device to the next player',
+    combatLog: 'Combat Log'
   }
 };
