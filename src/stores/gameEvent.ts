@@ -40,6 +40,7 @@ export const useGameEventStore = defineStore('gameEvent', () => {
   
   const currentPlayerId = ref<string>('')
   const currentTurn = ref(0)
+  const isAITurn = ref(false)
   
   const mapData = ref<any>(null)
 
@@ -74,6 +75,10 @@ export const useGameEventStore = defineStore('gameEvent', () => {
     currentTurn.value = turn
   }
 
+  function setAITurn(value: boolean) {
+    isAITurn.value = value
+  }
+
   function setMapData(data: any) {
     mapData.value = data
   }
@@ -85,6 +90,7 @@ export const useGameEventStore = defineStore('gameEvent', () => {
     combatStart,
     currentPlayerId,
     currentTurn,
+    isAITurn,
     mapData,
     selectUnit,
     clearSelection,
@@ -93,6 +99,7 @@ export const useGameEventStore = defineStore('gameEvent', () => {
     clearCombatResult,
     setCurrentPlayer,
     setTurn,
+    setAITurn,
     setMapData
   }
 })

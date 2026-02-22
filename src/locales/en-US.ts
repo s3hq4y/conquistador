@@ -77,6 +77,8 @@ export default {
     hotseat: 'Hotseat',
     playerSwitch: 'Switch Player',
     playerSwitchHint: 'Please pass the device to the next player',
+    aiTurnTitle: 'AI Turn',
+    aiTurnHint: 'AI is taking actions, please wait…',
     combatLog: 'Combat Log'
   }
 };

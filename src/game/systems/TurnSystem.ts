@@ -9,6 +9,7 @@ export class TurnSystem extends GameSystem {
   private movementSystem: MovementSystem | null = null;
   private unitRenderSystem: UnitRenderSystem | null = null;
   private currentTurn: number = 1;
+  private isAITurn: boolean = false;
   private gameStore = useGameStore();
   private gameEventStore = useGameEventStore();
 
@@ -24,14 +25,14 @@ export class TurnSystem extends GameSystem {
   }
 
   endTurn(): void {
-    const isHotseat = this.gameStore.isHotseat;
+    this.gameStore.nextPlayer();
 
-    if (isHotseat) {
-      this.gameStore.nextPlayer();
-      debug.ui('Hotseat: switched to player:', this.gameStore.getCurrentPlayerId());
-      this.gameEventStore.setCurrentPlayer(this.gameStore.getCurrentPlayerId());
-    } else {
+    const newPlayerIndex = this.gameStore.currentPlayerIndex;
+    const completedRound = newPlayerIndex === 0;
+
+    if (completedRound) {
       this.currentTurn++;
+      debug.ui('Round completed, new turn:', this.currentTurn);
     }
 
     if (this.movementSystem) {
@@ -47,7 +48,33 @@ export class TurnSystem extends GameSystem {
     }
 
     this.gameEventStore.setTurn(this.currentTurn);
-    debug.ui('Turn ended. New turn:', this.currentTurn, 'Current player:', this.getCurrentPlayerId());
+    this.gameEventStore.setCurrentPlayer(currentPlayerId);
+    debug.ui('Turn ended. New turn:', this.currentTurn, 'Current player:', currentPlayerId);
+
+    const currentPlayer = this.gameStore.currentPlayer;
+    if (currentPlayer && this.isAIControlledPlayer(currentPlayer)) {
+      this.triggerAITurn();
+    }
+  }
+
+  private isAIControlledPlayer(player: { isAI: boolean; isLocal: boolean }): boolean {
+    if (player.isAI) return true;
+    return this.gameStore.isSingle && !player.isLocal;
+  }
+
+  private triggerAITurn(): void {
+    if (this.isAITurn) return;
+    this.isAITurn = true;
+    this.gameEventStore.setAITurn(true);
+
+    debug.ui('AI turn started');
+
+    setTimeout(() => {
+      debug.ui('AI turn ended');
+      this.isAITurn = false;
+      this.gameEventStore.setAITurn(false);
+      this.endTurn();
+    }, 1000);
   }
 
   getCurrentTurn(): number {

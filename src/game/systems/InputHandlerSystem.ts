@@ -47,6 +47,7 @@ export class InputHandlerSystem extends GameSystem {
   }
 
   private handleMouseDown(e: MouseEvent): void {
+    if (this.gameEventStore.isAITurn) return;
     if (!this.mapSystem || !this.movementSystem || !this.unitRenderSystem) return;
     if (e.button !== 0) return;
 

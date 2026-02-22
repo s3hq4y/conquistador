@@ -49,6 +49,7 @@ const ducat = computed(() => gameStore.getResource('ducat'));
 
 const currentPlayer = computed(() => gameStore.currentPlayer);
 const isHotseat = computed(() => gameStore.isHotseat);
+const isAITurn = computed(() => gameEventStore.isAITurn);
 
 const ownerName = computed(() => {
   if (!selectedTile.value) return '';
@@ -92,10 +93,17 @@ const handleTurnEnded = () => {
 };
 
 const handlePlayerChanged = () => {
+  if (!shouldShowPlayerSwitch()) return;
   showPlayerSwitch.value = true;
   setTimeout(() => {
     showPlayerSwitch.value = false;
   }, 2000);
+};
+
+const shouldShowPlayerSwitch = (): boolean => {
+  const player = currentPlayer.value;
+  if (!player) return false;
+  return isHotseat.value && player.isLocal && !player.isAI;
 };
 
 const handleCombatExecuted = (event: CustomEvent) => {
@@ -132,6 +140,10 @@ watch(() => gameEventStore.currentTurn, (newTurn) => {
 });
 
 watch(() => gameEventStore.currentPlayerId, () => {
+  if (!shouldShowPlayerSwitch()) {
+    showPlayerSwitch.value = false;
+    return;
+  }
   showPlayerSwitch.value = true;
   setTimeout(() => {
     showPlayerSwitch.value = false;
@@ -365,6 +377,13 @@ onUnmounted(() => {
           <span class="text-xl text-stone-200">{{ currentPlayer.name }}</span>
         </div>
         <div class="text-stone-500 text-xs mt-4">{{ t('game.playerSwitchHint') }}</div>
+      </div>
+    </div>
+
+    <div v-if="isAITurn" class="pointer-events-auto fixed inset-0 bg-stone-950/80 flex items-center justify-center z-[45]">
+      <div class="bg-stone-900 border border-amber-800/50 rounded-lg p-8 text-center min-w-[320px]">
+        <div class="text-amber-400 text-lg mb-3">🤖 {{ t('game.aiTurnTitle') }}</div>
+        <div class="text-stone-400 text-sm">{{ t('game.aiTurnHint') }}</div>
       </div>
     </div>
 

@@ -77,6 +77,8 @@ export default {
     hotseat: '热座',
     playerSwitch: '切换玩家',
     playerSwitchHint: '请将设备交给下一位玩家',
+    aiTurnTitle: 'AI 回合',
+    aiTurnHint: 'AI 正在行动，请稍候…',
     combatLog: '战斗日志'
   }
 };

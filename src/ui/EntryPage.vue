@@ -36,7 +36,7 @@ const selectGameType = (type: GameType) => {
   if (type === 'single') {
     players.value = [
       { id: 'player', name: '玩家', color: '#3b82f6', isLocal: true, isAI: false },
-      { id: 'enemy', name: '敌方', color: '#ef4444', isLocal: false, isAI: false }
+      { id: 'enemy', name: '敌方', color: '#ef4444', isLocal: false, isAI: true }
     ];
     step.value = 'game';
     startGame();
