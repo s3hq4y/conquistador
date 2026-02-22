@@ -106,8 +106,8 @@ export class GameModeSystem extends GameSystem {
         this.unitRenderSystem.selectUnit(clickedUnit.id);
         debug.selection('Selected own unit:', clickedUnit.id, 'at', hexPos.q, hexPos.r, 'owner:', clickedUnit.owner, 'currentPlayerId:', this.getCurrentPlayerId());
         
-        const unitStats = this.traitManager ? this.traitManager.calculateStats(clickedUnit.traits) : null;
-        const maxHp = unitStats?.hp || clickedUnit.hp;
+        const unitStats = this.traitManager ? this.traitManager.calculateStats(clickedUnit.traits, this.calculateUnitStateValues(clickedUnit)) : null;
+        const maxHp = this.getUnitMaxHp(clickedUnit);
         this.gameEventStore.selectUnit({
           id: clickedUnit.id,
           type: clickedUnit.traits?.[0] || 'infantry',
@@ -130,8 +130,8 @@ export class GameModeSystem extends GameSystem {
         this.highlightAttackableTiles(clickedUnit);
         return;
       } else {
-        const unitStats = this.traitManager ? this.traitManager.calculateStats(clickedUnit.traits) : null;
-        const maxHp = unitStats?.hp || clickedUnit.hp;
+        const unitStats = this.traitManager ? this.traitManager.calculateStats(clickedUnit.traits, this.calculateUnitStateValues(clickedUnit)) : null;
+        const maxHp = this.getUnitMaxHp(clickedUnit);
         this.gameEventStore.selectUnit({
           id: clickedUnit.id,
           type: clickedUnit.traits?.[0] || 'infantry',
@@ -231,7 +231,7 @@ export class GameModeSystem extends GameSystem {
 
   private getUnitRange(unit: UnitInstance): number {
     if (this.traitManager) {
-      const stats = this.traitManager.calculateStats(unit.traits);
+      const stats = this.traitManager.calculateStats(unit.traits, this.calculateUnitStateValues(unit));
       return stats.range ?? 1;
     }
     return 1;
@@ -243,8 +243,8 @@ export class GameModeSystem extends GameSystem {
     const attacker = this.movementSystem.getUnit(attackerId);
     if (!attacker) return;
 
-    const attackerStats = this.traitManager.calculateStats(attacker.traits);
-    const defenderStats = this.traitManager.calculateStats(defender.traits);
+    const attackerStats = this.traitManager.calculateStats(attacker.traits, this.calculateUnitStateValues(attacker));
+    const defenderStats = this.traitManager.calculateStats(defender.traits, this.calculateUnitStateValues(defender));
 
     const distance = this.calculateDistance(attacker.q, attacker.r, defender.q, defender.r);
     const defenderRange = defenderStats.range ?? 1;
@@ -344,6 +344,25 @@ export class GameModeSystem extends GameSystem {
       }
     }
     this.selectedTileKey = null;
+  }
+
+  private calculateUnitStateValues(unit: UnitInstance): Map<string, number> {
+    if (!this.traitManager) return new Map();
+    
+    const baseStats = this.traitManager.calculateStats(unit.traits);
+    const maxHp = baseStats.hp ?? unit.hp;
+    const hpPercent = (unit.hp / maxHp) * 100;
+    
+    const stateValues = new Map<string, number>();
+    stateValues.set('hp', hpPercent);
+    
+    return stateValues;
+  }
+  
+  private getUnitMaxHp(unit: UnitInstance): number {
+    if (!this.traitManager) return unit.hp;
+    const baseStats = this.traitManager.calculateStats(unit.traits);
+    return baseStats.hp ?? unit.hp;
   }
 
   endTurn(): void {

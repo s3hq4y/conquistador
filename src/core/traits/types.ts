@@ -24,6 +24,17 @@ export interface CombatBonus {
   description?: string;
 }
 
+export type EffectType = 'linear' | 'threshold' | 'percentage';
+
+export interface StateEffect {
+  state: string;
+  stat: string;
+  type: EffectType;
+  value?: number;
+  minPercent?: number;
+  maxPercent?: number;
+}
+
 export interface Trait {
   id: string;
   name: string;
@@ -34,6 +45,7 @@ export interface Trait {
   stats?: UnitStats;
   tags?: string[];
   combatBonuses?: CombatBonus[];
+  stateEffects?: StateEffect[];
 }
 
 export interface TraitData {

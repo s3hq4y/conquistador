@@ -53,6 +53,11 @@
       },
       "combatBonuses": [
         { "targetTrait": "cavalry", "bonusType": "multiply", "value": 0.9, "description": "步兵对骑兵略处劣势" }
+      ],
+      "stateEffects": [
+        { "state": "hp", "stat": "attack", "type": "linear" },
+        { "state": "hp", "stat": "defense", "type": "linear" },
+        { "state": "hp", "stat": "movement", "type": "threshold", "value": 50, "minPercent": 50 }
       ]
     },
     "archer": {
@@ -69,6 +74,10 @@
       },
       "combatBonuses": [
         { "targetTrait": "cavalry", "bonusType": "multiply", "value": 0.8, "description": "弓箭手对骑兵效果减弱" }
+      ],
+      "stateEffects": [
+        { "state": "hp", "stat": "attack", "type": "linear" },
+        { "state": "hp", "stat": "defense", "type": "linear" }
       ]
     },
     "cavalry": {
@@ -85,6 +94,11 @@
       },
       "combatBonuses": [
         { "targetTrait": "archer", "bonusType": "multiply", "value": 1.4, "description": "骑兵克制弓箭手" }
+      ],
+      "stateEffects": [
+        { "state": "hp", "stat": "attack", "type": "linear" },
+        { "state": "hp", "stat": "defense", "type": "linear" },
+        { "state": "hp", "stat": "movement", "type": "threshold", "value": 50, "minPercent": 50 }
       ]
     },
     "sword": {

@@ -7,12 +7,15 @@ import {
   mergeStats,
   createEmptyStats,
   DEFAULT_TRAIT_TYPES,
+  StateEffect,
 } from './types';
+import { StateCalculator } from './StateCalculator';
 
 export class TraitManager {
   private traits: Map<string, Trait> = new Map();
   private traitTypes: Map<string, TraitTypeDefinition> = new Map();
   private traitChildrenCache: Map<string, Set<string>> = new Map();
+  private stateCalculator: StateCalculator = new StateCalculator();
 
   loadTraitData(data: TraitData): void {
     this.traits.clear();
@@ -164,13 +167,46 @@ export class TraitManager {
     return Array.from(allIds);
   }
 
-  calculateStats(traitIds: string[]): UnitStats {
+  calculateStats(traitIds: string[], stateValues?: Map<string, number>): UnitStats {
     const allTraits = this.getUnitAllTraits(traitIds);
     let stats = createEmptyStats();
 
     for (const trait of allTraits) {
       if (trait.stats) {
         stats = mergeStats(stats, trait.stats);
+      }
+    }
+
+    if (stateValues && stateValues.size > 0) {
+      const stateEffects: StateEffect[] = [];
+      for (const trait of allTraits) {
+        if (trait.stateEffects) {
+          stateEffects.push(...trait.stateEffects);
+        }
+      }
+
+      if (stateEffects.length > 0) {
+        const statsRecord: Record<string, number> = {
+          hp: stats.hp ?? 0,
+          attack: stats.attack ?? 0,
+          defense: stats.defense ?? 0,
+          movement: stats.movement ?? 0,
+          range: stats.range ?? 0,
+        };
+
+        const affectedStats = this.stateCalculator.applyStateEffects(
+          statsRecord,
+          stateEffects,
+          stateValues
+        );
+
+        stats = {
+          hp: affectedStats.hp,
+          attack: affectedStats.attack,
+          defense: affectedStats.defense,
+          movement: affectedStats.movement,
+          range: affectedStats.range,
+        };
       }
     }
 

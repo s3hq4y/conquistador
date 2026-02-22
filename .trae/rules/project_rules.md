@@ -160,6 +160,41 @@
   - 关键日志包括：`Unit range`、`Attackable tiles`、`Canvas clicked` 等
   - 使用 `src/core/engine/EventBus` 进行跨系统通信
 
+- **战斗系统扩展功能**：
+  - 单位一回合只能进攻一次：进攻后设置 `hasAttacked` 状态并清空移动力
+    - 核心实现在 `MovementSystem.ts`：`setAttacked()`、`canAttack()`、`clearMovement()` 方法
+    - `resetAllMoves()` 会同时重置 `hasAttacked` 状态
+  - 战斗后攻击方深色遮罩：
+    - `UnitRenderSystem.ts` 中维护 `unitOriginalColors` Map 存储原始颜色
+    - `playDamageAnimation()` 结束后调用 `applyAttackedTint()` 应用深色（原始颜色 × 0.5）
+    - `endTurn()` 时调用 `restoreUnitColor()` 恢复当前玩家单位颜色
+  - 防守方射程不足无法反击：
+    - `GameModeSystem.ts` 中 `executeAttack()` 计算攻击距离和防守方射程
+    - `CombatSystem.ts` 的 `executeCombat()` 新增 `canDefenderCounterAttack` 参数
+    - 防守方射程 < 距离时，反击伤害为 0
+
+- **属性随HP变化系统**（配置驱动）：
+  - 核心文件：`src/core/traits/StateCalculator.ts` - 算法实现
+  - 类型定义在 `src/core/traits/types.ts`：
+    - `EffectType`: `'linear' | 'threshold' | 'percentage'`
+    - `StateEffect`: 状态效果接口，属性由 JSON 配置决定
+  - 算法说明：
+    - **linear**: `属性 = 基础值 × (当前HP/最大HP)`，结果取整
+    - **threshold**: 当HP低于阈值时按比例衰减，可设置最低百分比
+    - **percentage**: 每损失1%HP，属性减少指定百分比
+  - 使用方式：在 `Trait` 接口中添加 `stateEffects` 数组，配置在 JSON 文件中
+  - 示例配置（traits.json）：
+    ```json
+    "infantry": {
+      "stateEffects": [
+        { "state": "hp", "stat": "attack", "type": "linear" },
+        { "state": "hp", "stat": "defense", "type": "linear" },
+        { "state": "hp", "stat": "movement", "type": "threshold", "value": 50, "minPercent": 50 }
+      ]
+    }
+    ```
+  - 扩展性：新增其他状态（如MP、士气）只需在 JSON 中配置，程序无需修改
+
 - **调试系统规范**（统一调试输出）：
   - 调试配置位于 `src/core/config.ts` 的 `debugConfig`
   - 调试函数位于 `src/core/utils/debug.ts`，使用 `debug.xxx()` 格式调用
