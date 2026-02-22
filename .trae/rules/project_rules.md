@@ -13,7 +13,14 @@
 - **核心模块结构**：
   - `src/core`：核心数据模型与子系统的导出（`src/core/index.ts`），包含 `engine`, `map`, `camera`, `entity`, `systems`, `traits` 等子目录。
   - `src/editor`：场景编辑器模块，包含 `EditorSystem`, `SceneManager`, `EditorTools`, `EdgeEditorSystem` 等系统。
-  - `src/game`：游戏逻辑模块，包含 `GameModeSystem` 处理回合制和战斗逻辑。
+  - **游戏模块** (`src/game`)：游戏逻辑模块
+    - `GameModeSystem`：游戏模式协调者，负责初始化和连接各子系统
+    - `systems/`：游戏子系统目录
+      - `TurnSystem`：回合管理（回合切换、玩家轮换）
+      - `SelectionSystem`：选择与高亮（单位/地块选择、攻击范围高亮）
+      - `InputHandlerSystem`：输入处理（鼠标事件处理、移动/攻击执行）
+      - `SceneLoader`：场景加载（JSON数据加载、特性能数据加载）
+    - `GameUI.vue`：游戏界面组件
   - `src/ui`：Vue 页面层，包含 `EntryPage`, `GamePage` 等入口页面。
   - `src/stores/`
     - `game.ts`：Pinia store，管理游戏模式、玩家信息、回合状态
@@ -126,7 +133,10 @@
     ```
 
 - **战斗系统实现**：
-  - 核心逻辑位于 `src/game/GameModeSystem.ts`，负责回合管理、攻击范围检测和单位控制
+  - `GameModeSystem` 作为协调者，委托给子系统处理具体逻辑
+  - `TurnSystem`：回合管理
+  - `SelectionSystem`：单位/地块选择、攻击范围高亮
+  - `InputHandlerSystem`：攻击范围检测、战斗执行
   - 攻击范围检测使用六边形距离计算（Axial 坐标系）：
     ```typescript
     // 正确的六边形距离计算公式（用于攻击范围检测）
@@ -139,8 +149,7 @@
 
 - **热座（Hotseat）多人模式**：
   - 游戏类型定义在 `src/stores/game.ts` 的 `GameType` 枚举：`single` | `hotseat`
-  - `GameModeSystem.ts` 维护 `currentPlayerIndex` 管理当前玩家
-  - 回合切换：通过 `endTurn()` 方法切换当前玩家，触发 UI 更新
+  - `TurnSystem` 维护 `currentTurn` 管理回合数，通过 `endTurn()` 方法切换当前玩家
   - 单位行动限制：单位只能由其所有者控制，每个单位有 `hasMoved` 和 `hasAttacked` 标记
 
 - **单位数据格式**（`units.json`）：
@@ -167,9 +176,9 @@
   - 战斗后攻击方深色遮罩：
     - `UnitRenderSystem.ts` 中维护 `unitOriginalColors` Map 存储原始颜色
     - `playDamageAnimation()` 结束后调用 `applyAttackedTint()` 应用深色（原始颜色 × 0.5）
-    - `endTurn()` 时调用 `restoreUnitColor()` 恢复当前玩家单位颜色
+    - `TurnSystem.endTurn()` 时调用 `restoreUnitColor()` 恢复当前玩家单位颜色
   - 防守方射程不足无法反击：
-    - `GameModeSystem.ts` 中 `executeAttack()` 计算攻击距离和防守方射程
+    - `InputHandlerSystem.ts` 中 `executeAttack()` 计算攻击距离和防守方射程
     - `CombatSystem.ts` 的 `executeCombat()` 新增 `canDefenderCounterAttack` 参数
     - 防守方射程 < 距离时，反击伤害为 0
 
