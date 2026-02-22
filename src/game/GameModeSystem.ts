@@ -107,19 +107,20 @@ export class GameModeSystem extends GameSystem {
         debug.selection('Selected own unit:', clickedUnit.id, 'at', hexPos.q, hexPos.r, 'owner:', clickedUnit.owner, 'currentPlayerId:', this.getCurrentPlayerId());
         
         const unitStats = this.traitManager ? this.traitManager.calculateStats(clickedUnit.traits) : null;
+        const maxHp = unitStats?.hp || clickedUnit.hp;
         this.gameEventStore.selectUnit({
           id: clickedUnit.id,
           type: clickedUnit.traits?.[0] || 'infantry',
           owner: clickedUnit.owner,
           hp: clickedUnit.hp,
-          maxHp: clickedUnit.hp,
+          maxHp: maxHp,
           attack: unitStats?.attack || 0,
           defense: unitStats?.defense || 0,
           movement: unitStats?.movement || 0,
           range: unitStats?.range || 1,
           traits: clickedUnit.traits || []
         }, {
-          hp: clickedUnit.hp,
+          hp: maxHp,
           attack: unitStats?.attack || 0,
           defense: unitStats?.defense || 0,
           movement: unitStats?.movement || 0,
@@ -130,19 +131,20 @@ export class GameModeSystem extends GameSystem {
         return;
       } else {
         const unitStats = this.traitManager ? this.traitManager.calculateStats(clickedUnit.traits) : null;
+        const maxHp = unitStats?.hp || clickedUnit.hp;
         this.gameEventStore.selectUnit({
           id: clickedUnit.id,
           type: clickedUnit.traits?.[0] || 'infantry',
           owner: clickedUnit.owner,
           hp: clickedUnit.hp,
-          maxHp: clickedUnit.hp,
+          maxHp: maxHp,
           attack: unitStats?.attack || 0,
           defense: unitStats?.defense || 0,
           movement: unitStats?.movement || 0,
           range: unitStats?.range || 1,
           traits: clickedUnit.traits || []
         }, {
-          hp: clickedUnit.hp,
+          hp: maxHp,
           attack: unitStats?.attack || 0,
           defense: unitStats?.defense || 0,
           movement: unitStats?.movement || 0,
@@ -166,7 +168,7 @@ export class GameModeSystem extends GameSystem {
         if (selectedId) {
           this.unitRenderSystem.selectUnit(selectedId);
           const unit = this.movementSystem?.getUnit(selectedId);
-          if (unit) {
+          if (unit && this.movementSystem?.canAttack(unit.id)) {
             this.highlightAttackableTiles(unit);
           }
         }
@@ -181,6 +183,11 @@ export class GameModeSystem extends GameSystem {
 
   private highlightAttackableTiles(unit: UnitInstance): void {
     if (!this.mapSystem || !this.movementSystem) return;
+
+    if (!this.movementSystem.canAttack(unit.id)) {
+      this.attackableTiles.clear();
+      return;
+    }
 
     this.attackableTiles.clear();
     const unitRange = this.getUnitRange(unit);
@@ -239,6 +246,10 @@ export class GameModeSystem extends GameSystem {
     const attackerStats = this.traitManager.calculateStats(attacker.traits);
     const defenderStats = this.traitManager.calculateStats(defender.traits);
 
+    const distance = this.calculateDistance(attacker.q, attacker.r, defender.q, defender.r);
+    const defenderRange = defenderStats.range ?? 1;
+    const canDefenderCounterAttack = distance <= defenderRange;
+
     const attackerCombatUnit = {
       traitIds: attacker.traits,
       stats: attackerStats,
@@ -254,10 +265,11 @@ export class GameModeSystem extends GameSystem {
     this.gameEventStore.startCombat(attackerId, defender.id);
 
     setTimeout(() => {
-      const result = this.combatSystem!.executeCombat(attackerCombatUnit, defenderCombatUnit);
+      const result = this.combatSystem!.executeCombat(attackerCombatUnit, defenderCombatUnit, canDefenderCounterAttack);
 
       debug.combat('Combat result:', result);
       debug.combat(`Attacker dealt ${result.defenderHpLost} damage, Defender dealt ${result.attackerHpLost} damage`);
+      debug.combat(`Distance: ${distance}, Defender range: ${defenderRange}, Can counter: ${canDefenderCounterAttack}`);
 
       attacker.hp -= result.attackerHpLost;
       defender.hp -= result.defenderHpLost;
@@ -269,7 +281,6 @@ export class GameModeSystem extends GameSystem {
         }
         if (defender.hp > 0) {
           this.unitRenderSystem.updateUnitHpBar(defender.id);
-          this.unitRenderSystem.playDamageAnimation(defender.id);
         }
       }
 
@@ -287,6 +298,12 @@ export class GameModeSystem extends GameSystem {
         this.unitRenderSystem.selectUnit(null);
       }
       this.clearAttackHighlights();
+
+      if (attacker.hp > 0) {
+        this.movementSystem!.setAttacked(attackerId);
+        this.movementSystem!.clearMovement(attackerId);
+      }
+
       this.gameEventStore.setCombatResult({
         attackerId,
         defenderId: defender.id,
@@ -296,6 +313,12 @@ export class GameModeSystem extends GameSystem {
         defenderSurvived: defender.hp > 0
       });
     }, 300);
+  }
+
+  private calculateDistance(q1: number, r1: number, q2: number, r2: number): number {
+    const dq = q1 - q2;
+    const dr = r1 - r2;
+    return (Math.abs(dq) + Math.abs(dq + dr) + Math.abs(dr)) / 2;
   }
 
   private selectTile(key: string, q: number, r: number): void {
@@ -340,6 +363,14 @@ export class GameModeSystem extends GameSystem {
 
     if (this.movementSystem) {
       this.movementSystem.resetAllMoves();
+    }
+
+    const currentPlayerId = this.getCurrentPlayerId();
+    if (this.movementSystem && this.unitRenderSystem) {
+      const playerUnits = this.movementSystem.getUnitsByOwner(currentPlayerId);
+      for (const unit of playerUnits) {
+        this.unitRenderSystem.restoreUnitColor(unit.id);
+      }
     }
 
     this.gameEventStore.setTurn(this.currentTurn);

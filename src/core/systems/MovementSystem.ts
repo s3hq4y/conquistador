@@ -16,6 +16,7 @@ export interface MovementNode {
 interface UnitState {
   moves: number;
   maxMoves: number;
+  hasAttacked: boolean;
 }
 
 export class MovementSystem extends GameSystem {
@@ -77,7 +78,7 @@ export class MovementSystem extends GameSystem {
       data.units.forEach(unit => {
         this.units.set(unit.id, { ...unit });
         const maxMoves = this.calculateMovement(unit.traits);
-        this.unitStates.set(unit.id, { moves: maxMoves, maxMoves });
+        this.unitStates.set(unit.id, { moves: maxMoves, maxMoves, hasAttacked: false });
       });
     }
   }
@@ -96,10 +97,10 @@ export class MovementSystem extends GameSystem {
       const unit = this.units.get(id);
       if (unit) {
         const maxMoves = this.calculateMovement(unit.traits);
-        state = { moves: maxMoves, maxMoves };
+        state = { moves: maxMoves, maxMoves, hasAttacked: false };
         this.unitStates.set(id, state);
       } else {
-        state = { moves: 6, maxMoves: 6 };
+        state = { moves: 6, maxMoves: 6, hasAttacked: false };
       }
     }
     return state;
@@ -143,7 +144,7 @@ export class MovementSystem extends GameSystem {
   addUnit(unit: UnitInstance): void {
     this.units.set(unit.id, { ...unit });
     const maxMoves = this.calculateMovement(unit.traits);
-    this.unitStates.set(unit.id, { moves: maxMoves, maxMoves });
+    this.unitStates.set(unit.id, { moves: maxMoves, maxMoves, hasAttacked: false });
     this.invalidateCache();
     this.engine.getEventBus().emit('unit:added', unit);
   }
@@ -181,9 +182,30 @@ export class MovementSystem extends GameSystem {
     for (const [id] of this.units) {
       const state = this.getUnitState(id);
       state.moves = state.maxMoves;
+      state.hasAttacked = false;
     }
     this.invalidateCache();
     this.engine.getEventBus().emit('units:movesReset', null);
+  }
+
+  setAttacked(id: string): void {
+    const state = this.getUnitState(id);
+    if (state) {
+      state.hasAttacked = true;
+    }
+  }
+
+  canAttack(id: string): boolean {
+    const state = this.getUnitState(id);
+    return state ? !state.hasAttacked : false;
+  }
+
+  clearMovement(id: string): void {
+    const state = this.getUnitState(id);
+    if (state) {
+      state.moves = 0;
+      this.invalidateCache();
+    }
   }
 
   private invalidateCache(): void {

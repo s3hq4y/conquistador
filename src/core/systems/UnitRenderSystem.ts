@@ -15,6 +15,7 @@ export class UnitRenderSystem extends GameSystem {
   private unitLayer: pc.Entity | null = null;
   private selectedUnitId: string | null = null;
   private reachableTiles: Set<string> = new Set();
+  private unitOriginalColors: Map<string, { r: number; g: number; b: number }> = new Map();
 
   constructor(engine: GameEngine) {
     super(engine);
@@ -200,6 +201,8 @@ export class UnitRenderSystem extends GameSystem {
 
     this.createHealthBar(entity, unit);
 
+    this.unitOriginalColors.set(unit.id, { r: rgb.r, g: rgb.g, b: rgb.b });
+
     this.unitLayer.addChild(entity);
     this.unitEntities.set(unit.id, entity);
     this.unitMovesText.set(unit.id, movesText);
@@ -295,8 +298,15 @@ export class UnitRenderSystem extends GameSystem {
               material.emissive = new pc.Color(1, 0, 0);
               material.emissiveIntensity = 1;
             } else {
-              material.emissive = new pc.Color(0.5, 0.5, 0.5);
-              material.emissiveIntensity = 0.5;
+              const originalColor = this.unitOriginalColors.get(unitId);
+              if (originalColor) {
+                material.emissive = new pc.Color(
+                  originalColor.r / 255,
+                  originalColor.g / 255,
+                  originalColor.b / 255
+                );
+                material.emissiveIntensity = 0.5;
+              }
             }
             material.update();
           }
@@ -306,19 +316,62 @@ export class UnitRenderSystem extends GameSystem {
       flashCount++;
       if (flashCount >= 4) {
         clearInterval(flashInterval);
-        for (const child of children) {
-          const renderComponent = (child as any).render;
-          if (renderComponent) {
-            const material = renderComponent.material as pc.StandardMaterial;
-            if (material) {
-              material.emissive = new pc.Color(0.5, 0.5, 0.5);
-              material.emissiveIntensity = 0.5;
-              material.update();
-            }
-          }
-        }
+        this.applyAttackedTint(unitId);
       }
     }, 100);
+  }
+
+  private applyAttackedTint(unitId: string): void {
+    const entity = this.unitEntities.get(unitId);
+    const originalColor = this.unitOriginalColors.get(unitId);
+    if (!entity || !originalColor) return;
+
+    const darkFactor = 0.5;
+    const darkR = (originalColor.r / 255) * darkFactor;
+    const darkG = (originalColor.g / 255) * darkFactor;
+    const darkB = (originalColor.b / 255) * darkFactor;
+
+    const children = entity.children;
+    for (const child of children) {
+      const renderComponent = (child as any).render;
+      if (renderComponent) {
+        const material = renderComponent.material as pc.StandardMaterial;
+        if (material) {
+          material.emissive = new pc.Color(darkR, darkG, darkB);
+          material.emissiveIntensity = 0.5;
+          material.update();
+        }
+      }
+    }
+  }
+
+  restoreUnitColor(unitId: string): void {
+    const entity = this.unitEntities.get(unitId);
+    const originalColor = this.unitOriginalColors.get(unitId);
+    if (!entity || !originalColor) return;
+
+    const children = entity.children;
+    for (const child of children) {
+      const renderComponent = (child as any).render;
+      if (renderComponent) {
+        const material = renderComponent.material as pc.StandardMaterial;
+        if (material) {
+          material.emissive = new pc.Color(
+            originalColor.r / 255,
+            originalColor.g / 255,
+            originalColor.b / 255
+          );
+          material.emissiveIntensity = 0.5;
+          material.update();
+        }
+      }
+    }
+  }
+
+  restoreAllUnitColors(): void {
+    for (const [unitId] of this.unitEntities) {
+      this.restoreUnitColor(unitId);
+    }
   }
 
   selectUnit(unitId: string | null): void {

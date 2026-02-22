@@ -86,9 +86,9 @@ export class CombatSystem {
     return Math.max(1, Math.round(effectiveDamage));
   }
 
-  executeCombat(attacker: CombatUnit, defender: CombatUnit): CombatResult {
+  executeCombat(attacker: CombatUnit, defender: CombatUnit, canDefenderCounterAttack: boolean = true): CombatResult {
     const attackerDamage = this.calculateDamage(attacker, defender);
-    const defenderDamage = this.calculateDamage(defender, attacker);
+    const defenderDamage = canDefenderCounterAttack ? this.calculateDamage(defender, attacker) : 0;
 
     const defenderHpLost = Math.min(attackerDamage, defender.currentHp);
     const attackerHpLost = Math.min(defenderDamage, attacker.currentHp);
