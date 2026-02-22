@@ -5,6 +5,13 @@ const router = useRouter();
 
 const betaFeatures = [
   {
+    id: 'terrain-viewer',
+    name: '地形查看器',
+    description: '查看 example_battlefield 地形分布，不显示 owner 和单位',
+    route: '/beta/terrain-viewer',
+    status: 'new'
+  },
+  {
     id: 'pathfinding',
     name: '路径查找测试',
     description: 'A* 算法实现，点击两个地块显示最短路径',

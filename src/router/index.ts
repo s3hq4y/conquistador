@@ -26,6 +26,11 @@ const routes: RouteRecordRaw[] = [
     path: '/beta/movement-range',
     name: 'beta-movement-range',
     component: () => import('../beta/movement-range/BetaPage.vue')
+  },
+  {
+    path: '/beta/terrain-viewer',
+    name: 'beta-terrain-viewer',
+    component: () => import('../beta/terrain-viewer/BetaPage.vue')
   }
 ];
 

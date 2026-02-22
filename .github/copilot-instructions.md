@@ -13,7 +13,14 @@
 - **核心模块结构**：
   - `src/core`：核心数据模型与子系统的导出（`src/core/index.ts`），包含 `engine`, `map`, `camera`, `entity`, `systems`, `traits` 等子目录。
   - `src/editor`：场景编辑器模块，包含 `EditorSystem`, `SceneManager`, `EditorTools`, `EdgeEditorSystem` 等系统。
-  - `src/game`：游戏逻辑模块，包含 `GameModeSystem` 处理回合制和战斗逻辑。
+  - **游戏模块** (`src/game`)：游戏逻辑模块
+    - `GameModeSystem`：游戏模式协调者，负责初始化和连接各子系统
+    - `systems/`：游戏子系统目录
+      - `TurnSystem`：回合管理（回合切换、玩家轮换）
+      - `SelectionSystem`：选择与高亮（单位/地块选择、攻击范围高亮）
+      - `InputHandlerSystem`：输入处理（鼠标事件处理、移动/攻击执行）
+      - `SceneLoader`：场景加载（JSON数据加载、特性能数据加载）
+    - `GameUI.vue`：游戏界面组件
   - `src/ui`：Vue 页面层，包含 `EntryPage`, `GamePage` 等入口页面。
   - `src/stores/`
     - `game.ts`：Pinia store，管理游戏模式、玩家信息、回合状态
@@ -126,7 +133,10 @@
     ```
 
 - **战斗系统实现**：
-  - 核心逻辑位于 `src/game/GameModeSystem.ts`，负责回合管理、攻击范围检测和单位控制
+  - `GameModeSystem` 作为协调者，委托给子系统处理具体逻辑
+  - `TurnSystem`：回合管理
+  - `SelectionSystem`：单位/地块选择、攻击范围高亮
+  - `InputHandlerSystem`：攻击范围检测、战斗执行
   - 攻击范围检测使用六边形距离计算（Axial 坐标系）：
     ```typescript
     // 正确的六边形距离计算公式（用于攻击范围检测）
@@ -139,8 +149,7 @@
 
 - **热座（Hotseat）多人模式**：
   - 游戏类型定义在 `src/stores/game.ts` 的 `GameType` 枚举：`single` | `hotseat`
-  - `GameModeSystem.ts` 维护 `currentPlayerIndex` 管理当前玩家
-  - 回合切换：通过 `endTurn()` 方法切换当前玩家，触发 UI 更新
+  - `TurnSystem` 维护 `currentTurn` 管理回合数，通过 `endTurn()` 方法切换当前玩家
   - 单位行动限制：单位只能由其所有者控制，每个单位有 `hasMoved` 和 `hasAttacked` 标记
 
 - **单位数据格式**（`units.json`）：
@@ -159,6 +168,41 @@
   - 战斗系统调试：使用统一的调试函数 `debug`（见下方调试系统规范）
   - 关键日志包括：`Unit range`、`Attackable tiles`、`Canvas clicked` 等
   - 使用 `src/core/engine/EventBus` 进行跨系统通信
+
+- **战斗系统扩展功能**：
+  - 单位一回合只能进攻一次：进攻后设置 `hasAttacked` 状态并清空移动力
+    - 核心实现在 `MovementSystem.ts`：`setAttacked()`、`canAttack()`、`clearMovement()` 方法
+    - `resetAllMoves()` 会同时重置 `hasAttacked` 状态
+  - 战斗后攻击方深色遮罩：
+    - `UnitRenderSystem.ts` 中维护 `unitOriginalColors` Map 存储原始颜色
+    - `playDamageAnimation()` 结束后调用 `applyAttackedTint()` 应用深色（原始颜色 × 0.5）
+    - `TurnSystem.endTurn()` 时调用 `restoreUnitColor()` 恢复当前玩家单位颜色
+  - 防守方射程不足无法反击：
+    - `InputHandlerSystem.ts` 中 `executeAttack()` 计算攻击距离和防守方射程
+    - `CombatSystem.ts` 的 `executeCombat()` 新增 `canDefenderCounterAttack` 参数
+    - 防守方射程 < 距离时，反击伤害为 0
+
+- **属性随HP变化系统**（配置驱动）：
+  - 核心文件：`src/core/traits/StateCalculator.ts` - 算法实现
+  - 类型定义在 `src/core/traits/types.ts`：
+    - `EffectType`: `'linear' | 'threshold' | 'percentage'`
+    - `StateEffect`: 状态效果接口，属性由 JSON 配置决定
+  - 算法说明：
+    - **linear**: `属性 = 基础值 × (当前HP/最大HP)`，结果取整
+    - **threshold**: 当HP低于阈值时按比例衰减，可设置最低百分比
+    - **percentage**: 每损失1%HP，属性减少指定百分比
+  - 使用方式：在 `Trait` 接口中添加 `stateEffects` 数组，配置在 JSON 文件中
+  - 示例配置（traits.json）：
+    ```json
+    "infantry": {
+      "stateEffects": [
+        { "state": "hp", "stat": "attack", "type": "linear" },
+        { "state": "hp", "stat": "defense", "type": "linear" },
+        { "state": "hp", "stat": "movement", "type": "threshold", "value": 50, "minPercent": 50 }
+      ]
+    }
+    ```
+  - 扩展性：新增其他状态（如MP、士气）只需在 JSON 中配置，程序无需修改
 
 - **调试系统规范**（统一调试输出）：
   - 调试配置位于 `src/core/config.ts` 的 `debugConfig`
