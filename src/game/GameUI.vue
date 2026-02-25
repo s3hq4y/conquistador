@@ -278,6 +278,29 @@ onUnmounted(() => {
 <template>
   <div class="fixed inset-0 pointer-events-none">
     <div class="pointer-events-auto">
+      <!-- 方向指示器 -->
+      <div class="absolute top-14 left-4 z-30">
+        <div class="w-16 h-16 rounded-full bg-stone-900/80 border border-stone-700/50 flex items-center justify-center">
+          <div class="relative w-12 h-12">
+            <!-- 罗盘背景 -->
+            <svg viewBox="0 0 100 100" class="w-full h-full">
+              <!-- 北 -->
+              <text x="50" y="18" text-anchor="middle" class="fill-amber-400 text-xs font-bold">N</text>
+              <!-- 南 -->
+              <text x="50" y="88" text-anchor="middle" class="fill-stone-500 text-xs">S</text>
+              <!-- 东 -->
+              <text x="88" y="56" text-anchor="middle" class="fill-stone-500 text-xs">E</text>
+              <!-- 西 -->
+              <text x="12" y="56" text-anchor="middle" class="fill-stone-500 text-xs">W</text>
+              <!-- 中心点 -->
+              <circle cx="50" cy="50" r="3" class="fill-stone-600"/>
+              <!-- 指针 - 北 -->
+              <polygon points="50,25 45,50 55,50" class="fill-amber-500"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
       <div class="absolute top-0 left-0 right-0 h-12 bg-stone-950/80 border-b border-stone-800/50 flex items-center justify-between px-4">
 
         <div class="flex items-center gap-4">
