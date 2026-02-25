@@ -60,6 +60,12 @@
 
 - **地图坐标**：六边形坐标转换与邻居计算位于 `src/core/map/HexGrid.ts`，使用 `hexToPixel` / `pixelToHex` / `getNeighbors()` 等方法。
 
+- **六边形类型**：本项目使用 **平顶六边形（Flat-top Hexagon）**
+  - 顶点方向：水平顶（边和底边是水平的）
+  - 顶边角度：0°（右）、60°、120°、180°（左）、240°、300°
+  - 代码中对应：`angleDeg = 60 * index`（index = 0-5）
+  - 贴图和资源制作时需使用平顶六边形
+
 - **数据文件格式**：场景与存档以 JSON 保存，`manifest.json` 包含 `settings`（例如 `hexSize`），示例位于 `public/scenarios/example_battlefield`。
 
 - **编辑器模块** (`src/editor`)：场景编辑器核心系统

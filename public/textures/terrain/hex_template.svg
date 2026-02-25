@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 平顶六边形 (Flat-top Hexagon) 模板 -->
+<!-- 顶点顺序：右 → 右下 → 左下 → 左 → 左上 → 右上 -->
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <polygon points="238,128 183,223 73,223 18,128 73,33 183,33"
+           fill="white"
+           stroke="white"
+           stroke-width="4"/>
+</svg>
