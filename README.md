@@ -1,6 +1,12 @@
 # Conquistador
 
-一个基于 PlayCanvas 2D 的六边形策略游戏引擎。
+![Static Badge](https://img.shields.io/badge/PlayCanvas-red?style=flat&logo=playcanvas&logoColor=white)
+![Static Badge](https://img.shields.io/badge/vue-brightgreen?style=flat&logo=vue.js&logoColor=white)
+![Static Badge](https://img.shields.io/badge/nuxt-brightgreen?style=flat&logo=nuxt&logoColor=white)
+![Static Badge](https://img.shields.io/badge/pinia-yellow?style=flat&logo=pinia&logoColor=white)
+![Static Badge](https://img.shields.io/badge/typescript-blue?style=flat&logo=typescript&logoColor=white)
+![Static Badge](https://img.shields.io/badge/EventEmitter3-blue?style=flat&logo=typescript&logoColor=white)
+
 
 [English](#english) | [中文](#中文)
 

@@ -8,6 +8,7 @@ export class InputManager {
   private mouseDown: boolean = false;
   private mouseButton: number = 0;
   private keys: Set<string> = new Set();
+  private initialized: boolean = false;
 
   constructor(app: pc.Application, eventBus: EventBus) {
     this.app = app;
@@ -16,6 +17,9 @@ export class InputManager {
   }
 
   private init(): void {
+    if (this.initialized) return;
+    this.initialized = true;
+
     const canvas = this.app.graphicsDevice.canvas;
 
     canvas.addEventListener('mousedown', (e) => this.onMouseDown(e));

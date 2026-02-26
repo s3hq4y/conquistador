@@ -1,37 +1,30 @@
+import EventEmitter from 'eventemitter3';
+
 type EventHandler = (...args: unknown[]) => void;
 
 export class EventBus {
-  private listeners: Map<string, EventHandler[]> = new Map();
+  private emitter: EventEmitter;
   private eventQueue: Array<{ event: string; args: unknown[] }> = [];
 
+  constructor() {
+    this.emitter = new EventEmitter();
+  }
+
   on(event: string, handler: EventHandler): void {
-    if (!this.listeners.has(event)) {
-      this.listeners.set(event, []);
-    }
-    this.listeners.get(event)!.push(handler);
+    this.emitter.on(event, handler as any);
   }
 
   off(event: string, handler: EventHandler): void {
-    const handlers = this.listeners.get(event);
-    if (handlers) {
-      const index = handlers.indexOf(handler);
-      if (index > -1) {
-        handlers.splice(index, 1);
-      }
-    }
+    this.emitter.off(event, handler as any);
   }
 
   emit(event: string, ...args: unknown[]): void {
     this.eventQueue.push({ event, args });
-    window.dispatchEvent(new CustomEvent(event, { detail: args }));
   }
 
   flush(): void {
     for (const { event, args } of this.eventQueue) {
-      const handlers = this.listeners.get(event);
-      if (handlers) {
-        handlers.forEach(handler => handler(...args));
-      }
+      this.emitter.emit(event, ...args);
     }
     this.eventQueue.length = 0;
   }
