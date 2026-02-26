@@ -17,6 +17,7 @@ import * as pc from 'playcanvas';
 import { Tile, TerrainTypeDefinition, OwnerTagDefinition, hexToRgb } from '../core/map';
 import { getHexCorner } from '../core/utils/HexUtils';
 import { debugConfig } from '../core/config';
+import type { TextureManager } from '../core/utils/TextureManager';
 
 /**
  * 将十六进制颜色转换为 PlayCanvas Color 对象
@@ -76,13 +77,15 @@ export class HexTile {
    * @param hexSize - 六边形大小（半径）
    * @param terrainDef - 地形类型定义（颜色、贴图等）
    * @param ownerDef - 归属标签定义（颜色、ID等）
+   * @param textureManager - 纹理管理器，用于加载地块材质
    */
   constructor(
     app: pc.Application, 
     tile: Tile, 
     hexSize: number,
     terrainDef: TerrainTypeDefinition,
-    ownerDef: OwnerTagDefinition
+    ownerDef: OwnerTagDefinition,
+    textureManager: TextureManager
   ) {
     // 1. 初始化基本属性
     this.entity = new pc.Entity(`Tile_${tile.q}_${tile.r}`);
@@ -91,16 +94,8 @@ export class HexTile {
     this.hexSize = hexSize;
     this.graphicsDevice = app.graphicsDevice;
     
-    // 2. 创建材质 - 使用自发光颜色实现纯色效果
-    const terrainColor = hexToPlayCanvas(terrainDef.color);
-    
-    this.material = new pc.StandardMaterial();
-    this.material.diffuse = terrainColor.clone();    // 漫反射颜色
-    this.material.useLighting = false;               // 不使用光照（纯色）
-    this.material.emissive = terrainColor.clone();   // 自发光颜色
-    this.material.emissiveIntensity = 1;            // 自发光强度
-    this.material.opacity = 1.0;                    // 不透明
-    this.material.update();
+    // 2. 创建材质 - 支持纹理或纯色
+    this.material = this.createTerrainMaterial(app, terrainDef, textureManager);
 
     // 3. 创建平顶六边形几何体（包含旋转）
     this.createHexGeometry(app.graphicsDevice, hexSize);
@@ -116,6 +111,49 @@ export class HexTile {
     const label = new pc.Entity();
     label.name = `label_${tile.q}_${tile.r}`;
     this.entity.addChild(label);
+  }
+
+  /**
+   * 创建地块材质
+   * 支持纹理材质和纯色材质
+   * 注意：材质图片是平顶六边形，但几何体是尖顶旋转30°后视觉为平顶
+   */
+  private createTerrainMaterial(
+    _app: pc.Application, 
+    terrainDef: TerrainTypeDefinition,
+    textureManager: TextureManager
+  ): pc.StandardMaterial {
+    const material = new pc.StandardMaterial();
+    const terrainColor = hexToPlayCanvas(terrainDef.color);
+
+    // 如果有纹理，加载纹理材质
+    // 注意：纹理已在 TextureManager 中预旋转210°以匹配平顶六边形（30° + 180°）
+    if (terrainDef.texture) {
+      const texture = textureManager.getTexture(terrainDef.texture, 210);
+      if (texture) {
+        material.diffuseMap = texture;
+        material.diffuse = new pc.Color(1, 1, 1);
+        material.useLighting = false;
+        material.emissiveMap = texture;
+        material.emissive = new pc.Color(1, 1, 1);
+        material.emissiveIntensity = 1;
+        material.update();
+      } else {
+        material.diffuse = terrainColor.clone();
+        material.useLighting = false;
+        material.emissive = terrainColor.clone();
+        material.emissiveIntensity = 1;
+        material.update();
+      }
+    } else {
+      material.diffuse = terrainColor.clone();
+      material.useLighting = false;
+      material.emissive = terrainColor.clone();
+      material.emissiveIntensity = 1;
+      material.update();
+    }
+
+    return material;
   }
 
   // ==================== 几何体创建 ====================

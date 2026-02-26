@@ -11,6 +11,7 @@
       },
       "color": "#59a640",
       "icon": "🌾",
+      "texture": "game_saves/example_battlefield/textures/terrain/plains.png",
       "isPassable": true,
       "movementCost": 2
     }

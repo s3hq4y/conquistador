@@ -2,6 +2,7 @@ import { GameSystem } from './GameSystem';
 import { HexGrid, Tile, SceneData, TerrainTypeDefinition, OwnerTagDefinition, createEmptyScene, DEFAULT_TERRAIN_TYPES, DEFAULT_OWNER_TAGS, terrainInstanceToDefinition, ownerInstanceToDefinition, setEdgeConfigs } from '../map';
 import type { GameEngine } from '../engine';
 import { HexTile } from '../../components/HexTile';
+import { TextureManager } from '../utils/TextureManager';
 
 type MapMode = 'NONE' | 'RANDOM' | 'CUSTOM';
 
@@ -13,13 +14,19 @@ export class MapSystem extends GameSystem {
   private sceneData: SceneData;
   private terrainTypes: Map<string, TerrainTypeDefinition> = new Map();
   private ownerTags: Map<string, OwnerTagDefinition> = new Map();
+  private textureManager: TextureManager;
 
   constructor(engine: GameEngine, hexSize: number = 50) {
     super(engine);
     this.hexSize = hexSize;
     this.grid = new HexGrid(10, hexSize);
     this.sceneData = createEmptyScene();
+    this.textureManager = new TextureManager(engine.getApplication());
     this.initDefaultDefinitions();
+  }
+
+  getTextureManager(): TextureManager {
+    return this.textureManager;
   }
 
   private initDefaultDefinitions(): void {
@@ -32,6 +39,27 @@ export class MapSystem extends GameSystem {
   }
 
   initialize(): void {
+    this.preloadTerrainTextures();
+  }
+
+  private async preloadTerrainTextures(): Promise<void> {
+    const textureConfigs = new Map<string, number>(); // path -> rotateDegrees
+    
+    // 收集所有地形定义的纹理路径和旋转角度
+    for (const terrainDef of this.terrainTypes.values()) {
+      if (terrainDef.texture) {
+        // 尖顶几何体旋转30°后视觉为平顶，所以纹理需要反向旋转210°（30° + 180°）
+        textureConfigs.set(terrainDef.texture, 210);
+      }
+    }
+    
+    // 预加载所有纹理
+    const loadPromises = Array.from(textureConfigs.entries()).map(([path, rotateDegrees]) => 
+      this.textureManager.loadTexture(path, rotateDegrees)
+    );
+    
+    await Promise.all(loadPromises);
+    console.log(`TextureManager: Preloaded ${textureConfigs.size} terrain textures`);
   }
 
   update(_dt: number): void {
@@ -66,6 +94,7 @@ export class MapSystem extends GameSystem {
         description: def.description,
         color: def.color,
         icon: def.icon,
+        texture: def.texture,
         isWater: def.isWater,
         isPassable: def.isPassable,
         movementCost: def.movementCost
@@ -124,7 +153,7 @@ export class MapSystem extends GameSystem {
     const terrainDef = this.getTerrainDef(tile.terrain);
     const ownerDef = this.getOwnerDef(tile.owner);
 
-    const hexTile = new HexTile(app, tile, this.hexSize, terrainDef, ownerDef);
+    const hexTile = new HexTile(app, tile, this.hexSize, terrainDef, ownerDef, this.textureManager);
     const pos = this.grid.hexToPixel(tile.q, tile.r);
     hexTile.setPosition(pos.x, pos.y);
     tileLayer.addChild(hexTile.getEntity());
@@ -244,15 +273,17 @@ export class MapSystem extends GameSystem {
       
       this.clearMap();
       
-      for (const tileData of data.tiles) {
-        const tile = Tile.fromJSON(tileData);
-        this.grid.addTile(tile);
-        this.createTileEntity(tile);
-      }
-
-      this.updateAllBorderStates();
-      
-      this.engine.getEventBus().emit('map:loaded', data);
+      // 预加载场景的纹理
+      this.preloadTerrainTextures().then(() => {
+        // 纹理预加载完成后创建地块
+        for (const tileData of data.tiles) {
+          const tile = Tile.fromJSON(tileData);
+          this.grid.addTile(tile);
+          this.createTileEntity(tile);
+        }
+        this.updateAllBorderStates();
+        this.engine.getEventBus().emit('map:loaded', data);
+      });
       
       return true;
     } catch (error) {

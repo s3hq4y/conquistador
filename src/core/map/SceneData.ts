@@ -45,6 +45,7 @@ export interface TerrainComponents {
   description: LocalizedString;
   color: HexColor;
   icon: Icon;
+  texture?: string;
   isWater?: boolean;
   isPassable?: boolean;
   movementCost?: number;
@@ -60,6 +61,7 @@ export interface TerrainTypeDefinition {
   description: LocalizedString;
   color: HexColor;
   icon: Icon;
+  texture?: string;
   isWater?: boolean;
   isPassable?: boolean;
   movementCost?: number;
@@ -179,6 +181,7 @@ export function terrainInstanceToDefinition(id: string, instance: TerrainTypeIns
     description: instance.components.description,
     color: instance.components.color,
     icon: instance.components.icon,
+    texture: instance.components.texture,
     isWater: instance.components.isWater,
     isPassable: instance.components.isPassable,
     movementCost: instance.components.movementCost
