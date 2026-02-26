@@ -13,6 +13,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../ui/GamePage.vue')
   },
   {
+    path: '/editor',
+    name: 'editor',
+    component: () => import('../ui/GamePage.vue')
+  },
+  {
     path: '/beta',
     name: 'beta',
     component: () => import('../beta/BetaEntryPage.vue')

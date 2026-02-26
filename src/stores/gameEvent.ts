@@ -31,9 +31,17 @@ export interface UnitStats {
   range: number
 }
 
+export interface TileInfo {
+  q: number
+  r: number
+  terrain: string
+  owner: string
+}
+
 export const useGameEventStore = defineStore('gameEvent', () => {
   const selectedUnit = ref<UnitInfo | null>(null)
   const unitStats = ref<UnitStats | null>(null)
+  const selectedTile = ref<TileInfo | null>(null)
   
   const combatResult = ref<CombatResult | null>(null)
   const combatStart = ref<{ attackerId: string; defenderId: string } | null>(null)
@@ -47,6 +55,14 @@ export const useGameEventStore = defineStore('gameEvent', () => {
   function selectUnit(unit: UnitInfo, stats: UnitStats) {
     selectedUnit.value = unit
     unitStats.value = stats
+  }
+
+  function selectTile(tile: TileInfo) {
+    selectedTile.value = tile
+  }
+
+  function clearTileSelection() {
+    selectedTile.value = null
   }
 
   function clearSelection() {
@@ -86,6 +102,7 @@ export const useGameEventStore = defineStore('gameEvent', () => {
   return {
     selectedUnit,
     unitStats,
+    selectedTile,
     combatResult,
     combatStart,
     currentPlayerId,
@@ -93,6 +110,8 @@ export const useGameEventStore = defineStore('gameEvent', () => {
     isAITurn,
     mapData,
     selectUnit,
+    selectTile,
+    clearTileSelection,
     clearSelection,
     startCombat,
     setCombatResult,

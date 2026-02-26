@@ -79,6 +79,13 @@ export default {
     playerSwitchHint: '请将设备交给下一位玩家',
     aiTurnTitle: 'AI 回合',
     aiTurnHint: 'AI 正在行动，请稍候…',
-    combatLog: '战斗日志'
+    combatLog: '战斗日志',
+    unitInfo: '单位信息',
+    hp: '生命值',
+    attack: '攻击',
+    defense: '防御',
+    range: '射程',
+    traits: '特性',
+    position: '位置'
   }
 };

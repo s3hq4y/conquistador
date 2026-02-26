@@ -92,6 +92,12 @@ const goToBeta = () => {
   router.push('/beta');
 };
 
+const goToEditor = () => {
+  gameStore.setGameMode('CUSTOM');
+  gameStore.setGameType('single');
+  router.push('/editor');
+};
+
 const backToMode = () => {
   step.value = 'mode';
   selectedGameType.value = null;
@@ -219,7 +225,7 @@ const backToMode = () => {
             </button>
 
             <button 
-              @click="selectGameType('single')"
+              @click="goToEditor"
               class="group relative p-6 bg-stone-900/50 border border-stone-800/50 hover:border-amber-800/50 transition-all duration-300"
             >
               <div class="absolute inset-0 bg-gradient-to-br from-amber-900/0 to-amber-900/0 group-hover:from-amber-900/5 group-hover:to-amber-900/10 transition-all duration-300"></div>

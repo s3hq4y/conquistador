@@ -122,7 +122,16 @@ export class SelectionSystem extends GameSystem {
       const hexTile = tileEntities.get(key);
       if (hexTile) {
         hexTile.setSelected(true);
-        debug.selection('Selected tile:', q, r);
+        
+        const tile = hexTile.getTile();
+        this.gameEventStore.selectTile({
+          q: tile.q,
+          r: tile.r,
+          terrain: tile.terrain || 'plains',
+          owner: tile.owner || 'neutral'
+        });
+        
+        debug.selection('Selected tile:', q, r, 'terrain:', tile.terrain, 'owner:', tile.owner);
       }
     }
   }
@@ -136,6 +145,7 @@ export class SelectionSystem extends GameSystem {
       }
     }
     this.selectedTileKey = null;
+    this.gameEventStore.clearTileSelection();
   }
 
   clearSelection(): void {

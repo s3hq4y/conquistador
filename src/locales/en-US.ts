@@ -79,6 +79,13 @@ export default {
     playerSwitchHint: 'Please pass the device to the next player',
     aiTurnTitle: 'AI Turn',
     aiTurnHint: 'AI is taking actions, please wait…',
-    combatLog: 'Combat Log'
+    combatLog: 'Combat Log',
+    unitInfo: 'Unit Info',
+    hp: 'HP',
+    attack: 'Attack',
+    defense: 'Defense',
+    range: 'Range',
+    traits: 'Traits',
+    position: 'Position'
   }
 };

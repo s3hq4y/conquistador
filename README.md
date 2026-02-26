@@ -1,12 +1,12 @@
 # Conquistador
 
 ![Static Badge](https://img.shields.io/badge/PlayCanvas-red?style=flat&logo=playcanvas&logoColor=white)
-![Static Badge](https://img.shields.io/badge/vue-brightgreen?style=flat&logo=vue.js&logoColor=white)
-![Static Badge](https://img.shields.io/badge/nuxt-brightgreen?style=flat&logo=nuxt&logoColor=white)
-![Static Badge](https://img.shields.io/badge/pinia-yellow?style=flat&logo=pinia&logoColor=white)
-![Static Badge](https://img.shields.io/badge/typescript-blue?style=flat&logo=typescript&logoColor=white)
+![Static Badge](https://img.shields.io/badge/Vue-brightgreen?style=flat&logo=vue.js&logoColor=white)
+![Static Badge](https://img.shields.io/badge/Nuxt-brightgreen?style=flat&logo=nuxt&logoColor=white)
+![Static Badge](https://img.shields.io/badge/Pinia-yellow?style=flat&logo=pinia&logoColor=white)
+![Static Badge](https://img.shields.io/badge/TypeScript-blue?style=flat&logo=typescript&logoColor=white)
 ![Static Badge](https://img.shields.io/badge/EventEmitter3-blue?style=flat&logo=typescript&logoColor=white)
-
+![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-06B6D4?style=flat&logo=tailwindcss&logoColor=white)
 This project is currently a work in progress!
 
 [English](#english) | [中文](#中文)
@@ -24,7 +24,7 @@ Conquistador is a hexagonal strategy game engine built with PlayCanvas 2D, TypeS
 ### Tech Stack
 
 - **Frontend**: TypeScript + Vue 3 + Vite
-- **Game Engine**: PlayCanvas 2D
+- **Renderer**: PlayCanvas 2D
 - **State Management**: Pinia
 - **Routing**: Vue Router
 - **Backend**: Express (for scene/game save API)
@@ -60,28 +60,6 @@ Visit `http://localhost:5173` after starting the dev server.
 | `npm run lint` | Run ESLint |
 | `npm run typecheck` | Run TypeScript type check |
 
-### Project Structure
-
-```
-src/
-├── core/               # Core game engine
-│   ├── camera/         # Camera control
-│   ├── engine/         # Game engine & renderer
-│   ├── entity/         # Unit & Player entities
-│   ├── map/            # Hex grid & tiles
-│   ├── systems/        # Game systems (movement, combat, etc.)
-│   ├── traits/         # Unit traits & combat system
-│   └── utils/          # Utilities & debug tools
-├── editor/             # Scene editor module
-│   ├── components/     # Editor UI components
-│   └── systems/        # Editor systems
-├── game/               # Game logic module
-│   └── systems/        # Game subsystems (turn, selection, input)
-├── locales/            # i18n files (en-US, zh-CN)
-├── stores/             # Pinia stores
-└── ui/                 # Vue pages
-```
-
 ### Key Features
 
 - **Hexagonal Grid**: Axial coordinate system with neighbor/triangle calculations
@@ -99,6 +77,17 @@ Add `?debug=module` to URL to enable debug logs:
 - `?debug=edge` - Edge system logs (editor)
 - `?debug=all` - All debug logs
 
+### Routes
+
+| Path | Description |
+|------|-------------|
+| `/` | Home page - Game mode selection |
+| `/game` | Game page - Play mode |
+| `/editor` | Editor page - Custom map editor |
+| `/beta` | Beta features entry |
+| `/beta/pathfinding` | Pathfinding test |
+| `/beta/movement-range` | Movement range test |
+
 ---
 
 ## 中文
@@ -110,7 +99,7 @@ Conquistador 是一个基于 PlayCanvas 2D 的六边形策略游戏引擎，使�
 ### 技术栈
 
 - **前端**: TypeScript + Vue 3 + Vite
-- **游戏引擎**: PlayCanvas 2D
+- **渲染器**: PlayCanvas 2D
 - **状态管理**: Pinia
 - **路由**: Vue Router
 - **后端**: Express（提供场景/存档 API）
@@ -146,28 +135,6 @@ npm run dev:all
 | `npm run lint` | 运行 ESLint 检查 |
 | `npm run typecheck` | 运行 TypeScript 类型检查 |
 
-### 项目结构
-
-```
-src/
-├── core/               # 核心游戏引擎
-│   ├── camera/         # 相机控制
-│   ├── engine/         # 游戏引擎与渲染器
-│   ├── entity/         # 单位与玩家实体
-│   ├── map/            # 六边形网格与地块
-│   ├── systems/        # 游戏系统（移动、战斗等）
-│   ├── traits/         # 单位特性与战斗系统
-│   └── utils/          # 工具函数与调试
-├── editor/            # 场景编辑器模块
-│   ├── components/     # 编辑器 UI 组件
-│   └── systems/       # 编辑器系统
-├── game/              # 游戏逻辑模块
-│   └── systems/       # 游戏子系统（回合、选择、输入）
-├── locales/           # 国际化文件（英文、中文）
-├── stores/            # Pinia 状态管理
-└── ui/                # Vue 页面组件
-```
-
 ### 核心功能
 
 - **六边形网格**: 使用轴坐标系统，支持邻居/三角形计算
@@ -184,3 +151,14 @@ src/
 - `?debug=selection` - 选择系统日志
 - `?debug=edge` - 边系统日志（编辑器）
 - `?debug=all` - 所有调试日志
+
+### 路由
+
+| 路径 | 说明 |
+|------|------|
+| `/` | 主页 - 游戏模式选择 |
+| `/game` | 游戏页面 - 游戏模式 |
+| `/editor` | 编辑器页面 - 自定义地图编辑器 |
+| `/beta` | Beta 功能入口 |
+| `/beta/pathfinding` | 路径查找测试 |
+| `/beta/movement-range` | 移动力范围测试 |

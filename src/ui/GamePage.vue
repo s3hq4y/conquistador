@@ -32,5 +32,8 @@ onUnmounted(() => {
     <canvas id="gameCanvas"></canvas>
     <div id="ui"></div>
     <GameUI v-if="gameStore.gameMode === 'GAME'" />
+    <div v-else-if="gameStore.gameMode === 'CUSTOM'" class="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div class="text-stone-500 text-sm">编辑器加载中...</div>
+    </div>
   </div>
 </template>

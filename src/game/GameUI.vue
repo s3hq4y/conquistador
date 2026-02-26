@@ -49,7 +49,6 @@ const switchLocale = (newLocale: string) => {
 
 const showMenu = ref(false);
 const turn = ref(1);
-const selectedTile = ref<{ q: number; r: number; terrain: string; owner: string } | null>(null);
 const combatLog = ref<{ message: string; type: string }[]>([]);
 const showPlayerSwitch = ref(false);
 const selectedUnit = ref<{ unit: UnitInfo; stats: UnitStats } | null>(null);
@@ -61,6 +60,8 @@ const ducat = computed(() => gameStore.getResource('ducat'));
 const currentPlayer = computed(() => gameStore.currentPlayer);
 const isHotseat = computed(() => gameStore.isHotseat);
 const isAITurn = computed(() => gameEventStore.isAITurn);
+
+const selectedTile = computed(() => gameEventStore.selectedTile);
 
 const ownerName = computed(() => {
   if (!selectedTile.value) return '';
@@ -259,7 +260,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="fixed inset-0 pointer-events-none">
+  <div class="fixed inset-0">
     <Compass :show="debugConfig.game.compass" />
 
     <GameTopBar 
