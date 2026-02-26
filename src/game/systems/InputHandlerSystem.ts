@@ -38,8 +38,6 @@ export class InputHandlerSystem extends GameSystem {
   private setupInputHandlers(): void {
     const eventBus = this.engine.getEventBus();
 
-    console.log('InputHandlerSystem: Setting up input handlers');
-
     eventBus.on('mousedown', (...args: unknown[]) => {
       const e = args[0] as MouseEvent;
       this.handleMouseDown(e);

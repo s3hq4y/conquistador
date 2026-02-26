@@ -260,7 +260,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="fixed inset-0">
+  <div class="fixed inset-0 pointer-events-none">
     <Compass :show="debugConfig.game.compass" />
 
     <GameTopBar 

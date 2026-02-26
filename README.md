@@ -7,6 +7,7 @@
 ![Static Badge](https://img.shields.io/badge/TypeScript-blue?style=flat&logo=typescript&logoColor=white)
 ![Static Badge](https://img.shields.io/badge/EventEmitter3-blue?style=flat&logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-06B6D4?style=flat&logo=tailwindcss&logoColor=white)
+
 This project is currently a work in progress!
 
 [English](#english) | [中文](#中文)
