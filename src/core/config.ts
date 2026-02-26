@@ -11,6 +11,9 @@ export interface DebugConfig {
     movement: boolean;
     selection: boolean;
     ui: boolean;
+    compass: boolean;
+    directionArrows: boolean;
+    coloredBorder: boolean;
   };
 }
 
@@ -31,7 +34,10 @@ function getDebugFromUrl(): Partial<DebugConfig['editor'] & DebugConfig['game']>
       combat: modules.includes('combat') || modules.includes('all'),
       movement: modules.includes('movement') || modules.includes('all'),
       selection: modules.includes('selection') || modules.includes('all'),
-      ui: modules.includes('ui') || modules.includes('all')
+      ui: modules.includes('ui') || modules.includes('all'),
+      compass: modules.includes('compass') || modules.includes('all'),
+      directionArrows: modules.includes('directionArrows') || modules.includes('all'),
+      coloredBorder: modules.includes('coloredBorder') || modules.includes('all')
     };
   }
   
@@ -52,7 +58,10 @@ export const debugConfig: DebugConfig = {
     combat: urlDebug.combat ?? false,
     movement: urlDebug.movement ?? false,
     selection: urlDebug.selection ?? false,
-    ui: urlDebug.ui ?? false
+    ui: urlDebug.ui ?? false,
+    compass: urlDebug.compass ?? false,
+    directionArrows: urlDebug.directionArrows ?? false,
+    coloredBorder: urlDebug.coloredBorder ?? false
   }
 };
 
@@ -69,4 +78,7 @@ export function setGameDebug(enabled: boolean): void {
   debugConfig.game.movement = enabled;
   debugConfig.game.selection = enabled;
   debugConfig.game.ui = enabled;
+  debugConfig.game.compass = enabled;
+  debugConfig.game.directionArrows = enabled;
+  debugConfig.game.coloredBorder = enabled;
 }

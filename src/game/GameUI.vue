@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useGameStore, type OwnerStates, type PlayerInfo } from '../stores/game';
 import { useGameEventStore } from '../stores/gameEvent';
+import { debugConfig } from '../core/config';
 
 interface UnitStats {
   hp?: number;
@@ -278,8 +279,8 @@ onUnmounted(() => {
 <template>
   <div class="fixed inset-0 pointer-events-none">
     <div class="pointer-events-auto">
-      <!-- 方向指示器 -->
-      <div class="absolute top-14 left-4 z-30">
+      <!-- 指南针 -->
+      <div v-if="debugConfig.game.compass" class="absolute top-14 left-4 z-30">
         <div class="w-16 h-16 rounded-full bg-stone-900/80 border border-stone-700/50 flex items-center justify-center">
           <div class="relative w-12 h-12">
             <!-- 罗盘背景 -->
@@ -386,6 +387,40 @@ onUnmounted(() => {
             {{ t('game.backToMenu') }}
           </button>
         </div>
+        
+        <!-- 调试设置 -->
+        <div class="mt-6 pt-4 border-t border-stone-700/50">
+          <h3 class="text-stone-400 text-xs font-medium mb-3">调试功能</h3>
+          <div class="flex flex-col gap-2">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input 
+                type="checkbox" 
+                :checked="debugConfig.game.compass" 
+                @change="debugConfig.game.compass = !debugConfig.game.compass"
+                class="w-4 h-4 rounded bg-stone-800 border-stone-600 text-amber-500 focus:ring-amber-500"
+              />
+              <span class="text-stone-400 text-sm">指南针</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input 
+                type="checkbox" 
+                :checked="debugConfig.game.directionArrows" 
+                @change="debugConfig.game.directionArrows = !debugConfig.game.directionArrows"
+                class="w-4 h-4 rounded bg-stone-800 border-stone-600 text-amber-500 focus:ring-amber-500"
+              />
+              <span class="text-stone-400 text-sm">方向箭头</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input 
+                type="checkbox" 
+                :checked="debugConfig.game.coloredBorder" 
+                @change="debugConfig.game.coloredBorder = !debugConfig.game.coloredBorder"
+                class="w-4 h-4 rounded bg-stone-800 border-stone-600 text-amber-500 focus:ring-amber-500"
+              />
+              <span class="text-stone-400 text-sm">彩色边框</span>
+            </label>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -407,6 +442,41 @@ onUnmounted(() => {
       <div class="bg-stone-900 border border-amber-800/50 rounded-lg p-8 text-center min-w-[320px]">
         <div class="text-amber-400 text-lg mb-3">🤖 {{ t('game.aiTurnTitle') }}</div>
         <div class="text-stone-400 text-sm">{{ t('game.aiTurnHint') }}</div>
+      </div>
+    </div>
+
+    <!-- 六向方向指示器 -->
+    <div v-if="debugConfig.game.directionArrows" class="pointer-events-auto">
+      <div class="absolute bottom-20 left-4 w-24 h-32 bg-stone-900/80 border border-stone-700/50 rounded-lg flex flex-col items-center justify-center p-1">
+        <div class="text-stone-400 text-[10px] mb-0.5">方向</div>
+        <svg viewBox="0 0 60 60" class="w-16 h-20">
+          <!-- 中心点 -->
+          <circle cx="30" cy="30" r="2.5" class="fill-stone-600"/>
+          
+          <!-- 方向0: 东/右下 (黄色) -->
+          <polygon points="52,30 45,27 45,33" class="fill-yellow-500"/>
+          <text x="50" y="42" text-anchor="middle" class="fill-yellow-500 text-[6px]">0</text>
+          
+          <!-- 方向1: 东北 (红色) -->
+          <polygon points="45,18 38,21 40,26" class="fill-red-500"/>
+          <text x="48" y="14" text-anchor="middle" class="fill-red-500 text-[6px]">1</text>
+          
+          <!-- 方向2: 北 (品红) -->
+          <polygon points="30,10 26,17 34,17" class="fill-fuchsia-500"/>
+          <text x="22" y="14" text-anchor="middle" class="fill-fuchsia-500 text-[6px]">2</text>
+          
+          <!-- 方向3: 西/左下 (蓝色) -->
+          <polygon points="8,30 15,27 15,33" class="fill-blue-500"/>
+          <text x="4" y="42" text-anchor="middle" class="fill-blue-500 text-[6px]">3</text>
+          
+          <!-- 方向4: 西北 (青色) -->
+          <polygon points="15,42 22,39 20,34" class="fill-cyan-500"/>
+          <text x="10" y="50" text-anchor="middle" class="fill-cyan-500 text-[6px]">4</text>
+          
+          <!-- 方向5: 南 (绿色) -->
+          <polygon points="30,50 26,43 34,43" class="fill-green-500"/>
+          <text x="30" y="56" text-anchor="middle" class="fill-green-500 text-[6px]">5</text>
+        </svg>
       </div>
     </div>
 

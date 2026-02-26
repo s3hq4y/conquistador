@@ -15,6 +15,8 @@
 
 import * as pc from 'playcanvas';
 import { Tile, TerrainTypeDefinition, OwnerTagDefinition, hexToRgb } from '../core/map';
+import { getHexCorner } from '../core/utils/HexUtils';
+import { debugConfig } from '../core/config';
 
 /**
  * 将十六进制颜色转换为 PlayCanvas Color 对象
@@ -146,19 +148,10 @@ export class HexTile {
 
   /**
    * 计算六边形顶点坐标
-   * 
+   *
    * @param index - 顶点索引 (0-5)
    * @returns 顶点 x, z 坐标（在 XZ 平面上）
    */
-  private getHexCorner(index: number): { x: number; z: number } {
-    // 平顶六边形角度公式：60° * index
-    const angleDeg = 60 * index;
-    const angleRad = Math.PI / 180 * angleDeg;
-    return {
-      x: this.hexSize * Math.cos(angleRad),
-      z: this.hexSize * Math.sin(angleRad)
-    };
-  }
 
   // ==================== 梯形网格创建 ====================
   /**
@@ -259,12 +252,12 @@ export class HexTile {
     const entities: pc.Entity[] = [];
     
     // 获取边的两个端点
-    const p0 = this.getHexCorner(edgeIndex);
-    const p1 = this.getHexCorner((edgeIndex + 1) % 6);
+    const p0 = getHexCorner(edgeIndex, this.hexSize);
+    const p1 = getHexCorner((edgeIndex + 1) % 6, this.hexSize);
     
     // 获取相邻两边（用于计算延伸方向）
-    const prevCorner = this.getHexCorner((edgeIndex + 5) % 6);
-    const nextCorner = this.getHexCorner((edgeIndex + 2) % 6);
+    const prevCorner = getHexCorner((edgeIndex + 5) % 6, this.hexSize);
+    const nextCorner = getHexCorner((edgeIndex + 2) % 6, this.hexSize);
     
     // 计算边的方向向量
     const ex = p1.x - p0.x;
@@ -364,30 +357,7 @@ export class HexTile {
       
       // 边框略高于地块表面
       entity.setLocalPosition(0, 2, 0);
-      // 视觉上逆时针旋转了30度（象限角定义）
 
-      /*
-      ## 为什么要修正角度？
-      ### 问题的本质
-      边框渲染和地块主体使用 不同的方式 计算顶点：
-
-      组件 顶点计算方式 旋转 地块主体 CylinderGeometry （尖顶） +30° → 平顶 边框 getHexCorner() 继承父实体 +30°
-
-      ### 如果不改 getHexCorner（保持尖顶公式）
-      1. getHexCorner 使用 60 * index - 30 （尖顶公式）
-      2. 边框实体继承父实体 +30° 旋转
-      3. 最终效果 = 尖顶公式 + 30° = 尖顶 + 30° = 错误的视觉方向
-      ### 修正后的正确流程
-      1. getHexCorner 改为 60 * index （平顶公式）
-      2. 边框实体额外 +30° 旋转
-      3. 最终效果 = 平顶公式 + 30° = 平顶公式 + 30° = 正确的平顶
-      ### 总结
-      组件 公式 父旋转 最终效果 地块主体 CylinderGeometry (尖顶) +30° ✓ 平顶 边框（修正前） 60*index - 30 (尖顶) +30° ✗ 错误 边框（修正后） 60*index (平顶) +30° ✓ 平顶
-
-      核心原因 ：边框的顶点计算和父实体的旋转是 叠加 的，不是抵消的，所以需要让公式本身变成平顶公式，才能在旋转后得到正确的平顶效果。
-      */
-
-      entity.setLocalEulerAngles(0, 30, 0);
       entity.enabled = true;
       
       entities.push(entity);
@@ -606,17 +576,56 @@ export class HexTile {
   }
 
   /**
-   * 显示选中边框（黄色，6条边全覆盖）
+   * 根据边索引计算颜色
+   * 使用 HSL 颜色空间，色相从 0 到 360 均匀分布
+   */
+  private getEdgeColor(edgeIndex: number): pc.Color {
+    const hue = (edgeIndex / 6) * 360;
+    return this.hslToRgb(hue, 1, 0.5);
+  }
+
+  /**
+   * HSL 转 RGB 颜色
+   */
+  private hslToRgb(h: number, s: number, l: number): pc.Color {
+    let r: number, g: number, b: number;
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m = l - c / 2;
+
+    if (h < 60) {
+      r = c; g = x; b = 0;
+    } else if (h < 120) {
+      r = x; g = c; b = 0;
+    } else if (h < 180) {
+      r = 0; g = c; b = x;
+    } else if (h < 240) {
+      r = 0; g = x; b = c;
+    } else if (h < 300) {
+      r = x; g = 0; b = c;
+    } else {
+      r = c; g = 0; b = x;
+    }
+
+    return new pc.Color(r + m, g + m, b + m);
+  }
+
+  /**
+   * 显示选中边框
+   * 根据调试配置决定使用彩色边框还是统一颜色
    */
   private showSelectedBorder(): void {
     this.hideSelectedBorder();
     if (!this.graphicsDevice) return;
 
-    const selectedColor = new pc.Color(1, 1, 0);
+    const useColoredBorder = debugConfig.game.coloredBorder;
 
     // 选中时显示全部6条边的边框
     for (let edgeIndex = 0; edgeIndex < 6; edgeIndex++) {
-      const trapezoids = this.createBorderTrapezoids(edgeIndex, selectedColor, 0.7);
+      const edgeColor = useColoredBorder
+        ? this.getEdgeColor(edgeIndex)
+        : new pc.Color(1, 1, 0); // 黄色
+      const trapezoids = this.createBorderTrapezoids(edgeIndex, edgeColor, 0.7);
       trapezoids.forEach(entity => {
         this.entity.addChild(entity);
         this.selectedBorderEntities.push(entity);

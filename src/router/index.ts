@@ -31,6 +31,11 @@ const routes: RouteRecordRaw[] = [
     path: '/beta/terrain-viewer',
     name: 'beta-terrain-viewer',
     component: () => import('../beta/terrain-viewer/BetaPage.vue')
+  },
+  {
+    path: '/beta/hex-geometry',
+    name: 'beta-hex-geometry',
+    component: () => import('../beta/hex-geometry/BetaPage.vue')
   }
 ];
 

@@ -1,6 +1,7 @@
 import * as pc from 'playcanvas';
 import type { MapSystem } from '../../core/systems';
 import { Tile } from '../../core/map';
+import { getHexCorner } from '../../core/utils/HexUtils';
 
 export class DebugEdgeSystem {
   private mapSystem: MapSystem | null = null;
@@ -111,15 +112,6 @@ export class DebugEdgeSystem {
     edgeBEntities.forEach(entity => this.edgeHighlightEntities.push(entity));
   }
 
-  private getHexCorner(index: number, hexSize: number): { x: number; z: number } {
-    const angleDeg = 60 * index - 30;
-    const angleRad = Math.PI / 180 * angleDeg;
-    return {
-      x: hexSize * Math.cos(angleRad),
-      z: hexSize * Math.sin(angleRad)
-    };
-  }
-
   private createTrapezoidMesh(
     p0x: number, p0z: number,
     p1x: number, p1z: number,
@@ -185,11 +177,11 @@ export class DebugEdgeSystem {
 
     const entities: pc.Entity[] = [];
     
-    const p0 = this.getHexCorner(edgeIndex, hexSize);
-    const p1 = this.getHexCorner((edgeIndex + 1) % 6, hexSize);
-    
-    const prevCorner = this.getHexCorner((edgeIndex + 5) % 6, hexSize);
-    const nextCorner = this.getHexCorner((edgeIndex + 2) % 6, hexSize);
+    const p0 = getHexCorner(edgeIndex, hexSize);
+    const p1 = getHexCorner((edgeIndex + 1) % 6, hexSize);
+
+    const prevCorner = getHexCorner((edgeIndex + 5) % 6, hexSize);
+    const nextCorner = getHexCorner((edgeIndex + 2) % 6, hexSize);
     
     const ex = p1.x - p0.x;
     const ez = p1.z - p0.z;

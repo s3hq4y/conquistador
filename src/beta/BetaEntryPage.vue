@@ -5,6 +5,13 @@ const router = useRouter();
 
 const betaFeatures = [
   {
+    id: 'hex-geometry',
+    name: '六边形几何查看器',
+    description: '展示尖顶六边形和旋转后的平顶六边形的对应点和边',
+    route: '/beta/hex-geometry',
+    status: 'new'
+  },
+  {
     id: 'terrain-viewer',
     name: '地形查看器',
     description: '查看 example_battlefield 地形分布，不显示 owner 和单位',
