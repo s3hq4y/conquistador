@@ -7,8 +7,11 @@
 ![Static Badge](https://img.shields.io/badge/typescript-blue?style=flat&logo=typescript&logoColor=white)
 ![Static Badge](https://img.shields.io/badge/EventEmitter3-blue?style=flat&logo=typescript&logoColor=white)
 
+This project is currently a work in progress!
 
 [English](#english) | [中文](#中文)
+
+![This project is currently a work in progress](image.png)
 
 ---
 

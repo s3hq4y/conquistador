@@ -5,6 +5,21 @@ import { useI18n } from 'vue-i18n';
 import { useGameStore, type OwnerStates, type PlayerInfo } from '../stores/game';
 import { useGameEventStore } from '../stores/gameEvent';
 import { debugConfig } from '../core/config';
+import {
+  GameTopBar,
+  GameMenu,
+  PlayerSwitchOverlay,
+  AITurnOverlay,
+  Compass,
+  DirectionIndicator,
+  TileInfoPanel,
+  CombatLog,
+  CombatResultModal,
+  UnitInfoPanel,
+  EndTurnButton,
+  ZoomControls,
+  KeyboardHints
+} from './components/overlay';
 
 interface UnitStats {
   hp?: number;
@@ -27,11 +42,6 @@ const router = useRouter();
 const { t, locale } = useI18n();
 const gameStore = useGameStore();
 const gameEventStore = useGameEventStore();
-
-const availableLocales = [
-  { code: 'zh-CN', label: '简体中文' },
-  { code: 'en-US', label: 'English' }
-];
 
 const switchLocale = (newLocale: string) => {
   locale.value = newLocale;
@@ -220,34 +230,6 @@ const closeUnitInfo = () => {
   gameEventStore.clearSelection();
 };
 
-const ownerColors: Record<string, string> = {
-  neutral: '#808080',
-  player: '#268ceb',
-  enemy: '#eb3838'
-};
-
-const ownerNames: Record<string, string> = {
-  neutral: '中立',
-  player: '玩家',
-  enemy: '敌人'
-};
-
-const unitOwnerColor = computed(() => {
-  if (!selectedUnit.value) return '#808080';
-  return ownerColors[selectedUnit.value.unit.owner] || '#808080';
-});
-
-const unitOwnerName = computed(() => {
-  if (!selectedUnit.value) return '';
-  return ownerNames[selectedUnit.value.unit.owner] || selectedUnit.value.unit.owner;
-});
-
-const hpPercent = computed(() => {
-  if (!selectedUnit.value) return 0;
-  const maxHp = selectedUnit.value.stats.hp || 100;
-  return Math.round((selectedUnit.value.unit.hp / maxHp) * 100);
-});
-
 onMounted(() => {
   const canvas = document.getElementById('gameCanvas');
   if (canvas) {
@@ -278,398 +260,57 @@ onUnmounted(() => {
 
 <template>
   <div class="fixed inset-0 pointer-events-none">
-    <div class="pointer-events-auto">
-      <!-- 指南针 -->
-      <div v-if="debugConfig.game.compass" class="absolute top-14 left-4 z-30">
-        <div class="w-16 h-16 rounded-full bg-stone-900/80 border border-stone-700/50 flex items-center justify-center">
-          <div class="relative w-12 h-12">
-            <!-- 罗盘背景 -->
-            <svg viewBox="0 0 100 100" class="w-full h-full">
-              <!-- 北 -->
-              <text x="50" y="18" text-anchor="middle" class="fill-amber-400 text-xs font-bold">N</text>
-              <!-- 南 -->
-              <text x="50" y="88" text-anchor="middle" class="fill-stone-500 text-xs">S</text>
-              <!-- 东 -->
-              <text x="88" y="56" text-anchor="middle" class="fill-stone-500 text-xs">E</text>
-              <!-- 西 -->
-              <text x="12" y="56" text-anchor="middle" class="fill-stone-500 text-xs">W</text>
-              <!-- 中心点 -->
-              <circle cx="50" cy="50" r="3" class="fill-stone-600"/>
-              <!-- 指针 - 北 -->
-              <polygon points="50,25 45,50 55,50" class="fill-amber-500"/>
-            </svg>
-          </div>
-        </div>
-      </div>
+    <Compass :show="debugConfig.game.compass" />
 
-      <div class="absolute top-0 left-0 right-0 h-12 bg-stone-950/80 border-b border-stone-800/50 flex items-center justify-between px-4">
+    <GameTopBar 
+      :turn="turn"
+      :current-player="currentPlayer"
+      :is-hotseat="isHotseat"
+      :locale="locale"
+      :ducat="ducat"
+      @update:locale="switchLocale"
+      @toggle-menu="showMenu = !showMenu"
+    />
 
-        <div class="flex items-center gap-4">
-          <div class="flex items-center gap-2">
-            <span class="text-amber-400">🪙</span>
-            <span class="text-amber-300 font-mono">{{ ducat }}</span>
-            <span class="text-stone-500 text-xs">ducat</span>
-          </div>
-          
-          <div v-if="currentPlayer" class="flex items-center gap-2">
-            <div 
-              class="w-4 h-4 rounded-full"
-              :style="{ backgroundColor: currentPlayer.color }"
-            ></div>
-            <span class="text-stone-300 text-sm">{{ currentPlayer.name }}</span>
-            <span v-if="isHotseat" class="text-stone-500 text-xs">({{ t('game.hotseat') }})</span>
-          </div>
-        </div>
-        
-        <div class="flex items-center gap-3">
-          <div class="flex items-center gap-4 text-stone-400 text-sm">
-            <div class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-              </svg>
-              <span>{{ t('game.turn') }} {{ turn }}</span>
-            </div>
-          </div>
-          
-          <div class="h-4 w-px bg-stone-700"></div>
-          
-          <div class="flex items-center gap-2">
-            <button 
-              v-for="loc in availableLocales"
-              :key="loc.code"
-              @click="switchLocale(loc.code)"
-              :class="[
-                'px-2 py-1 text-xs font-medium rounded transition-colors',
-                locale === loc.code 
-                  ? 'bg-amber-700 text-amber-100' 
-                  : 'text-stone-400 hover:text-stone-300 hover:bg-stone-800/50'
-              ]"
-            >
-              {{ loc.label }}
-            </button>
-          </div>
-          
-          <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded bg-gradient-to-br from-amber-700 to-amber-900 flex items-center justify-center">
-              <svg class="w-4 h-4 text-amber-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
-              </svg>
-            </div>
-            <span class="text-stone-400 font-light tracking-widest text-xs uppercase">Conquistador</span>
-          </div>
-          
-          <button 
-            @click="showMenu = !showMenu"
-            class="p-2 rounded hover:bg-stone-800/50 transition-colors"
-          >
-            <svg class="w-5 h-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"></path>
-            </svg>
-          </button>
-        </div>
-      </div>
-    </div>
+    <GameMenu 
+      v-if="showMenu"
+      @close="showMenu = false"
+      @back-to-menu="handleBackToMenu"
+    />
 
-    <div v-if="showMenu" class="pointer-events-auto fixed inset-0 bg-stone-950/90 flex items-center justify-center z-50">
-      <div class="bg-stone-900 border border-stone-800 rounded-lg p-6 min-w-[300px]">
-        <h2 class="text-stone-200 font-light tracking-wider text-lg mb-6 text-center">{{ t('game.gameMenu') }}</h2>
-        <div class="flex flex-col gap-3">
-          <button 
-            @click="showMenu = false"
-            class="px-4 py-3 bg-stone-800/50 border border-stone-700/50 hover:border-amber-800/50 text-stone-300 text-sm tracking-wider transition-colors rounded"
-          >
-            {{ t('game.continueGame') }}
-          </button>
-          <button 
-            @click="handleBackToMenu"
-            class="px-4 py-3 bg-stone-800/50 border border-stone-700/50 hover:border-red-800/50 text-stone-300 text-sm tracking-wider transition-colors rounded"
-          >
-            {{ t('game.backToMenu') }}
-          </button>
-        </div>
-        
-        <!-- 调试设置 -->
-        <div class="mt-6 pt-4 border-t border-stone-700/50">
-          <h3 class="text-stone-400 text-xs font-medium mb-3">调试功能</h3>
-          <div class="flex flex-col gap-2">
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input 
-                type="checkbox" 
-                :checked="debugConfig.game.compass" 
-                @change="debugConfig.game.compass = !debugConfig.game.compass"
-                class="w-4 h-4 rounded bg-stone-800 border-stone-600 text-amber-500 focus:ring-amber-500"
-              />
-              <span class="text-stone-400 text-sm">指南针</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input 
-                type="checkbox" 
-                :checked="debugConfig.game.directionArrows" 
-                @change="debugConfig.game.directionArrows = !debugConfig.game.directionArrows"
-                class="w-4 h-4 rounded bg-stone-800 border-stone-600 text-amber-500 focus:ring-amber-500"
-              />
-              <span class="text-stone-400 text-sm">方向箭头</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input 
-                type="checkbox" 
-                :checked="debugConfig.game.coloredBorder" 
-                @change="debugConfig.game.coloredBorder = !debugConfig.game.coloredBorder"
-                class="w-4 h-4 rounded bg-stone-800 border-stone-600 text-amber-500 focus:ring-amber-500"
-              />
-              <span class="text-stone-400 text-sm">彩色边框</span>
-            </label>
-          </div>
-        </div>
-      </div>
-    </div>
+    <PlayerSwitchOverlay 
+      :show="showPlayerSwitch"
+      :current-player="currentPlayer"
+    />
 
-    <div v-if="showPlayerSwitch" class="pointer-events-auto fixed inset-0 bg-stone-950/80 flex items-center justify-center z-40">
-      <div class="bg-stone-900 border border-amber-800/50 rounded-lg p-8 text-center">
-        <div class="text-stone-400 text-sm mb-4">{{ t('game.playerSwitch') }}</div>
-        <div v-if="currentPlayer" class="flex items-center justify-center gap-3">
-          <div 
-            class="w-8 h-8 rounded-full"
-            :style="{ backgroundColor: currentPlayer.color }"
-          ></div>
-          <span class="text-xl text-stone-200">{{ currentPlayer.name }}</span>
-        </div>
-        <div class="text-stone-500 text-xs mt-4">{{ t('game.playerSwitchHint') }}</div>
-      </div>
-    </div>
+    <AITurnOverlay :show="isAITurn" />
 
-    <div v-if="isAITurn" class="pointer-events-auto fixed inset-0 bg-stone-950/80 flex items-center justify-center z-[45]">
-      <div class="bg-stone-900 border border-amber-800/50 rounded-lg p-8 text-center min-w-[320px]">
-        <div class="text-amber-400 text-lg mb-3">🤖 {{ t('game.aiTurnTitle') }}</div>
-        <div class="text-stone-400 text-sm">{{ t('game.aiTurnHint') }}</div>
-      </div>
-    </div>
+    <DirectionIndicator :show="debugConfig.game.directionArrows" />
 
-    <!-- 六向方向指示器 -->
-    <div v-if="debugConfig.game.directionArrows" class="pointer-events-auto">
-      <div class="absolute bottom-20 left-4 w-24 h-32 bg-stone-900/80 border border-stone-700/50 rounded-lg flex flex-col items-center justify-center p-1">
-        <div class="text-stone-400 text-[10px] mb-0.5">方向</div>
-        <svg viewBox="0 0 60 60" class="w-16 h-20">
-          <!-- 中心点 -->
-          <circle cx="30" cy="30" r="2.5" class="fill-stone-600"/>
-          
-          <!-- 方向0: 东/右下 (黄色) -->
-          <polygon points="52,30 45,27 45,33" class="fill-yellow-500"/>
-          <text x="50" y="42" text-anchor="middle" class="fill-yellow-500 text-[6px]">0</text>
-          
-          <!-- 方向1: 东北 (红色) -->
-          <polygon points="45,18 38,21 40,26" class="fill-red-500"/>
-          <text x="48" y="14" text-anchor="middle" class="fill-red-500 text-[6px]">1</text>
-          
-          <!-- 方向2: 北 (品红) -->
-          <polygon points="30,10 26,17 34,17" class="fill-fuchsia-500"/>
-          <text x="22" y="14" text-anchor="middle" class="fill-fuchsia-500 text-[6px]">2</text>
-          
-          <!-- 方向3: 西/左下 (蓝色) -->
-          <polygon points="8,30 15,27 15,33" class="fill-blue-500"/>
-          <text x="4" y="42" text-anchor="middle" class="fill-blue-500 text-[6px]">3</text>
-          
-          <!-- 方向4: 西北 (青色) -->
-          <polygon points="15,42 22,39 20,34" class="fill-cyan-500"/>
-          <text x="10" y="50" text-anchor="middle" class="fill-cyan-500 text-[6px]">4</text>
-          
-          <!-- 方向5: 南 (绿色) -->
-          <polygon points="30,50 26,43 34,43" class="fill-green-500"/>
-          <text x="30" y="56" text-anchor="middle" class="fill-green-500 text-[6px]">5</text>
-        </svg>
-      </div>
-    </div>
+    <TileInfoPanel 
+      :selected-tile="selectedTile"
+      :terrain-name="terrainName"
+      :owner-name="ownerName"
+    />
 
-    <div class="pointer-events-auto">
-      <div class="absolute left-4 top-20 w-64 bg-stone-950/80 border border-stone-800/50 rounded-lg overflow-hidden">
-        <div class="px-4 py-3 border-b border-stone-800/50">
-          <h3 class="text-stone-300 font-light tracking-wider text-sm">{{ t('game.tileInfo') }}</h3>
-        </div>
-        <div class="p-4">
-          <div v-if="selectedTile" class="space-y-3 text-sm">
-            <div class="flex justify-between">
-              <span class="text-stone-500">{{ t('game.coordinates') }}</span>
-              <span class="text-stone-300">{{ selectedTile.q }}, {{ selectedTile.r }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-stone-500">{{ t('game.terrain') }}</span>
-              <span class="text-stone-300">{{ terrainName }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-stone-500">{{ t('game.owner') }}</span>
-              <span class="text-stone-300">{{ ownerName }}</span>
-            </div>
-          </div>
-          <div v-else class="text-stone-500 text-sm">
-            {{ t('game.tileInfoPlaceholder') }}
-          </div>
-        </div>
-      </div>
-    </div>
+    <CombatLog :logs="combatLog" />
 
-    <div class="pointer-events-auto">
-      <div class="absolute left-4 top-80 w-64 bg-stone-950/80 border border-stone-800/50 rounded-lg overflow-hidden" v-if="combatLog.length > 0">
-        <div class="px-4 py-3 border-b border-stone-800/50">
-          <h3 class="text-stone-300 font-light tracking-wider text-sm">{{ t('game.combatLog') }}</h3>
-        </div>
-        <div class="p-2 max-h-32 overflow-y-auto">
-          <div v-for="(log, index) in combatLog" :key="index" class="text-xs text-stone-400 py-1">
-            {{ log.message }}
-          </div>
-        </div>
-      </div>
-    </div>
+    <CombatResultModal 
+      :result="combatResult"
+      @close="closeCombatResult"
+    />
 
-    <div v-if="combatResult && combatResult.show" class="pointer-events-auto fixed inset-0 flex items-center justify-center z-50">
-      <div class="absolute inset-0 bg-black/50" @click="closeCombatResult"></div>
-      <div class="relative bg-stone-900 border border-amber-700/50 rounded-xl p-6 min-w-[320px] shadow-2xl shadow-amber-900/30 animate-pulse-once">
-        <div class="text-center">
-          <div class="text-amber-500 text-lg font-medium mb-4">⚔️ 战斗结果 ⚔️</div>
-          
-          <div class="flex items-center justify-center gap-4 mb-4">
-            <div class="text-center">
-              <div class="text-red-400 text-2xl font-bold">-{{ combatResult.attackerDamage }}</div>
-              <div class="text-stone-500 text-xs mt-1">攻击方受伤</div>
-            </div>
-            <div class="text-stone-600 text-xl">VS</div>
-            <div class="text-center">
-              <div class="text-red-400 text-2xl font-bold">-{{ combatResult.defenderDamage }}</div>
-              <div class="text-stone-500 text-xs mt-1">防守方受伤</div>
-            </div>
-          </div>
+    <UnitInfoPanel 
+      v-if="showUnitInfo"
+      :unit="selectedUnit?.unit || null"
+      :stats="selectedUnit?.stats || null"
+      @close="closeUnitInfo"
+    />
 
-          <div v-if="combatResult.defenderDied" class="mb-4">
-            <div class="text-green-400 text-lg font-medium animate-bounce">🏆 防守方被击败!</div>
-          </div>
-          <div v-if="combatResult.attackerDied" class="mb-4">
-            <div class="text-red-400 text-lg font-medium animate-bounce">💀 攻击方被击败!</div>
-          </div>
+    <EndTurnButton @click="handleEndTurn" />
 
-          <div class="text-stone-500 text-xs mt-4">
-            正在继续...
-          </div>
-        </div>
-      </div>
-    </div>
+    <ZoomControls />
 
-    <div v-if="showUnitInfo && selectedUnit" class="pointer-events-auto">
-      <div class="absolute right-4 top-20 w-72 bg-stone-950/90 border border-stone-800/50 rounded-lg overflow-hidden z-30">
-        <div class="px-4 py-3 border-b border-stone-800/50 flex items-center justify-between">
-          <h3 class="text-stone-300 font-light tracking-wider text-sm">{{ t('game.unitInfo') || '单位信息' }}</h3>
-          <button @click="closeUnitInfo" class="text-stone-500 hover:text-stone-300 text-lg">×</button>
-        </div>
-        <div class="p-4">
-          <div class="flex items-center gap-3 mb-4">
-            <div class="w-12 h-12 rounded-lg flex items-center justify-center text-2xl" :style="{ backgroundColor: unitOwnerColor }">
-              ⚔️
-            </div>
-            <div>
-              <div class="text-stone-200 font-medium text-sm">{{ selectedUnit.unit.id.slice(0, 16) }}...</div>
-              <div class="flex items-center gap-2 mt-1">
-                <span class="w-2 h-2 rounded-full" :style="{ backgroundColor: unitOwnerColor }"></span>
-                <span class="text-stone-400 text-xs">{{ unitOwnerName }}</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="mb-4">
-            <div class="flex justify-between text-xs text-stone-500 mb-1">
-              <span>生命值</span>
-              <span class="text-stone-300">{{ selectedUnit.unit.hp }} / {{ selectedUnit.stats.hp || 100 }}</span>
-            </div>
-            <div class="h-2 bg-stone-800 rounded-full overflow-hidden">
-              <div 
-                class="h-full transition-all duration-300"
-                :class="{
-                  'bg-green-500': hpPercent > 60,
-                  'bg-yellow-500': hpPercent > 30 && hpPercent <= 60,
-                  'bg-red-500': hpPercent <= 30
-                }"
-                :style="{ width: `${hpPercent}%` }"
-              ></div>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-3 gap-2 mb-4">
-            <div class="bg-stone-800/50 rounded p-2 text-center">
-              <div class="text-amber-400 text-lg">⚔️</div>
-              <div class="text-stone-200 font-medium">{{ selectedUnit.stats.attack || 0 }}</div>
-              <div class="text-stone-500 text-xs">攻击</div>
-            </div>
-            <div class="bg-stone-800/50 rounded p-2 text-center">
-              <div class="text-blue-400 text-lg">🛡️</div>
-              <div class="text-stone-200 font-medium">{{ selectedUnit.stats.defense || 0 }}</div>
-              <div class="text-stone-500 text-xs">防御</div>
-            </div>
-            <div class="bg-stone-800/50 rounded p-2 text-center">
-              <div class="text-green-400 text-lg">🎯</div>
-              <div class="text-stone-200 font-medium">{{ selectedUnit.stats.range || 1 }}</div>
-              <div class="text-stone-500 text-xs">射程</div>
-            </div>
-          </div>
-
-          <div>
-            <div class="text-xs text-stone-500 mb-2">特性</div>
-            <div class="flex flex-wrap gap-1">
-              <span 
-                v-for="trait in selectedUnit.unit.traits" 
-                :key="trait"
-                class="px-2 py-1 bg-stone-800/50 rounded text-xs text-stone-400"
-              >
-                {{ trait }}
-              </span>
-            </div>
-          </div>
-
-          <div class="mt-3 pt-3 border-t border-stone-800/50">
-            <div class="text-xs text-stone-500">
-              位置: Q:{{ selectedUnit.unit.q }}, R:{{ selectedUnit.unit.r }}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="pointer-events-auto">
-      <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3">
-        <button 
-          @click="handleEndTurn"
-          class="px-6 py-3 bg-gradient-to-r from-amber-800 to-amber-900 hover:from-amber-700 hover:to-amber-800 border border-amber-700/50 text-amber-100 text-sm tracking-wider transition-all rounded shadow-lg shadow-amber-900/30"
-        >
-          {{ t('game.endTurn') }}
-        </button>
-      </div>
-    </div>
-
-    <div class="pointer-events-auto">
-      <div class="absolute right-4 top-20 flex flex-col gap-2">
-        <button 
-          class="w-10 h-10 bg-stone-950/80 border border-stone-800/50 rounded flex items-center justify-center hover:border-amber-800/50 transition-colors"
-          :title="t('game.zoomIn')"
-        >
-          <svg class="w-5 h-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
-          </svg>
-        </button>
-        <button 
-          class="w-10 h-10 bg-stone-950/80 border border-stone-800/50 rounded flex items-center justify-center hover:border-amber-800/50 transition-colors"
-          :title="t('game.zoomOut')"
-        >
-          <svg class="w-5 h-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"></path>
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <div class="pointer-events-auto">
-      <div class="absolute bottom-4 right-4 text-stone-600 text-xs tracking-wider">
-        <span class="text-stone-500">{{ t('common.esc') }}</span> {{ t('common.menu') }}
-        <span class="mx-2 text-stone-700">|</span>
-        <span class="text-stone-500">{{ t('common.scroll') }}</span> {{ t('common.zoom') }}
-        <span class="mx-2 text-stone-700">|</span>
-        <span class="text-stone-500">{{ t('game.drag') }}</span> {{ t('game.move') }}
-      </div>
-    </div>
+    <KeyboardHints />
   </div>
 </template>
