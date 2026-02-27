@@ -3,7 +3,7 @@ import type { GameEngine } from '../../core/engine';
 import { MapSystem, MovementSystem, UnitRenderSystem } from '../../core/systems';
 import type { UnitInstance } from '../../core/map';
 import { TraitManager } from '../../core/traits/TraitManager';
-import { useGameEventStore } from '../../stores/gameEvent';
+import { useGameEventStore, type TileUnitInfo } from '../../stores/gameEvent';
 import { debug } from '../../core/utils/debug';
 
 export class SelectionSystem extends GameSystem {
@@ -53,7 +53,7 @@ export class SelectionSystem extends GameSystem {
   selectUnit(unit: UnitInstance): void {
     if (!this.unitRenderSystem || !this.traitManager) return;
 
-    this.clearSelection();
+    this.clearAttackHighlights();
     this.unitRenderSystem.selectUnit(unit.id);
 
     const unitStats = this.traitManager.calculateStats(unit.traits, this.calculateUnitStateValues(unit));
@@ -124,15 +124,102 @@ export class SelectionSystem extends GameSystem {
         hexTile.setSelected(true);
         
         const tile = hexTile.getTile();
+        const capacity = this.movementSystem?.getTileCapacity(q, r) || null;
+        
         this.gameEventStore.selectTile({
           q: tile.q,
           r: tile.r,
           terrain: tile.terrain || 'plains',
-          owner: tile.owner || 'neutral'
+          owner: tile.owner || 'neutral',
+          capacity: capacity || undefined
         });
         
-        debug.selection('Selected tile:', q, r, 'terrain:', tile.terrain, 'owner:', tile.owner);
+        const unitsOnTile = this.movementSystem?.getUnitsAt(q, r) || [];
+        if (unitsOnTile.length > 1) {
+          this.showTileUnitsPanel(q, r, unitsOnTile);
+        } else if (unitsOnTile.length === 1) {
+          const unit = unitsOnTile[0];
+          if (this.isCurrentPlayerUnit(unit)) {
+            this.selectUnit(unit);
+          } else {
+            this.selectEnemyUnit(unit);
+          }
+        }
+        
+        debug.selection('Selected tile:', q, r, 'terrain:', tile.terrain, 'owner:', tile.owner, 'units:', unitsOnTile.length);
       }
+    }
+  }
+
+  private showTileUnitsPanel(q: number, r: number, units: UnitInstance[]): void {
+    if (!this.traitManager) return;
+
+    const tileUnits: TileUnitInfo[] = units.map(unit => {
+      const maxHp = this.getUnitMaxHp(unit);
+      return {
+        id: unit.id,
+        type: unit.traits?.[0] || 'infantry',
+        owner: unit.owner,
+        hp: unit.hp,
+        maxHp: maxHp,
+        traits: unit.traits || [],
+        isTop: false
+      };
+    });
+
+    const tile = this.movementSystem?.getTileAt(q, r);
+    if (tile && tile.unitOrder.length > 0) {
+      const topUnitId = tile.unitOrder[0];
+      const topUnit = tileUnits.find(u => u.id === topUnitId);
+      if (topUnit) {
+        topUnit.isTop = true;
+      }
+    }
+
+    this.gameEventStore.selectTileUnits(tileUnits, { q, r });
+    debug.selection('Show tile units panel:', q, r, 'units:', units.map(u => u.id).join(', '));
+  }
+
+  setTopUnit(unitId: string): void {
+    if (!this.movementSystem || !this.selectedTileKey) return;
+
+    const [q, r] = this.selectedTileKey.split(',').map(Number);
+    const units = this.movementSystem.getUnitsAt(q, r);
+    const currentOrder = units.map(u => u.id);
+    
+    const currentIndex = currentOrder.indexOf(unitId);
+    if (currentIndex <= 0) return;
+
+    const newOrder = [unitId];
+    for (const id of currentOrder) {
+      if (id !== unitId) {
+        newOrder.push(id);
+      }
+    }
+
+    this.movementSystem.reorderUnitsOnTile(q, r, newOrder);
+    this.gameEventStore.reorderTileUnits(newOrder);
+
+    const unit = this.movementSystem.getUnit(unitId);
+    if (unit && this.isCurrentPlayerUnit(unit)) {
+      this.selectUnit(unit);
+    }
+
+    debug.selection('Set top unit:', unitId);
+  }
+
+  handleTileUnitSelected(unitId: string): void {
+    if (!this.movementSystem) return;
+
+    const unit = this.movementSystem.getUnit(unitId);
+    if (!unit) return;
+
+    this.gameEventStore.clearTileUnits();
+
+    if (this.isCurrentPlayerUnit(unit)) {
+      this.selectUnit(unit);
+    } else {
+      this.selectEnemyUnit(unit);
     }
   }
 
@@ -146,6 +233,7 @@ export class SelectionSystem extends GameSystem {
     }
     this.selectedTileKey = null;
     this.gameEventStore.clearTileSelection();
+    this.gameEventStore.clearTileUnits();
   }
 
   clearSelection(): void {

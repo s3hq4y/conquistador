@@ -96,6 +96,11 @@ export interface TileComponents {
   building: string | null;
   district: string | null;
   deposit: string | null;
+  capacity?: {
+    army: number;
+    building: number;
+  };
+  unitOrder?: string[];
 }
 
 export interface TileInstance {

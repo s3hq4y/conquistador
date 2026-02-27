@@ -3,7 +3,7 @@ import type { EditorUI } from '../EditorUI';
 import type { SceneData, TerrainTypeDefinition, OwnerTagDefinition } from '../../core/map';
 import type { TraitData } from '../../core/traits';
 import { TraitManager } from '../../core/traits';
-import { debugConfig } from '../../core/config';
+import { debugConfig, SCENE_BASE_PATH } from '../../core/config';
 import * as sceneApi from '../sceneApi';
 
 export class SceneManager {
@@ -167,7 +167,7 @@ export class SceneManager {
 
   async loadTraits(sceneId: string): Promise<void> {
     try {
-      const response = await fetch(`/scenarios/${sceneId}/traits.json`);
+      const response = await fetch(`${SCENE_BASE_PATH}/${sceneId}/traits.json`);
       if (response.ok) {
         const traitData: TraitData = await response.json();
         this.editorUI?.setTraits(traitData.traits || {});

@@ -1,50 +1,32 @@
-{
-  "neutral": {
-    "components": {
-      "name": {
-        "en": "Neutral",
-        "zh": "中立"
-      },
-      "description": {
-        "en": "Neutral territory",
-        "zh": "中立区域"
-      },
-      "color": "#808080",
-      "icon": "⚪",
-      "isPlayer": false,
-      "isAI": false
-    }
+[
+  {
+    "id": "neutral",
+    "name": "Neutral",
+    "nameZh": "中立",
+    "color": "#808080",
+    "description": "中立区域",
+    "icon": "⚪",
+    "isPlayer": false,
+    "isAI": false
   },
-  "player": {
-    "components": {
-      "name": {
-        "en": "Player",
-        "zh": "玩家"
-      },
-      "description": {
-        "en": "Player controlled territory",
-        "zh": "玩家控制区域"
-      },
-      "color": "#268ceb",
-      "icon": "🔵",
-      "isPlayer": true,
-      "isAI": false
-    }
+  {
+    "id": "player",
+    "name": "Player",
+    "nameZh": "玩家",
+    "color": "#268ceb",
+    "description": "玩家控制区域",
+    "icon": "🔵",
+    "isPlayer": true,
+    "isAI": false
   },
-  "enemy": {
-    "components": {
-      "name": {
-        "en": "Enemy",
-        "zh": "敌人"
-      },
-      "description": {
-        "en": "Enemy controlled territory",
-        "zh": "敌方控制区域"
-      },
-      "color": "#eb3838",
-      "icon": "🔴",
-      "isPlayer": false,
-      "isAI": true
-    }
+  {
+    "id": "enemy",
+    "name": "Enemy",
+    "nameZh": "敌人",
+    "color": "#eb3838",
+    "description": "敌方控制区域",
+    "icon": "🔴",
+    "isPlayer": false,
+    "isAI": true
   }
-}
+]

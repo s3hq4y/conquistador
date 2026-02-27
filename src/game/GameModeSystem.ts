@@ -5,6 +5,7 @@ import { TraitManager } from '../core/traits/TraitManager';
 import type { UnitInstance } from '../core/map';
 import { TurnSystem, SelectionSystem, InputHandlerSystem, SceneLoader } from './systems';
 import { useGameStore } from '../stores/game';
+import { useGameEventStore } from '../stores/gameEvent';
 import type { OwnerStates } from '../stores/game';
 
 declare global {
@@ -22,6 +23,7 @@ export class GameModeSystem extends GameSystem {
   private traitManager: TraitManager | null = null;
   private combatSystem: CombatSystem | null = null;
   private gameStore = useGameStore();
+  private gameEventStore = useGameEventStore();
 
   constructor(engine: GameEngine) {
     super(engine);
@@ -53,6 +55,17 @@ export class GameModeSystem extends GameSystem {
       this.selectionSystem,
       this.traitManager!,
       this.combatSystem!
+    );
+
+    this.gameEventStore.setTileUnitCallbacks(
+      (unitId: string) => {
+        this.selectionSystem?.handleTileUnitSelected(unitId);
+      },
+      (newOrder: string[]) => {
+        if (this.selectionSystem && newOrder.length > 0) {
+          this.selectionSystem.setTopUnit(newOrder[0]);
+        }
+      }
     );
 
     window.__endTurn = () => this.endTurn();

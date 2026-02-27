@@ -1,165 +1,43 @@
-{
-  "plains": {
-    "components": {
-      "name": {
-        "en": "Plains",
-        "zh": "平原"
-      },
-      "description": {
-        "en": "Basic terrain, suitable for building and development",
-        "zh": "基础地形，适合建造和发展"
-      },
-      "color": "#59a640",
-      "icon": "🌾",
-      "texture": "game_saves/example_battlefield/textures/terrain/plains.png",
-      "isPassable": true,
-      "movementCost": 2
-    }
+[
+  {
+    "id": "plains",
+    "name": "Plains",
+    "nameZh": "平原",
+    "color": "#59a640",
+    "description": "基础地形，适合建造和发展",
+    "icon": "🌾",
+    "isPassable": true,
+    "movementCost": 1
   },
-  "grassland": {
-    "components": {
-      "name": {
-        "en": "Grassland",
-        "zh": "草地"
-      },
-      "description": {
-        "en": "Fertile land, good for agriculture",
-        "zh": "肥沃的土地，适合农业"
-      },
-      "color": "#7cb342",
-      "icon": "🌿",
-      "isPassable": true,
-      "movementCost": 2
-    }
+  {
+    "id": "forest",
+    "name": "Forest",
+    "nameZh": "森林",
+    "color": "#266b2e",
+    "description": "提供木材资源，隐蔽加成",
+    "icon": "🌲",
+    "isPassable": true,
+    "movementCost": 2
   },
-  "forest": {
-    "components": {
-      "name": {
-        "en": "Forest",
-        "zh": "森林"
-      },
-      "description": {
-        "en": "Provides wood resources, stealth bonus",
-        "zh": "提供木材资源，隐蔽加成"
-      },
-      "color": "#266b2e",
-      "icon": "🌲",
-      "isPassable": true,
-      "movementCost": 3
-    }
+  {
+    "id": "mountain",
+    "name": "Mountain",
+    "nameZh": "山地",
+    "color": "#7f786b",
+    "description": "提供防御加成，限制移动",
+    "icon": "⛰️",
+    "isPassable": true,
+    "movementCost": 3
   },
-  "hill": {
-    "components": {
-      "name": {
-        "en": "Hill",
-        "zh": "丘陵"
-      },
-      "description": {
-        "en": "Elevated terrain, provides defense bonus",
-        "zh": "高地地形，提供防御加成"
-      },
-      "color": "#8d6e63",
-      "icon": "🏞️",
-      "isPassable": true,
-      "movementCost": 3
-    }
-  },
-  "mountain": {
-    "components": {
-      "name": {
-        "en": "Mountain",
-        "zh": "山地"
-      },
-      "description": {
-        "en": "Provides defense bonus, restricts movement",
-        "zh": "提供防御加成，限制移动"
-      },
-      "color": "#7f786b",
-      "icon": "⛰️",
-      "isPassable": true,
-      "movementCost": 4
-    }
-  },
-  "desert": {
-    "components": {
-      "name": {
-        "en": "Desert",
-        "zh": "沙漠"
-      },
-      "description": {
-        "en": "Arid terrain, limited resources",
-        "zh": "干旱地形，资源有限"
-      },
-      "color": "#e6c85b",
-      "icon": "🏜️",
-      "isPassable": true,
-      "movementCost": 3
-    }
-  },
-  "tundra": {
-    "components": {
-      "name": {
-        "en": "Tundra",
-        "zh": "苔原"
-      },
-      "description": {
-        "en": "Cold terrain, limited development",
-        "zh": "寒冷地形，开发受限"
-      },
-      "color": "#b0bec5",
-      "icon": "❄️",
-      "isPassable": true,
-      "movementCost": 3
-    }
-  },
-  "shallow_sea": {
-    "components": {
-      "name": {
-        "en": "Shallow Sea",
-        "zh": "浅海"
-      },
-      "description": {
-        "en": "Navigable, can build ports",
-        "zh": "可航行，可建造港口"
-      },
-      "color": "#3884b8",
-      "icon": "🌊",
-      "isWater": true,
-      "isPassable": true,
-      "movementCost": 1
-    }
-  },
-  "deep_sea": {
-    "components": {
-      "name": {
-        "en": "Deep Sea",
-        "zh": "深海"
-      },
-      "description": {
-        "en": "Open ocean, requires naval units",
-        "zh": "公海，需要海军单位"
-      },
-      "color": "#1565c0",
-      "icon": "🌊",
-      "isWater": true,
-      "isPassable": true,
-      "movementCost": 1
-    }
-  },
-  "coast": {
-    "components": {
-      "name": {
-        "en": "Coast",
-        "zh": "海岸"
-      },
-      "description": {
-        "en": "Land next to water, can build ports",
-        "zh": "水边陆地，可建造港口"
-      },
-      "color": "#4fc3f7",
-      "icon": "🏖️",
-      "isPassable": true,
-      "movementCost": 2
-    }
+  {
+    "id": "shallow_sea",
+    "name": "Shallow Sea",
+    "nameZh": "浅海",
+    "color": "#3884b8",
+    "description": "可航行，可建造港口",
+    "icon": "🌊",
+    "isWater": true,
+    "isPassable": true,
+    "movementCost": 2
   }
-}
+]

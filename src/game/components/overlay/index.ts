@@ -5,6 +5,7 @@ export { default as AITurnOverlay } from './AITurnOverlay.vue';
 export { default as Compass } from './Compass.vue';
 export { default as DirectionIndicator } from './DirectionIndicator.vue';
 export { default as TileInfoPanel } from './TileInfoPanel.vue';
+export { default as TileUnitsPanel } from './TileUnitsPanel.vue';
 export { default as CombatLog } from './CombatLog.vue';
 export { default as CombatResultModal } from './CombatResultModal.vue';
 export { default as UnitInfoPanel } from './UnitInfoPanel.vue';

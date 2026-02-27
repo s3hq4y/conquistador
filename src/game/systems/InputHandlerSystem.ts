@@ -49,42 +49,71 @@ export class InputHandlerSystem extends GameSystem {
     if (!this.mapSystem || !this.movementSystem || !this.unitRenderSystem) return;
     if (e.button !== 0) return;
 
+    if (this.gameEventStore.showTileUnits) {
+      this.gameEventStore.clearTileUnits();
+    }
+
     const camera = this.engine.getCamera();
     const worldPos = camera.screenToWorld(e.clientX, e.clientY);
     const grid = this.mapSystem.getGrid();
     const hexPos = grid.pixelToHex(worldPos.x, worldPos.z);
     const tileKey = `${hexPos.q},${hexPos.r}`;
 
-    const clickedUnit = this.movementSystem.getUnitAt(hexPos.q, hexPos.r);
+    const clickedUnits = this.movementSystem.getUnitsAt(hexPos.q, hexPos.r);
 
-    if (clickedUnit) {
-      if (this.selectionSystem?.isCurrentPlayerUnit(clickedUnit)) {
-        this.selectionSystem.clearSelection();
-        this.selectionSystem.selectUnit(clickedUnit);
+    if (clickedUnits.length > 0) {
+      this.selectionSystem?.selectTile(tileKey, hexPos.q, hexPos.r);
+      
+      const topUnit = this.movementSystem.getTopUnitAt(hexPos.q, hexPos.r);
+      if (!topUnit) return;
+
+      if (this.selectionSystem?.isCurrentPlayerUnit(topUnit)) {
+        this.selectionSystem.selectUnit(topUnit);
         return;
       } else {
-        this.selectionSystem?.selectEnemyUnit(clickedUnit);
+        this.selectionSystem?.selectEnemyUnit(topUnit);
 
         if (this.selectionSystem?.isTileAttackable(tileKey)) {
-          this.executeAttack(this.selectionSystem.getSelectedUnitId()!, clickedUnit);
+          this.executeAttack(this.selectionSystem.getSelectedUnitId()!, topUnit);
           return;
         }
       }
+      return;
     }
 
     const reachableTiles = this.selectionSystem?.getReachableTiles() ?? new Set();
 
     if (reachableTiles.has(tileKey)) {
+      const selectedId = this.unitRenderSystem.getSelectedUnitId();
+      if (!selectedId) return;
+
+      const selectedUnit = this.movementSystem.getUnit(selectedId);
+      if (!selectedUnit) return;
+
+      const oldTile = this.movementSystem.getTileAt(selectedUnit.q, selectedUnit.r);
+      if (oldTile) {
+        oldTile.removeUnit(selectedId);
+      }
+
       const success = this.unitRenderSystem.moveSelectedUnit(hexPos.q, hexPos.r);
       if (success) {
+        const newTile = this.movementSystem.getTileAt(hexPos.q, hexPos.r);
+        if (newTile) {
+          newTile.addUnit(selectedId);
+        }
+
         debug.movement('Moved to', hexPos.q, hexPos.r);
-        const selectedId = this.unitRenderSystem.getSelectedUnitId();
-        if (selectedId) {
-          this.unitRenderSystem.selectUnit(selectedId);
-          const unit = this.movementSystem?.getUnit(selectedId);
+        const newSelectedId = this.unitRenderSystem.getSelectedUnitId();
+        if (newSelectedId) {
+          this.unitRenderSystem.selectUnit(newSelectedId);
+          const unit = this.movementSystem?.getUnit(newSelectedId);
           if (unit && this.movementSystem?.canAttack(unit.id)) {
             this.selectionSystem?.highlightAttackableTiles(unit);
           }
+        }
+      } else {
+        if (oldTile) {
+          oldTile.addUnit(selectedId);
         }
       }
       return;
@@ -141,13 +170,32 @@ export class InputHandlerSystem extends GameSystem {
         }
       }
 
+      const defenderQ = defender.q;
+      const defenderR = defender.r;
+
       if (attacker.hp <= 0) {
+        const attackerTile = this.movementSystem!.getTileAt(attacker.q, attacker.r);
+        if (attackerTile) {
+          attackerTile.removeUnit(attackerId);
+        }
         this.movementSystem!.removeUnit(attackerId);
+        const attackerNewTop = this.movementSystem!.getTopUnitAt(attacker.q, attacker.r);
+        if (attackerNewTop && this.selectionSystem?.isCurrentPlayerUnit(attackerNewTop)) {
+          this.selectionSystem.selectUnit(attackerNewTop);
+        }
         debug.combat('Attacker died');
       }
 
       if (defender.hp <= 0) {
+        const defenderTile = this.movementSystem!.getTileAt(defenderQ, defenderR);
+        if (defenderTile) {
+          defenderTile.removeUnit(defender.id);
+        }
         this.movementSystem!.removeUnit(defender.id);
+        const defenderNewTop = this.movementSystem!.getTopUnitAt(defenderQ, defenderR);
+        if (defenderNewTop && this.selectionSystem?.isCurrentPlayerUnit(defenderNewTop)) {
+          this.selectionSystem.selectUnit(defenderNewTop);
+        }
         debug.combat('Defender died');
       }
 

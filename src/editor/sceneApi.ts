@@ -13,6 +13,7 @@ export interface LocalizedString {
 }
 
 import { debugConfig } from '../core/config';
+import { SCENE_BASE_PATH } from '../core/config';
 import type { EdgeTypeInstance } from '../core/map';
 
 export type IconType = 'emoji' | 'svg' | 'image';
@@ -119,13 +120,13 @@ export async function listScenes(): Promise<SceneListItem[]> {
     console.warn('Failed to fetch scenes from API, falling back to static files');
   }
   
-  const modules = import.meta.glob('/public/scenarios/*/manifest.json', { as: 'json' }) as Record<string, () => Promise<any>>;
+  const modules = import.meta.glob('/game_saves/*/manifest.json', { as: 'json' }) as Record<string, () => Promise<any>>;
   const scenes: SceneListItem[] = [];
   for (const p of Object.keys(modules)) {
     try {
       const loader = modules[p];
       const manifest = await loader();
-      const m = p.match(/\/scenarios\/([^\/]+)\/manifest.json$/);
+      const m = p.match(new RegExp(`${SCENE_BASE_PATH}/([^/]+)/manifest.json$`));
       const id = m ? m[1] : p;
       scenes.push({
         id,
@@ -153,7 +154,7 @@ export async function loadScene(id: string): Promise<SceneData> {
     console.warn('Failed to load scene from API, falling back to static files');
   }
   
-  const base = `/scenarios/${id}`;
+  const base = `${SCENE_BASE_PATH}/${id}`;
   const timestamp = Date.now();
   
   const edgesPromise = fetch(`${base}/edges.json?t=${timestamp}`).then(r => { 

@@ -17,6 +17,8 @@ export interface DebugConfig {
   };
 }
 
+export const SCENE_BASE_PATH = '/game_saves';
+
 function getDebugFromUrl(): Partial<DebugConfig['editor'] & DebugConfig['game']> {
   if (typeof window === 'undefined') return {};
   

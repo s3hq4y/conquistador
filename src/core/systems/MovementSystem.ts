@@ -1,5 +1,5 @@
 import { GameSystem } from './GameSystem';
-import { HexGrid, SceneData, TerrainGroups } from '../map';
+import { HexGrid, SceneData, TerrainGroups, Tile } from '../map';
 import type { GameEngine } from '../engine';
 import type { UnitInstance } from '../map/SceneData';
 import { TraitManager } from '../traits';
@@ -21,6 +21,7 @@ interface UnitState {
 
 export class MovementSystem extends GameSystem {
   private grid: HexGrid | null = null;
+  private mapSystem: any = null;
   private terrainGroups: TerrainGroups = {
     land: ['plains', 'grassland', 'forest', 'hill', 'mountain', 'desert', 'tundra'],
     sea: ['shallow_sea', 'deep_sea', 'coast'],
@@ -61,9 +62,9 @@ export class MovementSystem extends GameSystem {
   }
 
   private onMapLoaded(sceneData: SceneData): void {
-    const mapSystem = this.engine.getSystems().find(s => s.constructor.name === 'MapSystem') as any;
-    if (mapSystem && mapSystem.getGrid) {
-      this.grid = mapSystem.getGrid();
+    this.mapSystem = this.engine.getSystems().find(s => s.constructor.name === 'MapSystem');
+    if (this.mapSystem && this.mapSystem.getGrid) {
+      this.grid = this.mapSystem.getGrid();
     }
     this.loadFromSceneData(sceneData);
   }
@@ -72,6 +73,13 @@ export class MovementSystem extends GameSystem {
     if (data.terrainGroups) {
       this.terrainGroups = data.terrainGroups;
     }
+    
+    if (this.grid) {
+      for (const tile of this.grid.getTiles()) {
+        tile.unitOrder = [];
+      }
+    }
+    
     this.units.clear();
     this.unitStates.clear();
     if (data.units) {
@@ -79,6 +87,11 @@ export class MovementSystem extends GameSystem {
         this.units.set(unit.id, { ...unit });
         const maxMoves = this.calculateMovement(unit.traits);
         this.unitStates.set(unit.id, { moves: maxMoves, maxMoves, hasAttacked: false });
+        
+        const tile = this.getTileAt(unit.q, unit.r);
+        if (tile) {
+          tile.addUnit(unit.id);
+        }
       });
     }
   }
@@ -135,6 +148,91 @@ export class MovementSystem extends GameSystem {
       }
     }
     return undefined;
+  }
+
+  getUnitsAt(q: number, r: number): UnitInstance[] {
+    return Array.from(this.units.values()).filter(u => u.q === q && u.r === r);
+  }
+
+  getTopUnitAt(q: number, r: number): UnitInstance | undefined {
+    const tile = this.getTileAt(q, r);
+    if (!tile || tile.unitOrder.length === 0) return undefined;
+    const topUnitId = tile.unitOrder[0];
+    return this.units.get(topUnitId);
+  }
+
+  getTileAt(q: number, r: number): Tile | undefined {
+    if (!this.mapSystem || !this.mapSystem.getGrid) return undefined;
+    return this.mapSystem.getGrid().getTile(q, r);
+  }
+
+  getUnitCategory(unit: UnitInstance): 'army' | 'building' {
+    if (!this.traitManager || !unit.traits || unit.traits.length === 0) {
+      return 'army';
+    }
+    const firstTrait = unit.traits[0];
+    const trait = this.traitManager.getTrait(firstTrait);
+    if (trait && trait.type === 'soldierType') {
+      return 'army';
+    }
+    return 'building';
+  }
+
+  canPlaceUnit(q: number, r: number, category?: 'army' | 'building'): boolean {
+    const tile = this.getTileAt(q, r);
+    if (!tile) return false;
+    const unitCategory = category || 'army';
+    if (unitCategory === 'army') {
+      return tile.canAddArmy();
+    } else {
+      return tile.canAddBuilding();
+    }
+  }
+
+  addUnitToTile(unit: UnitInstance): boolean {
+    const category = this.getUnitCategory(unit);
+    if (!this.canPlaceUnit(unit.q, unit.r, category)) {
+      return false;
+    }
+    this.addUnit(unit);
+    const tile = this.getTileAt(unit.q, unit.r);
+    if (tile) {
+      tile.addUnit(unit.id);
+    }
+    return true;
+  }
+
+  removeUnitFromTile(id: string): boolean {
+    const unit = this.units.get(id);
+    if (!unit) return false;
+    const tile = this.getTileAt(unit.q, unit.r);
+    if (tile) {
+      tile.removeUnit(id);
+    }
+    return this.removeUnit(id);
+  }
+
+  reorderUnitsOnTile(q: number, r: number, newOrder: string[]): boolean {
+    const tile = this.getTileAt(q, r);
+    if (!tile) return false;
+    const currentUnits = this.getUnitsAt(q, r);
+    const currentIds = currentUnits.map(u => u.id);
+    for (const unitId of newOrder) {
+      if (!currentIds.includes(unitId)) return false;
+    }
+    tile.setUnitOrder(newOrder);
+    return true;
+  }
+
+  getTileCapacity(q: number, r: number): { army: number; building: number; armyCount: number; buildingCount: number } | null {
+    const tile = this.getTileAt(q, r);
+    if (!tile) return null;
+    return {
+      army: tile.getArmyCapacity(),
+      building: tile.getBuildingCapacity(),
+      armyCount: tile.getArmyCount(),
+      buildingCount: tile.getBuildingCount()
+    };
   }
 
   getUnitsByOwner(owner: string): UnitInstance[] {

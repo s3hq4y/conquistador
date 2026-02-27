@@ -36,6 +36,22 @@ export interface TileInfo {
   r: number
   terrain: string
   owner: string
+  capacity?: {
+    army: number
+    building: number
+    armyCount: number
+    buildingCount: number
+  }
+}
+
+export interface TileUnitInfo {
+  id: string
+  type: string
+  owner: string
+  hp: number
+  maxHp: number
+  traits: string[]
+  isTop: boolean
 }
 
 export const useGameEventStore = defineStore('gameEvent', () => {
@@ -51,6 +67,21 @@ export const useGameEventStore = defineStore('gameEvent', () => {
   const isAITurn = ref(false)
   
   const mapData = ref<any>(null)
+
+  const tileUnits = ref<TileUnitInfo[]>([])
+  const showTileUnits = ref(false)
+  const tileUnitsPosition = ref<{ q: number; r: number } | null>(null)
+
+  let onTileUnitSelect: ((unitId: string) => void) | null = null
+  let onTileUnitReorder: ((newOrder: string[]) => void) | null = null
+
+  function setTileUnitCallbacks(
+    onSelect: (unitId: string) => void,
+    onReorder: (newOrder: string[]) => void
+  ) {
+    onTileUnitSelect = onSelect
+    onTileUnitReorder = onReorder
+  }
 
   function selectUnit(unit: UnitInfo, stats: UnitStats) {
     selectedUnit.value = unit
@@ -99,6 +130,43 @@ export const useGameEventStore = defineStore('gameEvent', () => {
     mapData.value = data
   }
 
+  function selectTileUnits(units: TileUnitInfo[], position: { q: number; r: number }) {
+    tileUnits.value = units
+    showTileUnits.value = true
+    tileUnitsPosition.value = position
+  }
+
+  function clearTileUnits() {
+    tileUnits.value = []
+    showTileUnits.value = false
+    tileUnitsPosition.value = null
+  }
+
+  function reorderTileUnits(newOrder: string[]) {
+    if (tileUnits.value.length === 0) return
+    const reordered: TileUnitInfo[] = []
+    for (let i = 0; i < newOrder.length; i++) {
+      const unitId = newOrder[i]
+      const unit = tileUnits.value.find(u => u.id === unitId)
+      if (unit) {
+        reordered.push({
+          ...unit,
+          isTop: i === 0
+        })
+      }
+    }
+    tileUnits.value = reordered
+    if (onTileUnitReorder) {
+      onTileUnitReorder(newOrder)
+    }
+  }
+
+  function triggerTileUnitSelect(unitId: string) {
+    if (onTileUnitSelect) {
+      onTileUnitSelect(unitId)
+    }
+  }
+
   return {
     selectedUnit,
     unitStats,
@@ -109,6 +177,9 @@ export const useGameEventStore = defineStore('gameEvent', () => {
     currentTurn,
     isAITurn,
     mapData,
+    tileUnits,
+    showTileUnits,
+    tileUnitsPosition,
     selectUnit,
     selectTile,
     clearTileSelection,
@@ -119,6 +190,11 @@ export const useGameEventStore = defineStore('gameEvent', () => {
     setCurrentPlayer,
     setTurn,
     setAITurn,
-    setMapData
+    setMapData,
+    selectTileUnits,
+    clearTileUnits,
+    reorderTileUnits,
+    setTileUnitCallbacks,
+    triggerTileUnitSelect
   }
 })

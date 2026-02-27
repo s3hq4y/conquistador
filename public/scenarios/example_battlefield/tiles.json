@@ -1,795 +1,612 @@
 [
   {
-    "pos": [
-      -4,
-      0
-    ],
-    "components": {
-      "terrain": "shallow_sea",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -4,
+    "r": 0,
+    "terrainId": "forest",
+    "ownerId": "enemy",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      -4,
-      1
-    ],
-    "components": {
-      "terrain": "shallow_sea",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -4,
+    "r": 1,
+    "terrainId": "forest",
+    "ownerId": "enemy",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      -4,
-      2
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "enemy",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -4,
+    "r": 2,
+    "terrainId": "forest",
+    "ownerId": "enemy",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      -4,
-      3
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "enemy",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -4,
+    "r": 3,
+    "terrainId": "forest",
+    "ownerId": "enemy",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      -4,
-      4
-    ],
-    "components": {
-      "terrain": "forest",
-      "owner": "enemy",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -4,
+    "r": 4,
+    "terrainId": "plains",
+    "ownerId": "enemy",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      -3,
-      -1
-    ],
-    "components": {
-      "terrain": "shallow_sea",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -3,
+    "r": -1,
+    "terrainId": "plains",
+    "ownerId": "enemy",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      -3,
-      0
-    ],
-    "components": {
-      "terrain": "shallow_sea",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -3,
+    "r": 0,
+    "terrainId": "plains",
+    "ownerId": "enemy",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      -3,
-      1
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "enemy",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -3,
+    "r": 1,
+    "terrainId": "plains",
+    "ownerId": "enemy",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      -3,
-      2
-    ],
-    "components": {
-      "terrain": "forest",
-      "owner": "enemy",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -3,
+    "r": 2,
+    "terrainId": "forest",
+    "ownerId": "enemy",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      -3,
-      3
-    ],
-    "components": {
-      "terrain": "forest",
-      "owner": "enemy",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -3,
+    "r": 3,
+    "terrainId": "forest",
+    "ownerId": "enemy",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      -3,
-      4
-    ],
-    "components": {
-      "terrain": "forest",
-      "owner": "enemy",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -3,
+    "r": 4,
+    "terrainId": "plains",
+    "ownerId": "enemy",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      -2,
-      -2
-    ],
-    "components": {
-      "terrain": "shallow_sea",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -2,
+    "r": -2,
+    "terrainId": "plains",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      -2,
-      -1
-    ],
-    "components": {
-      "terrain": "shallow_sea",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -2,
+    "r": -1,
+    "terrainId": "forest",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      -2,
-      0
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -2,
+    "r": 0,
+    "terrainId": "plains",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      -2,
-      1
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -2,
+    "r": 1,
+    "terrainId": "plains",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      -2,
-      2
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -2,
+    "r": 2,
+    "terrainId": "plains",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      -2,
-      3
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -2,
+    "r": 3,
+    "terrainId": "plains",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      -2,
-      4
-    ],
-    "components": {
-      "terrain": "forest",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -2,
+    "r": 4,
+    "terrainId": "plains",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      -1,
-      -3
-    ],
-    "components": {
-      "terrain": "shallow_sea",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -1,
+    "r": -3,
+    "terrainId": "shallow_sea",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      -1,
-      -2
-    ],
-    "components": {
-      "terrain": "shallow_sea",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -1,
+    "r": -2,
+    "terrainId": "forest",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      -1,
-      -1
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -1,
+    "r": -1,
+    "terrainId": "plains",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      -1,
-      0
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -1,
+    "r": 0,
+    "terrainId": "plains",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      -1,
-      1
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -1,
+    "r": 1,
+    "terrainId": "plains",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      -1,
-      2
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -1,
+    "r": 2,
+    "terrainId": "plains",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      -1,
-      3
-    ],
-    "components": {
-      "terrain": "forest",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -1,
+    "r": 3,
+    "terrainId": "plains",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      -1,
-      4
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": -1,
+    "r": 4,
+    "terrainId": "plains",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      0,
-      -4
-    ],
-    "components": {
-      "terrain": "shallow_sea",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 0,
+    "r": -4,
+    "terrainId": "shallow_sea",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      0,
-      -3
-    ],
-    "components": {
-      "terrain": "shallow_sea",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 0,
+    "r": -3,
+    "terrainId": "shallow_sea",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      0,
-      -2
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 0,
+    "r": -2,
+    "terrainId": "plains",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      0,
-      -1
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 0,
+    "r": -1,
+    "terrainId": "plains",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      0,
-      0
-    ],
-    "components": {
-      "terrain": "mountain",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 0,
+    "r": 0,
+    "terrainId": "mountain",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      0,
-      1
-    ],
-    "components": {
-      "terrain": "mountain",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 0,
+    "r": 1,
+    "terrainId": "plains",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      0,
-      2
-    ],
-    "components": {
-      "terrain": "mountain",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 0,
+    "r": 2,
+    "terrainId": "plains",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      0,
-      3
-    ],
-    "components": {
-      "terrain": "forest",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 0,
+    "r": 3,
+    "terrainId": "forest",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      0,
-      4
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 0,
+    "r": 4,
+    "terrainId": "forest",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      1,
-      -4
-    ],
-    "components": {
-      "terrain": "shallow_sea",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 1,
+    "r": -4,
+    "terrainId": "shallow_sea",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      1,
-      -3
-    ],
-    "components": {
-      "terrain": "shallow_sea",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 1,
+    "r": -3,
+    "terrainId": "shallow_sea",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      1,
-      -2
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 1,
+    "r": -2,
+    "terrainId": "plains",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      1,
-      -1
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 1,
+    "r": -1,
+    "terrainId": "plains",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      1,
-      0
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 1,
+    "r": 0,
+    "terrainId": "plains",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      1,
-      1
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 1,
+    "r": 1,
+    "terrainId": "plains",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      1,
-      2
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 1,
+    "r": 2,
+    "terrainId": "forest",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      1,
-      3
-    ],
-    "components": {
-      "terrain": "forest",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 1,
+    "r": 3,
+    "terrainId": "forest",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      2,
-      -4
-    ],
-    "components": {
-      "terrain": "shallow_sea",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 2,
+    "r": -4,
+    "terrainId": "shallow_sea",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      2,
-      -3
-    ],
-    "components": {
-      "terrain": "shallow_sea",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 2,
+    "r": -3,
+    "terrainId": "shallow_sea",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      2,
-      -2
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 2,
+    "r": -2,
+    "terrainId": "plains",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      2,
-      -1
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 2,
+    "r": -1,
+    "terrainId": "plains",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      2,
-      0
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 2,
+    "r": 0,
+    "terrainId": "plains",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      2,
-      1
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 2,
+    "r": 1,
+    "terrainId": "forest",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      2,
-      2
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 2,
+    "r": 2,
+    "terrainId": "forest",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      3,
-      -4
-    ],
-    "components": {
-      "terrain": "shallow_sea",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 3,
+    "r": -4,
+    "terrainId": "shallow_sea",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      3,
-      -3
-    ],
-    "components": {
-      "terrain": "shallow_sea",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 3,
+    "r": -3,
+    "terrainId": "shallow_sea",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      3,
-      -2
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "player",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 3,
+    "r": -2,
+    "terrainId": "plains",
+    "ownerId": "player",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      3,
-      -1
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "player",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 3,
+    "r": -1,
+    "terrainId": "forest",
+    "ownerId": "player",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      3,
-      0
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "player",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 3,
+    "r": 0,
+    "terrainId": "forest",
+    "ownerId": "player",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      3,
-      1
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "player",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 3,
+    "r": 1,
+    "terrainId": "plains",
+    "ownerId": "player",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      4,
-      -4
-    ],
-    "components": {
-      "terrain": "shallow_sea",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 4,
+    "r": -4,
+    "terrainId": "shallow_sea",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      4,
-      -3
-    ],
-    "components": {
-      "terrain": "shallow_sea",
-      "owner": "neutral",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 4,
+    "r": -3,
+    "terrainId": "shallow_sea",
+    "ownerId": "neutral",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      4,
-      -2
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "player",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 4,
+    "r": -2,
+    "terrainId": "forest",
+    "ownerId": "player",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      4,
-      -1
-    ],
-    "components": {
-      "terrain": "plains",
-      "owner": "player",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 4,
+    "r": -1,
+    "terrainId": "plains",
+    "ownerId": "player",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   },
   {
-    "pos": [
-      4,
-      0
-    ],
-    "components": {
-      "terrain": "forest",
-      "owner": "player",
-      "building": null,
-      "district": null,
-      "deposit": null
-    }
+    "q": 4,
+    "r": 0,
+    "terrainId": "forest",
+    "ownerId": "player",
+    "building": null,
+    "districtKey": null,
+    "preciousDeposit": false,
+    "oilDeposit": false
   }
 ]

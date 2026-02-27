@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 interface SelectedTile {
@@ -6,6 +7,12 @@ interface SelectedTile {
   r: number;
   terrain: string;
   owner: string;
+  capacity?: {
+    army: number;
+    building: number;
+    armyCount: number;
+    buildingCount: number;
+  };
 }
 
 const props = defineProps<{
@@ -15,6 +22,35 @@ const props = defineProps<{
 }>();
 
 const { t } = useI18n();
+
+const hasCapacity = computed(() => {
+  return props.selectedTile?.capacity !== undefined;
+});
+
+const armyDisplay = computed(() => {
+  if (!props.selectedTile?.capacity) return '';
+  return `${props.selectedTile.capacity.armyCount}/${props.selectedTile.capacity.army}`;
+});
+
+const buildingDisplay = computed(() => {
+  if (!props.selectedTile?.capacity) return '';
+  return `${props.selectedTile.capacity.buildingCount}/${props.selectedTile.capacity.building}`;
+});
+
+const isArmyFull = computed(() => {
+  if (!props.selectedTile?.capacity) return false;
+  return props.selectedTile.capacity.armyCount >= props.selectedTile.capacity.army;
+});
+
+const isBuildingFull = computed(() => {
+  if (!props.selectedTile?.capacity) return false;
+  return props.selectedTile.capacity.buildingCount >= props.selectedTile.capacity.building;
+});
+
+const hasMultipleUnits = computed(() => {
+  if (!props.selectedTile?.capacity) return false;
+  return props.selectedTile.capacity.armyCount > 1;
+});
 </script>
 
 <template>
@@ -36,6 +72,37 @@ const { t } = useI18n();
           <span class="text-stone-500">{{ t('game.owner') }}</span>
           <span class="text-stone-300">{{ ownerName }}</span>
         </div>
+        
+        <template v-if="hasCapacity">
+          <div class="pt-2 border-t border-stone-800/50 space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-stone-500">{{ t('game.army') || '军队' }}</span>
+              <div class="flex items-center gap-2">
+                <span 
+                  class="font-medium"
+                  :class="isArmyFull ? 'text-red-400' : 'text-green-400'"
+                >
+                  {{ armyDisplay }}
+                </span>
+                <span 
+                  v-if="hasMultipleUnits"
+                  class="px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-xs rounded"
+                >
+                  {{ t('game.multi') || '多单位' }}
+                </span>
+              </div>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-stone-500">{{ t('game.building') || '建筑' }}</span>
+              <span 
+                class="font-medium"
+                :class="isBuildingFull ? 'text-red-400' : 'text-green-400'"
+              >
+                {{ buildingDisplay }}
+              </span>
+            </div>
+          </div>
+        </template>
       </div>
       <div v-else class="text-stone-500 text-sm">
         {{ t('game.tileInfoPlaceholder') }}

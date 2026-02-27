@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { useGameStore, type OwnerStates, type PlayerInfo } from '../stores/game';
+import { useGameStore, type OwnerStates } from '../stores/game';
 import { useGameEventStore } from '../stores/gameEvent';
 import { debugConfig } from '../core/config';
 import {
@@ -18,7 +18,8 @@ import {
   UnitInfoPanel,
   EndTurnButton,
   ZoomControls,
-  KeyboardHints
+  KeyboardHints,
+  TileUnitsPanel
 } from './components/overlay';
 
 interface UnitStats {
@@ -62,6 +63,15 @@ const isHotseat = computed(() => gameStore.isHotseat);
 const isAITurn = computed(() => gameEventStore.isAITurn);
 
 const selectedTile = computed(() => gameEventStore.selectedTile);
+
+const tileUnits = computed(() => gameEventStore.tileUnits);
+const showTileUnits = computed(() => gameEventStore.showTileUnits);
+const tileUnitsPosition = computed(() => gameEventStore.tileUnitsPosition);
+
+const tileCapacity = computed(() => {
+  if (!selectedTile.value?.capacity) return null;
+  return selectedTile.value.capacity;
+});
 
 const ownerName = computed(() => {
   if (!selectedTile.value) return '';
@@ -231,6 +241,18 @@ const closeUnitInfo = () => {
   gameEventStore.clearSelection();
 };
 
+const handleTileUnitSelect = (unitId: string) => {
+  gameEventStore.triggerTileUnitSelect(unitId);
+};
+
+const handleTileUnitReorder = (newOrder: string[]) => {
+  gameEventStore.reorderTileUnits(newOrder);
+};
+
+const handleTileUnitsClose = () => {
+  gameEventStore.clearTileUnits();
+};
+
 onMounted(() => {
   const canvas = document.getElementById('gameCanvas');
   if (canvas) {
@@ -306,6 +328,16 @@ onUnmounted(() => {
       :unit="selectedUnit?.unit || null"
       :stats="selectedUnit?.stats || null"
       @close="closeUnitInfo"
+    />
+
+    <TileUnitsPanel
+      v-if="showTileUnits"
+      :units="tileUnits"
+      :capacity="tileCapacity"
+      :position="tileUnitsPosition"
+      @select="handleTileUnitSelect"
+      @reorder="handleTileUnitReorder"
+      @close="handleTileUnitsClose"
     />
 
     <EndTurnButton @click="handleEndTurn" />
