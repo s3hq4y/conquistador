@@ -56,6 +56,7 @@ export class HexTile {
   private attackableHighlight: pc.Entity | null = null; // 可攻击范围高亮
 
   // ==================== 地形与归属 ====================
+  private terrainDef: TerrainTypeDefinition;   // 地形类型定义
   private ownerDef: OwnerTagDefinition | null = null;   // 地块归属定义
   private borderEdges: number[] = [];                  // 边境边索引列表
   private hexSize: number = 0;                         // 六边形大小
@@ -91,6 +92,7 @@ export class HexTile {
     this.entity = new pc.Entity(`Tile_${tile.q}_${tile.r}`);
     this.tile = tile;
     this.ownerDef = ownerDef;
+    this.terrainDef = terrainDef;
     this.hexSize = hexSize;
     this.graphicsDevice = app.graphicsDevice;
     
@@ -505,6 +507,36 @@ export class HexTile {
     this.material.diffuse = terrainColor.clone();
     this.material.emissive = terrainColor.clone();
     this.updateEmissive();
+  }
+
+  /**
+   * 刷新地块材质纹理
+   * 当纹理异步加载完成后调用此方法更新材质
+   * @param textureManager - 纹理管理器
+   */
+  public refreshTerrain(textureManager: TextureManager): void {
+    const terrainDef = this.getTerrainDef();
+    if (!terrainDef) return;
+
+    if (terrainDef.texture) {
+      const texture = textureManager.getTexture(terrainDef.texture, 210);
+      if (texture) {
+        this.material.diffuseMap = texture;
+        this.material.diffuse = new pc.Color(1, 1, 1);
+        this.material.useLighting = false;
+        this.material.emissiveMap = texture;
+        this.material.emissive = new pc.Color(1, 1, 1);
+        this.material.emissiveIntensity = 1;
+        this.material.update();
+      }
+    }
+  }
+
+  /**
+   * 获取当前地块的地形定义
+   */
+  private getTerrainDef(): TerrainTypeDefinition | null {
+    return this.terrainDef;
   }
 
   /**

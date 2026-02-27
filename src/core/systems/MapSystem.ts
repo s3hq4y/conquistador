@@ -61,21 +61,12 @@ export class MapSystem extends GameSystem {
       return Promise.resolve();
     }
     
-    // 预加载所有纹理 - 使用 timeout 避免无限等待
+    // 预加载所有纹理
     const loadPromises = Array.from(textureConfigs.entries()).map(([path, rotateDegrees]) => {
-      const timeoutPromise = new Promise((resolve) => 
-        setTimeout(() => {
-          debug.scene('Texture load timeout for:', path);
-          resolve(null);
-        }, 3000) // 3秒超时
-      );
-      return Promise.race([
-        this.textureManager.loadTexture(path, rotateDegrees).catch(err => {
-          debug.scene('Failed to load texture:', path, err);
-          return null;
-        }),
-        timeoutPromise
-      ]);
+      return this.textureManager.loadTexture(path, rotateDegrees).catch(err => {
+        debug.scene('Failed to load texture:', path, err);
+        return null;
+      });
     });
     
     try {
@@ -85,7 +76,22 @@ export class MapSystem extends GameSystem {
     }
     
     debug.scene('preloadTerrainTextures: proceeding with tile creation (with or without textures)');
+    
+    // 纹理加载完成后，刷新所有地块材质
+    this.refreshAllTileTextures();
+    
     return;
+  }
+  
+  /**
+   * 刷新所有地块的材质纹理
+   * 在纹理异步加载完成后调用
+   */
+  private refreshAllTileTextures(): void {
+    for (const hexTile of this.tileEntities.values()) {
+      hexTile.refreshTerrain(this.textureManager);
+    }
+    debug.scene('refreshAllTileTextures: refreshed', this.tileEntities.size, 'tiles');
   }
 
   update(_dt: number): void {

@@ -185,6 +185,7 @@
   },
   "active": "9044a28c07444273",
   "lastOpenFiles": [
+    "vite.config.ts.timestamp-1772206046566-66d772eff2fc.mjs",
     "vite.config.ts.timestamp-1772147548570-96c34601394b7.mjs",
     "src/core/systems/StackSystem.ts",
     "src/core/systems/BuildingSystem.ts",
@@ -196,7 +197,6 @@
     "public/game_saves/example_battlefield/example_battlefield/units.json",
     "public/game_saves/example_battlefield/example_battlefield/traits.json",
     "public/game_saves/example_battlefield/example_battlefield/tiles.json",
-    "public/game_saves/example_battlefield/example_battlefield/textures",
     "docs/features.md",
     "public/scenarios/example_battlefield/textures/terrain/plains.png",
     "docs/bug-fix-summary.md"

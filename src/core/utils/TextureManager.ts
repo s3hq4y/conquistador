@@ -28,10 +28,10 @@ export class TextureManager {
 
       return new Promise<pc.Texture | null>((resolve) => {
         const img = new Image();
+        
         img.onload = () => {
           let finalImage: HTMLImageElement | HTMLCanvasElement = img;
           
-          // 如果需要旋转，用 Canvas 旋转图片
           if (rotateDegrees !== 0) {
             finalImage = this.rotateImage(img, rotateDegrees);
           }
@@ -54,12 +54,14 @@ export class TextureManager {
           debug.texture(`Loaded texture: ${cacheKey}`);
           resolve(texture);
         };
+        
         img.onerror = () => {
           URL.revokeObjectURL(url);
           debug.texture(`Failed to create texture: ${path}`);
           resolve(null);
         };
-
+        
+        img.src = url;
       });
     } catch (error) {
       debug.texture(`Error loading texture ${path}:`, error);
