@@ -12,7 +12,7 @@ export interface LocalizedString {
   [lang: string]: string;
 }
 
-import { debugConfig } from '../core/config';
+import { debug } from '../core/utils/debug';
 import { SCENE_BASE_PATH } from '../core/config';
 import type { EdgeTypeInstance } from '../core/map';
 
@@ -117,7 +117,7 @@ export async function listScenes(): Promise<SceneListItem[]> {
       return data.scenes;
     }
   } catch (e) {
-    console.warn('Failed to fetch scenes from API, falling back to static files');
+    debug.editor('sceneApi', 'Failed to fetch scenes from API, falling back to static files');
   }
   
   const modules = import.meta.glob('/game_saves/*/manifest.json', { as: 'json' }) as Record<string, () => Promise<any>>;
@@ -151,7 +151,7 @@ export async function loadScene(id: string): Promise<SceneData> {
       return data.scene as SceneData;
     }
   } catch (e) {
-    console.warn('Failed to load scene from API, falling back to static files');
+    debug.editor('sceneApi', 'Failed to load scene from API, falling back to static files');
   }
   
   const base = `${SCENE_BASE_PATH}/${id}`;
@@ -188,13 +188,11 @@ export async function loadScene(id: string): Promise<SceneData> {
     terrainGroupsPromise
   ]);
 
-  if (debugConfig.editor.sceneApi) {
-    console.log('[sceneApi] After Promise.all, edges type:', typeof edges, 'value:', edges);
-    console.log('[sceneApi] Is array:', Array.isArray(edges), 'Length:', edges?.length);
-    console.log('[sceneApi] edgeTypes:', edgeTypes);
-    console.log('[sceneApi] units:', units);
-    console.log('[sceneApi] terrainGroups:', terrainGroups);
-  }
+  debug.editor('sceneApi', 'After Promise.all, edges type:', typeof edges, 'value:', edges);
+  debug.editor('sceneApi', 'Is array:', Array.isArray(edges), 'Length:', edges?.length);
+  debug.editor('sceneApi', 'edgeTypes:', edgeTypes);
+  debug.editor('sceneApi', 'units:', units);
+  debug.editor('sceneApi', 'terrainGroups:', terrainGroups);
 
   const sceneData: SceneData = {
     version: manifest.version,

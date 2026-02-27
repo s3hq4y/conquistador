@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useGameStore } from '@/stores/game';
-import type { TileUnitInfo } from '@/stores/gameEvent';
+import { useGameEventStore, type TileUnitInfo } from '@/stores/gameEvent';
 
 interface TileCapacity {
   army: number;

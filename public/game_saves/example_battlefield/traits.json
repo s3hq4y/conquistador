@@ -1,10 +1,27 @@
 {
+  "unitCategories": {
+    "army": {
+      "id": "army",
+      "name": "军队",
+      "icon": "⚔️",
+      "capacityType": "army",
+      "traitTypes": ["soldierType"]
+    },
+    "building": {
+      "id": "building",
+      "name": "建筑",
+      "icon": "🏰",
+      "capacityType": "building",
+      "traitTypes": ["buildingType"]
+    }
+  },
   "traitTypes": {
     "soldierType": { "id": "soldierType", "name": "兵种", "icon": "⚔️", "description": "单位的基础类型，决定基础属性" },
     "weapon": { "id": "weapon", "name": "武器", "icon": "🗡️", "description": "单位装备的武器，提供攻击加成" },
     "armor": { "id": "armor", "name": "护甲", "icon": "🛡️", "description": "单位装备的护甲，提供防御加成" },
     "tag": { "id": "tag", "name": "标签", "icon": "🏷️", "description": "分类标签，用于战斗克制计算" },
-    "ability": { "id": "ability", "name": "能力", "icon": "⭐", "description": "特殊能力或技能" }
+    "ability": { "id": "ability", "name": "能力", "icon": "⭐", "description": "特殊能力或技能" },
+    "buildingType": { "id": "buildingType", "name": "建筑", "icon": "🏰", "description": "建筑类型，决定生产能力和耐久度" }
   },
   "traits": {
     "coldWeapon": {
@@ -250,6 +267,21 @@
       "combatBonuses": [
         { "targetTrait": "lightArmor", "bonusType": "add", "value": 3, "description": "精英射手对轻甲目标有额外伤害" }
       ]
+    },
+    "city": {
+      "id": "city",
+      "name": "城市",
+      "type": "buildingType",
+      "description": "主要城镇建筑，每回合产出金币",
+      "stats": {
+        "hp": 200,
+        "defense": 10,
+        "movement": 0,
+        "range": 0
+      },
+      "production": {
+        "ducat": 10
+      }
     }
   }
 }

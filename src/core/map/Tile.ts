@@ -65,14 +65,29 @@ export class Tile {
     return this.unitOrder.length > 0 ? this.unitOrder[0] : null;
   }
 
-  addUnit(unitId: string): boolean {
+  addUnit(unitId: string, category: UnitCategory = 'army'): boolean {
+    if (category === 'building') {
+      if (!this.canAddBuilding()) return false;
+      if (this.building !== null) return false;
+      this.building = unitId;
+      return true;
+    }
+    
     if (!this.canAddArmy()) return false;
     if (this.unitOrder.includes(unitId)) return false;
     this.unitOrder.push(unitId);
     return true;
   }
 
-  removeUnit(unitId: string): boolean {
+  removeUnit(unitId: string, category?: UnitCategory): boolean {
+    if (category === 'building' || (category === undefined && this.building === unitId)) {
+      if (this.building === unitId) {
+        this.building = null;
+        return true;
+      }
+      return false;
+    }
+    
     const index = this.unitOrder.indexOf(unitId);
     if (index === -1) return false;
     this.unitOrder.splice(index, 1);

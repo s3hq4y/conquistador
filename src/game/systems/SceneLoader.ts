@@ -4,6 +4,8 @@ import { MapSystem, MovementSystem, EdgeSystem } from '../../core/systems';
 import type { SceneData } from '../../core/map';
 import type { OwnerStates } from '../../stores/game';
 import { TraitManager } from '../../core/traits/TraitManager';
+import { SCENE_BASE_PATH } from '../../core/config';
+import { debug } from '../../core/utils/debug';
 
 export class SceneLoader extends GameSystem {
   private mapSystem: MapSystem | null = null;
@@ -31,7 +33,7 @@ export class SceneLoader extends GameSystem {
 
     if (!this.traitManager) {
       this.traitManager = new TraitManager();
-      console.log('[SceneLoader] Created new TraitManager');
+      debug.scene('Created new TraitManager');
     }
   }
 
@@ -50,6 +52,18 @@ export class SceneLoader extends GameSystem {
 
     try {
       const { sceneData, ownerStates } = await this.loadSceneFromFolder(targetSceneId);
+
+      const traitsData = await fetch(`${SCENE_BASE_PATH}/${targetSceneId}/traits.json`).then(r => r.json());
+      if (this.traitManager) {
+        this.traitManager.loadTraitData(traitsData);
+        debug.scene('Traits loaded:', Object.keys(traitsData.traits).length, 'traits');
+        
+        if (this.movementSystem) {
+          this.movementSystem.setTraitManager(this.traitManager);
+          debug.scene('TraitManager set to MovementSystem');
+        }
+      }
+
       this.mapSystem.loadSceneData(sceneData);
 
       if (this.edgeSystem && sceneData.edges) {
@@ -60,26 +74,22 @@ export class SceneLoader extends GameSystem {
         this.movementSystem.loadFromSceneData(sceneData);
       }
 
-      const traitsData = await fetch(`/game_saves/${targetSceneId}/traits.json`).then(r => r.json());
-      if (this.traitManager) {
-        this.traitManager.loadTraitData(traitsData);
-        console.log('[SceneLoader] Traits loaded:', Object.keys(traitsData.traits).length, 'traits');
-      }
-
       if (window.__setOwnerStates) {
         window.__setOwnerStates(ownerStates);
       }
 
-      console.log('[SceneLoader] Demo scene loaded:', sceneData.name, 'edges:', sceneData.edges?.length, 'units:', sceneData.units?.length);
+      debug.scene('Demo scene loaded:', sceneData.name, 'edges:', sceneData.edges?.length, 'units:', sceneData.units?.length);
     } catch (error) {
-      console.error('[SceneLoader] Failed to load demo scene:', error);
+      debug.scene('Failed to load demo scene:', error);
     }
   }
 
   private async loadSceneFromFolder(sceneId: string): Promise<{ sceneData: SceneData; ownerStates: OwnerStates }> {
-    const basePath = `/game_saves/${sceneId}`;
+    const basePath = `${SCENE_BASE_PATH}/${sceneId}`;
 
-    const [manifest, terrainTypes, ownerTags, tiles, edges, units, terrainGroups, ownerStates] = await Promise.all([
+    debug.scene('loadSceneFromFolder: loading from', basePath);
+
+    const [manifest, terrainTypes, ownerTags, tiles, edges, units, terrainGroups, ownerStates, edgeTypes] = await Promise.all([
       fetch(`${basePath}/manifest.json`).then(r => r.json()),
       fetch(`${basePath}/terrain_types.json`).then(r => r.json()),
       fetch(`${basePath}/owner_tags.json`).then(r => r.json()),
@@ -87,8 +97,11 @@ export class SceneLoader extends GameSystem {
       fetch(`${basePath}/edges.json`).then(r => r.json()).catch(() => []),
       fetch(`${basePath}/units.json`).then(r => r.json()).catch(() => []),
       fetch(`${basePath}/terrain_groups.json`).then(r => r.json()).catch(() => null),
-      fetch(`${basePath}/owner_states.json`).then(r => r.json()).catch(() => ({}))
+      fetch(`${basePath}/owner_states.json`).then(r => r.json()).catch(() => ({})),
+      fetch(`${basePath}/edge_types.json`).then(r => r.json()).catch(() => ({}))
     ]);
+
+    debug.scene('loadSceneFromFolder: loaded', tiles.length, 'tiles,', edges.length, 'edges');
 
     const sceneData: SceneData = {
       version: manifest.version,
@@ -104,7 +117,8 @@ export class SceneLoader extends GameSystem {
       tiles: tiles as any[],
       edges: edges as any[],
       units: units as any[],
-      terrainGroups: terrainGroups as any
+      terrainGroups: terrainGroups as any,
+      edgeTypes: edgeTypes as any
     };
 
     return { sceneData, ownerStates: ownerStates as OwnerStates };

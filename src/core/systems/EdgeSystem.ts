@@ -1,7 +1,7 @@
 import * as pc from 'playcanvas';
 import type { MapSystem } from './MapSystem';
 import { Tile } from '../map';
-import { debugConfig } from '../config';
+import { debug } from '../utils/debug';
 import { GameSystem } from './GameSystem';
 import type { GameEngine } from '../engine';
 import {
@@ -58,45 +58,33 @@ export class EdgeSystem extends GameSystem {
   }
 
   addEdge(tileA: Tile, tileB: Tile, type: EdgeType, properties?: Record<string, unknown>): boolean {
-    if (debugConfig.editor.edgeSystem) {
-      console.log('[EdgeSystem] addEdge called:', tileA.getKey(), tileB.getKey(), type);
-    }
+    debug.editor('edgeSystem', 'addEdge called:', tileA.getKey(), tileB.getKey(), type);
     if (!this.mapSystem) {
-      if (debugConfig.editor.edgeSystem) {
-        console.warn('[EdgeSystem] No mapSystem');
-      }
+      debug.editor('edgeSystem', 'No mapSystem');
       return false;
     }
 
     const grid = this.mapSystem.getGrid();
     
     if (!grid.areNeighbors(tileA, tileB)) {
-      console.warn('边只能添加在相邻地块之间');
+      debug.editor('edgeSystem', '边只能添加在相邻地块之间');
       return false;
     }
 
     const key = createEdgeKey(tileA, tileB);
-    if (debugConfig.editor.edgeSystem) {
-      console.log('[EdgeSystem] Edge key:', key);
-    }
+    debug.editor('edgeSystem', 'Edge key:', key);
     
     if (this.edges.has(key)) {
-      if (debugConfig.editor.edgeSystem) {
-        console.warn('[EdgeSystem] Edge already exists:', key);
-      }
+      debug.editor('edgeSystem', 'Edge already exists:', key);
       return false;
     }
 
     const sharedEdge = grid.getSharedEdge(tileA, tileB);
     if (!sharedEdge) {
-      if (debugConfig.editor.edgeSystem) {
-        console.warn('[EdgeSystem] No shared edge found');
-      }
+      debug.editor('edgeSystem', 'No shared edge found');
       return false;
     }
-    if (debugConfig.editor.edgeSystem) {
-      console.log('[EdgeSystem] Shared edge:', sharedEdge);
-    }
+    debug.editor('edgeSystem', 'Shared edge:', sharedEdge);
 
     const edgeData: EdgeData = {
       tileA: { q: tileA.q, r: tileA.r },
@@ -106,9 +94,7 @@ export class EdgeSystem extends GameSystem {
     };
 
     this.edges.set(key, edgeData);
-    if (debugConfig.editor.edgeSystem) {
-      console.log('[EdgeSystem] Edge added, total edges:', this.edges.size);
-    }
+    debug.editor('edgeSystem', 'Edge added, total edges:', this.edges.size);
     this.renderEdge(edgeData, sharedEdge.edgeA, sharedEdge.edgeB);
 
     return true;
@@ -139,9 +125,7 @@ export class EdgeSystem extends GameSystem {
   }
 
   loadFromInstances(instances: EdgeInstance[]): void {
-    if (debugConfig.editor.edgeSystem) {
-      console.log('[EdgeSystem] loadFromInstances called, count:', instances.length);
-    }
+    debug.editor('edgeSystem', 'loadFromInstances called, count:', instances.length);
     this.clearAllEdges();
     
     for (const instance of instances) {
@@ -149,9 +133,7 @@ export class EdgeSystem extends GameSystem {
       const tileB = { q: instance.tiles[1][0], r: instance.tiles[1][1] };
       const key = createEdgeKey(tileA, tileB);
       
-      if (debugConfig.editor.edgeSystem) {
-        console.log('[EdgeSystem] Loading edge:', key, instance.type);
-      }
+      debug.editor('edgeSystem', 'Loading edge:', key, instance.type);
       
       const edgeData: EdgeData = {
         tileA,
@@ -163,9 +145,7 @@ export class EdgeSystem extends GameSystem {
       this.edges.set(key, edgeData);
     }
     
-    if (debugConfig.editor.edgeSystem) {
-      console.log('[EdgeSystem] Total edges loaded:', this.edges.size);
-    }
+    debug.editor('edgeSystem', 'Total edges loaded:', this.edges.size);
     this.renderAllEdges();
   }
 

@@ -6,13 +6,21 @@ export interface UnitStats {
   range?: number;
 }
 
-export type TraitType = 'soldierType' | 'weapon' | 'armor' | 'tag' | 'ability';
+export type TraitType = 'soldierType' | 'weapon' | 'armor' | 'tag' | 'ability' | 'buildingType';
 
 export interface TraitTypeDefinition {
   id: string;
   name: string;
   icon: string;
   description?: string;
+}
+
+export interface UnitCategoryDefinition {
+  id: string;
+  name: string;
+  icon: string;
+  capacityType: string;
+  traitTypes: string[];
 }
 
 export type BonusType = 'multiply' | 'add';
@@ -46,9 +54,11 @@ export interface Trait {
   tags?: string[];
   combatBonuses?: CombatBonus[];
   stateEffects?: StateEffect[];
+  production?: Record<string, number>;
 }
 
 export interface TraitData {
+  unitCategories?: Record<string, UnitCategoryDefinition>;
   traitTypes?: Record<string, TraitTypeDefinition>;
   traits: Record<string, Trait>;
 }
@@ -89,5 +99,23 @@ export const DEFAULT_TRAIT_TYPES: Record<string, TraitTypeDefinition> = {
   weapon: { id: 'weapon', name: '武器', icon: '🗡️', description: '单位装备的武器' },
   armor: { id: 'armor', name: '护甲', icon: '🛡️', description: '单位装备的护甲' },
   tag: { id: 'tag', name: '标签', icon: '🏷️', description: '分类标签，无属性加成' },
-  ability: { id: 'ability', name: '能力', icon: '⭐', description: '特殊能力或技能' }
+  ability: { id: 'ability', name: '能力', icon: '⭐', description: '特殊能力或技能' },
+  buildingType: { id: 'buildingType', name: '建筑', icon: '🏰', description: '建筑类型，决定生产能力和耐久度' }
+};
+
+export const DEFAULT_UNIT_CATEGORIES: Record<string, UnitCategoryDefinition> = {
+  army: {
+    id: 'army',
+    name: '军队',
+    icon: '⚔️',
+    capacityType: 'army',
+    traitTypes: ['soldierType']
+  },
+  building: {
+    id: 'building',
+    name: '建筑',
+    icon: '🏰',
+    capacityType: 'building',
+    traitTypes: ['buildingType']
+  }
 };

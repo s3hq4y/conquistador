@@ -4,6 +4,7 @@ import type { GameEngine } from '../engine';
 import { MovementSystem, UnitInstance } from './MovementSystem';
 import { MapSystem } from './MapSystem';
 import type { SceneData } from '../map';
+import { debug } from '../utils/debug';
 
 export class UnitRenderSystem extends GameSystem {
   private mapSystem: MapSystem | null = null;
@@ -22,7 +23,7 @@ export class UnitRenderSystem extends GameSystem {
   }
 
   initialize(): void {
-    console.log('UnitRenderSystem: Initializing');
+    debug.render('UnitRenderSystem: Initializing');
     this.app = this.engine.getApplication();
     this.mapSystem = this.engine.getSystems().find(s => s instanceof MapSystem) as MapSystem;
     this.movementSystem = this.engine.getSystems().find(s => s instanceof MovementSystem) as MovementSystem;
@@ -41,9 +42,9 @@ export class UnitRenderSystem extends GameSystem {
     eventBus.on('units:movesReset', () => this.onMovesReset());
     eventBus.on('map:loaded', (...args: unknown[]) => this.onMapLoaded(args[0] as SceneData));
 
-    console.log('UnitRenderSystem: Calling renderAllUnits');
+    debug.render('UnitRenderSystem: Calling renderAllUnits');
     this.renderAllUnits();
-    console.log('UnitRenderSystem: Initialization complete');
+    debug.render('UnitRenderSystem: Initialization complete');
   }
 
   update(_dt: number): void {
@@ -66,13 +67,13 @@ export class UnitRenderSystem extends GameSystem {
   }
 
   private onMapLoaded(_sceneData: SceneData): void {
-    console.log('UnitRenderSystem: onMapLoaded called');
+    debug.render('UnitRenderSystem: onMapLoaded called');
     this.clearAllUnits();
     this.renderAllUnits();
   }
 
   private clearAllUnits(): void {
-    console.log('UnitRenderSystem: clearAllUnits called');
+    debug.render('UnitRenderSystem: clearAllUnits called');
     this.unitEntities.forEach(entity => entity.destroy());
     this.unitEntities.clear();
     this.unitMovesText.clear();
@@ -81,7 +82,7 @@ export class UnitRenderSystem extends GameSystem {
   }
 
   private onUnitAdded(unit: UnitInstance): void {
-    console.log('UnitRenderSystem: onUnitAdded called for', unit.id);
+    debug.render('UnitRenderSystem: onUnitAdded called for', unit.id);
     this.renderUnit(unit);
   }
 

@@ -3,7 +3,7 @@ import type { EditorTool, PaintMode } from './types';
 import type { EditorUI, SelectedUnit } from '../EditorUI';
 import type { UnitInstance } from '../../core/map/SceneData';
 import { TraitManager } from '../../core/traits';
-import { debugConfig } from '../../core/config';
+import { debug } from '../../core/utils/debug';
 
 export class EditorTools {
   private mapSystem: MapSystem | null;
@@ -36,9 +36,7 @@ export class EditorTools {
 
   getCurrentTool(): EditorTool {
     const tool = this.editorUI?.getCurrentTool() ?? 'paint';
-    if (debugConfig.editor.editorTools) {
-      console.log('EditorTools.getCurrentTool:', tool, 'hasEditorUI:', !!this.editorUI);
-    }
+    debug.editor('editorTools', 'getCurrentTool:', tool, 'hasEditorUI:', !!this.editorUI);
     return tool;
   }
 
@@ -167,7 +165,9 @@ export class EditorTools {
       hp: 100
     };
 
-    this.movementSystem.addUnit(unit);
+    if (!this.movementSystem.addUnitToTile(unit)) {
+      return;
+    }
   }
 
   removeUnitAt(q: number, r: number): boolean {

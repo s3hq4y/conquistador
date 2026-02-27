@@ -35,15 +35,17 @@ export class GameModeSystem extends GameSystem {
     this.inputHandlerSystem = new InputHandlerSystem(this.engine);
     this.sceneLoader = new SceneLoader(this.engine);
 
-    await this.turnSystem.initialize();
-    await this.selectionSystem.initialize();
-    await this.inputHandlerSystem.initialize();
     await this.sceneLoader.initialize();
 
     this.traitManager = this.sceneLoader.getTraitManager();
     if (this.traitManager) {
       this.combatSystem = new CombatSystem(this.traitManager);
+      this.turnSystem.setTraitManager(this.traitManager);
     }
+
+    await this.turnSystem.initialize();
+    await this.selectionSystem.initialize();
+    await this.inputHandlerSystem.initialize();
 
     this.selectionSystem.setDependencies(
       () => this.getCurrentPlayerId(),

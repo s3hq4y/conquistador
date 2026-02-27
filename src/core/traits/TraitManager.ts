@@ -7,20 +7,35 @@ import {
   mergeStats,
   createEmptyStats,
   DEFAULT_TRAIT_TYPES,
+  DEFAULT_UNIT_CATEGORIES,
   StateEffect,
+  UnitCategoryDefinition,
 } from './types';
 import { StateCalculator } from './StateCalculator';
+import { debug } from '../utils/debug';
 
 export class TraitManager {
   private traits: Map<string, Trait> = new Map();
   private traitTypes: Map<string, TraitTypeDefinition> = new Map();
   private traitChildrenCache: Map<string, Set<string>> = new Map();
+  private unitCategories: Map<string, UnitCategoryDefinition> = new Map();
   private stateCalculator: StateCalculator = new StateCalculator();
 
   loadTraitData(data: TraitData): void {
     this.traits.clear();
     this.traitTypes.clear();
     this.traitChildrenCache.clear();
+    this.unitCategories.clear();
+
+    if (data.unitCategories) {
+      for (const [id, categoryDef] of Object.entries(data.unitCategories)) {
+        this.unitCategories.set(id, categoryDef);
+      }
+    } else {
+      for (const [id, categoryDef] of Object.entries(DEFAULT_UNIT_CATEGORIES)) {
+        this.unitCategories.set(id, categoryDef);
+      }
+    }
 
     if (data.traitTypes) {
       for (const [id, typeDef] of Object.entries(data.traitTypes)) {
@@ -38,6 +53,7 @@ export class TraitManager {
 
     this.buildChildrenCache();
     this.validateDependencies();
+    debug.movement(`[TraitManager] Loaded ${this.traits.size} traits, ${this.traitTypes.size} trait types, ${this.unitCategories.size} unit categories`);
   }
 
   private buildChildrenCache(): void {
@@ -75,21 +91,27 @@ export class TraitManager {
   }
 
   private validateDependencies(): void {
+    let warningCount = 0;
     for (const [id, trait] of this.traits) {
       if (trait.requires) {
         for (const reqId of trait.requires) {
           if (!this.traits.has(reqId)) {
-            console.warn(`Trait "${id}" requires non-existent trait "${reqId}"`);
+            debug.movement(`Trait "${id}" requires non-existent trait "${reqId}"`);
+            warningCount++;
           }
         }
       }
       if (trait.children) {
         for (const childId of trait.children) {
           if (!this.traits.has(childId)) {
-            console.warn(`Trait "${id}" has non-existent child trait "${childId}"`);
+            debug.movement(`Trait "${id}" has non-existent child trait "${childId}"`);
+            warningCount++;
           }
         }
       }
+    }
+    if (warningCount > 0) {
+      debug.movement(`[TraitManager] Validation warnings: ${warningCount} missing trait references`);
     }
   }
 
@@ -210,6 +232,7 @@ export class TraitManager {
       }
     }
 
+    debug.movement(`[TraitManager] calculateStats for traits: [${traitIds.join(', ')}] => hp:${stats.hp}, atk:${stats.attack}, def:${stats.defense}, mov:${stats.movement}, rng:${stats.range}`);
     return stats;
   }
 
@@ -237,7 +260,31 @@ export class TraitManager {
   }
 
   hasAnyTrait(traitIds: string[], checkIds: string[]): boolean {
-    const allIds = new Set(this.getUnitAllTraitIds(traitIds));
-    return checkIds.some(id => allIds.has(id));
+    const allIds = this.getUnitAllTraitIds(traitIds);
+    const idSet = new Set(allIds);
+    return checkIds.some(id => idSet.has(id));
+  }
+
+  getUnitCategory(traitIds: string[]): string {
+    if (!traitIds || traitIds.length === 0) {
+      return 'army';
+    }
+
+    for (const category of this.unitCategories.values()) {
+      for (const traitId of traitIds) {
+        const trait = this.traits.get(traitId);
+        if (trait && category.traitTypes.includes(trait.type)) {
+          debug.movement(`[TraitManager] getUnitCategory: traits=[${traitIds.join(', ')}] => category=${category.capacityType} (matched ${traitId} type=${trait.type})`);
+          return category.capacityType;
+        }
+      }
+    }
+
+    debug.movement(`[TraitManager] getUnitCategory: traits=[${traitIds.join(', ')}] => category=army (default)`);
+    return 'army';
+  }
+
+  getAllUnitCategories(): Map<string, UnitCategoryDefinition> {
+    return this.unitCategories;
   }
 }

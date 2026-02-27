@@ -3,7 +3,8 @@ import type { EditorUI } from '../EditorUI';
 import type { SceneData, TerrainTypeDefinition, OwnerTagDefinition } from '../../core/map';
 import type { TraitData } from '../../core/traits';
 import { TraitManager } from '../../core/traits';
-import { debugConfig, SCENE_BASE_PATH } from '../../core/config';
+import { SCENE_BASE_PATH } from '../../core/config';
+import { debug } from '../../core/utils/debug';
 import * as sceneApi from '../sceneApi';
 
 export class SceneManager {
@@ -47,58 +48,42 @@ export class SceneManager {
 
   async saveSceneToServer(): Promise<void> {
     if (!this.mapSystem) {
-      if (debugConfig.editor.sceneManager) {
-        console.warn('[SceneManager] No mapSystem, cannot save');
-      }
+      debug.editor('sceneManager', 'No mapSystem, cannot save');
       return;
     }
     
     try {
       const sceneData = this.mapSystem.getSceneData();
       
-      if (debugConfig.editor.sceneManager) {
-        console.log('[SceneManager] edgeSystem exists:', !!this.edgeSystem);
-        console.log('[SceneManager] Saving scene, edges count:', this.edgeSystem ? this.edgeSystem.toInstances().length : 0);
-      }
+      debug.editor('sceneManager', 'edgeSystem exists:', !!this.edgeSystem);
+      debug.editor('sceneManager', 'Saving scene, edges count:', this.edgeSystem ? this.edgeSystem.toInstances().length : 0);
       
       if (this.edgeSystem) {
         const instances = this.edgeSystem.toInstances();
-        if (debugConfig.editor.sceneManager) {
-          console.log('[SceneManager] Edge instances:', instances);
-        }
+        debug.editor('sceneManager', 'Edge instances:', instances);
         sceneData.edges = instances;
-        if (debugConfig.editor.sceneManager) {
-          console.log('[SceneManager] Edges to save:', JSON.stringify(sceneData.edges));
-        }
+        debug.editor('sceneManager', 'Edges to save:', JSON.stringify(sceneData.edges));
       } else {
-        if (debugConfig.editor.sceneManager) {
-          console.warn('[SceneManager] edgeSystem is null!');
-        }
+        debug.editor('sceneManager', 'edgeSystem is null!');
       }
 
       if (this.movementSystem) {
         sceneData.units = this.movementSystem.getSceneDataUnits();
-        if (debugConfig.editor.sceneManager) {
-          console.log('[SceneManager] Units to save:', JSON.stringify(sceneData.units));
-        }
+        debug.editor('sceneManager', 'Units to save:', JSON.stringify(sceneData.units));
       }
       
       if (this.currentSceneId) {
         await sceneApi.updateScene(this.currentSceneId, sceneData);
-        if (debugConfig.editor.sceneManager) {
-          console.log('Scene updated:', this.currentSceneId);
-        }
+        debug.editor('sceneManager', 'Scene updated:', this.currentSceneId);
       } else {
         const sceneId = await sceneApi.saveScene(sceneData);
         this.currentSceneId = sceneId;
-        if (debugConfig.editor.sceneManager) {
-          console.log('Scene saved:', sceneId);
-        }
+        debug.editor('sceneManager', 'Scene saved:', sceneId);
       }
       
       this.editorUI?.showToast('场景已保存', 'success');
     } catch (error) {
-      console.error('[SceneManager] Failed to save scene:', error);
+      debug.editor('sceneManager', 'Failed to save scene:', error);
       this.editorUI?.showToast('保存场景失败', 'error');
     }
   }
@@ -107,18 +92,17 @@ export class SceneManager {
     if (!this.mapSystem) return false;
     
     try {
-      if (debugConfig.editor.sceneManager) {
-        console.log('[SceneManager] Loading scene:', sceneId);
-      }
+      debug.editor('sceneManager', 'Loading scene:', sceneId);
       const sceneData = await sceneApi.loadScene(sceneId);
-      if (debugConfig.editor.sceneManager) {
-        console.log('[SceneManager] Full sceneData:', { 
-          hasEdges: 'edges' in sceneData, 
-          edgesValue: sceneData.edges,
-          edgesType: typeof sceneData.edges 
-        });
-        console.log('[SceneManager] Loaded scene data, edges:', sceneData.edges?.length || 0);
-      }
+      debug.editor('sceneManager', 'Full sceneData:', { 
+        hasTiles: 'tiles' in sceneData,
+        tilesCount: sceneData.tiles?.length || 0,
+        hasEdges: 'edges' in sceneData, 
+        edgesValue: sceneData.edges,
+        edgesType: typeof sceneData.edges,
+        hexSize: sceneData.settings?.hexSize
+      });
+      debug.editor('sceneManager', 'Loaded scene data, tiles:', sceneData.tiles?.length || 0, 'edges:', sceneData.edges?.length || 0);
       
       const success = this.mapSystem.loadSceneData(sceneData);
       
@@ -127,25 +111,17 @@ export class SceneManager {
         
         if (this.edgeSystem) {
           const edges = sceneData.edges;
-          if (debugConfig.editor.sceneManager) {
-            console.log('[SceneManager] Edge data:', edges);
-          }
+          debug.editor('sceneManager', 'Edge data:', edges);
           if (edges && edges.length > 0) {
-            if (debugConfig.editor.sceneManager) {
-              console.log('[SceneManager] Loading edges:', JSON.stringify(edges));
-            }
+            debug.editor('sceneManager', 'Loading edges:', JSON.stringify(edges));
             this.edgeSystem.loadFromInstances(edges);
           } else {
-            if (debugConfig.editor.sceneManager) {
-              console.log('[SceneManager] No edges to load');
-            }
+            debug.editor('sceneManager', 'No edges to load');
           }
         }
         
         if (this.movementSystem && sceneData.units) {
-          if (debugConfig.editor.sceneManager) {
-            console.log('[SceneManager] Loading units:', sceneData.units.length);
-          }
+          debug.editor('sceneManager', 'Loading units:', sceneData.units.length);
           this.movementSystem.loadFromSceneData(sceneData);
         }
 
@@ -159,7 +135,7 @@ export class SceneManager {
         return false;
       }
     } catch (error) {
-      console.error('[SceneManager] Failed to load scene:', error);
+      debug.editor('sceneManager', 'Failed to load scene:', error);
       this.editorUI?.showToast('加载场景失败', 'error');
       return false;
     }
@@ -175,9 +151,7 @@ export class SceneManager {
         if (this.traitManager) {
           this.traitManager.loadTraitData(traitData);
         }
-        if (debugConfig.editor.sceneManager) {
-          console.log('[SceneManager] Loaded traits:', Object.keys(traitData.traits || {}).length);
-        }
+        debug.editor('sceneManager', 'Loaded traits:', Object.keys(traitData.traits || {}).length);
       } else {
         const fallbackResponse = await fetch(`/game_saves/${sceneId}/traits.json`);
         if (fallbackResponse.ok) {
@@ -190,7 +164,7 @@ export class SceneManager {
         }
       }
     } catch (error) {
-      console.warn('[SceneManager] Failed to load traits:', error);
+      debug.editor('sceneManager', 'Failed to load traits:', error);
     }
   }
 
@@ -246,7 +220,7 @@ export class SceneManager {
           this.editorUI?.showToast('导入场景失败', 'error');
         }
       } catch (error) {
-        console.error('Failed to import scene:', error);
+        debug.editor('sceneManager', 'Failed to import scene:', error);
         this.editorUI?.showToast('导入场景失败', 'error');
       }
     };

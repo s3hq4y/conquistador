@@ -1,12 +1,15 @@
 # Conquistador
 
 ![Static Badge](https://img.shields.io/badge/PlayCanvas-red?style=flat&logo=playcanvas&logoColor=white)
-![Static Badge](https://img.shields.io/badge/Vue-brightgreen?style=flat&logo=vue.js&logoColor=white)
-![Static Badge](https://img.shields.io/badge/Nuxt-brightgreen?style=flat&logo=nuxt&logoColor=white)
+![Static Badge](https://img.shields.io/badge/Vue_3-brightgreen?style=flat&logo=vue.js&logoColor=white)
+![Static Badge](https://img.shields.io/badge/Vite-brightgreen?style=flat&logo=vite&logoColor=white)
 ![Static Badge](https://img.shields.io/badge/Pinia-yellow?style=flat&logo=pinia&logoColor=white)
+![Static Badge](https://img.shields.io/badge/Vue_Router-brightgreen?style=flat&logo=vue.js&logoColor=white)
 ![Static Badge](https://img.shields.io/badge/TypeScript-blue?style=flat&logo=typescript&logoColor=white)
+![Static Badge](https://img.shields.io/badge/Express-gray?style=flat&logo=express&logoColor=white)
 ![Static Badge](https://img.shields.io/badge/EventEmitter3-blue?style=flat&logo=typescript&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-06B6D4?style=flat&logo=tailwindcss&logoColor=white)
+![Static Badge](https://img.shields.io/badge/TailwindCSS-06B6D4?style=flat&logo=tailwindcss&logoColor=white)
+![Static Badge](https://img.shields.io/badge/PostCSS-gray?style=flat&logo=postcss&logoColor=white)
 
 This project is currently a work in progress!
 

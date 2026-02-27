@@ -3,6 +3,7 @@ import { HexGrid, SceneData, TerrainGroups, Tile } from '../map';
 import type { GameEngine } from '../engine';
 import type { UnitInstance } from '../map/SceneData';
 import { TraitManager } from '../traits';
+import { debug } from '../utils/debug';
 
 export type UnitType = 'land' | 'sea' | 'air';
 export type { UnitInstance } from '../map/SceneData';
@@ -77,6 +78,7 @@ export class MovementSystem extends GameSystem {
     if (this.grid) {
       for (const tile of this.grid.getTiles()) {
         tile.unitOrder = [];
+        tile.building = null;
       }
     }
     
@@ -84,14 +86,20 @@ export class MovementSystem extends GameSystem {
     this.unitStates.clear();
     if (data.units) {
       data.units.forEach(unit => {
+        const category = this.getUnitCategory(unit);
+        const capacityType = this.getCapacityTypeForCategory(category);
+        const tile = this.getTileAt(unit.q, unit.r);
+        
+        if (!tile) return;
+        if (capacityType === 'army' && !tile.canAddArmy()) return;
+        if (capacityType === 'building' && !tile.canAddBuilding()) return;
+        
         this.units.set(unit.id, { ...unit });
         const maxMoves = this.calculateMovement(unit.traits);
         this.unitStates.set(unit.id, { moves: maxMoves, maxMoves, hasAttacked: false });
         
-        const tile = this.getTileAt(unit.q, unit.r);
-        if (tile) {
-          tile.addUnit(unit.id);
-        }
+        tile.addUnit(unit.id, capacityType);
+        debug.movement(`[MovementSystem] Loaded unit: ${unit.id} at (${unit.q},${unit.r}) with maxMoves=${maxMoves}`);
       });
     }
   }
@@ -166,16 +174,18 @@ export class MovementSystem extends GameSystem {
     return this.mapSystem.getGrid().getTile(q, r);
   }
 
-  getUnitCategory(unit: UnitInstance): 'army' | 'building' {
+  getUnitCategory(unit: UnitInstance): string {
     if (!this.traitManager || !unit.traits || unit.traits.length === 0) {
       return 'army';
     }
-    const firstTrait = unit.traits[0];
-    const trait = this.traitManager.getTrait(firstTrait);
-    if (trait && trait.type === 'soldierType') {
-      return 'army';
+    return this.traitManager.getUnitCategory(unit.traits);
+  }
+
+  getCapacityTypeForCategory(category: string): 'army' | 'building' {
+    if (category === 'building') {
+      return 'building';
     }
-    return 'building';
+    return 'army';
   }
 
   canPlaceUnit(q: number, r: number, category?: 'army' | 'building'): boolean {
@@ -191,13 +201,14 @@ export class MovementSystem extends GameSystem {
 
   addUnitToTile(unit: UnitInstance): boolean {
     const category = this.getUnitCategory(unit);
-    if (!this.canPlaceUnit(unit.q, unit.r, category)) {
+    const capacityType = this.getCapacityTypeForCategory(category);
+    if (!this.canPlaceUnit(unit.q, unit.r, capacityType)) {
       return false;
     }
     this.addUnit(unit);
     const tile = this.getTileAt(unit.q, unit.r);
     if (tile) {
-      tile.addUnit(unit.id);
+      tile.addUnit(unit.id, capacityType);
     }
     return true;
   }
@@ -205,9 +216,11 @@ export class MovementSystem extends GameSystem {
   removeUnitFromTile(id: string): boolean {
     const unit = this.units.get(id);
     if (!unit) return false;
+    const category = this.getUnitCategory(unit);
+    const capacityType = this.getCapacityTypeForCategory(category);
     const tile = this.getTileAt(unit.q, unit.r);
     if (tile) {
-      tile.removeUnit(id);
+      tile.removeUnit(id, capacityType);
     }
     return this.removeUnit(id);
   }
@@ -245,6 +258,7 @@ export class MovementSystem extends GameSystem {
     this.unitStates.set(unit.id, { moves: maxMoves, maxMoves, hasAttacked: false });
     this.invalidateCache();
     this.engine.getEventBus().emit('unit:added', unit);
+    debug.movement(`[MovementSystem] Unit added: ${unit.id} at (${unit.q},${unit.r}), maxMoves=${maxMoves}`);
   }
 
   removeUnit(id: string): boolean {
@@ -254,6 +268,7 @@ export class MovementSystem extends GameSystem {
       this.unitStates.delete(id);
       this.invalidateCache();
       this.engine.getEventBus().emit('unit:removed', unit);
+      debug.movement(`[MovementSystem] Unit removed: ${id}`);
       return true;
     }
     return false;
@@ -270,9 +285,13 @@ export class MovementSystem extends GameSystem {
 
   useUnitMoves(id: string, cost: number): boolean {
     const state = this.getUnitState(id);
-    if (!state || state.moves < cost) return false;
+    if (!state || state.moves < cost) {
+      debug.movement(`[MovementSystem] Cannot use ${cost} moves for unit ${id}, has ${state?.moves ?? 0}`);
+      return false;
+    }
     state.moves -= cost;
     this.invalidateCache();
+    debug.movement(`[MovementSystem] Unit ${id} used ${cost} moves, remaining ${state.moves}`);
     return true;
   }
 
@@ -284,6 +303,7 @@ export class MovementSystem extends GameSystem {
     }
     this.invalidateCache();
     this.engine.getEventBus().emit('units:movesReset', null);
+    debug.movement(`[MovementSystem] All units moves reset`);
   }
 
   setAttacked(id: string): void {
@@ -393,19 +413,33 @@ export class MovementSystem extends GameSystem {
   canMoveTo(unitId: string, q: number, r: number): boolean {
     const unit = this.units.get(unitId);
     const state = this.getUnitState(unitId);
-    if (!unit || state.moves <= 0) return false;
+    if (!unit || state.moves <= 0) {
+      debug.movement(`[MovementSystem] canMoveTo: unit=${unitId} not found or no moves left`);
+      return false;
+    }
 
     const targetTile = this.grid?.getTile(q, r);
-    if (!targetTile) return false;
+    if (!targetTile) {
+      debug.movement(`[MovementSystem] canMoveTo: target tile (${q},${r}) not found`);
+      return false;
+    }
 
     const occ = this.getUnitAt(q, r);
-    if (occ && occ.id !== unit.id) return false;
+    if (occ && occ.id !== unit.id) {
+      debug.movement(`[MovementSystem] canMoveTo: tile (${q},${r}) occupied by ${occ.id}`);
+      return false;
+    }
 
     const unitType = this.getUnitType(unit);
-    if (!this.canEnterTerrain(targetTile.terrain, unitType)) return false;
+    if (!this.canEnterTerrain(targetTile.terrain, unitType)) {
+      debug.movement(`[MovementSystem] canMoveTo: terrain ${targetTile.terrain} not accessible for unit type ${unitType}`);
+      return false;
+    }
 
     const reachable = this.computeReachableTiles(unitId);
-    return reachable.has(`${q},${r}`);
+    const canReach = reachable.has(`${q},${r}`);
+    debug.movement(`[MovementSystem] canMoveTo: unit=${unitId} to (${q},${r}) = ${canReach}, reachable tiles: ${reachable.size}`);
+    return canReach;
   }
 
   moveTo(unitId: string, q: number, r: number): boolean {
@@ -433,6 +467,7 @@ export class MovementSystem extends GameSystem {
 
     this.invalidateCache();
     this.engine.getEventBus().emit('unit:moved', { unit, from: { q: oldQ, r: oldR }, to: { q, r }, cost: totalCost });
+    debug.movement(`[MovementSystem] Unit ${unitId} moved from (${oldQ},${oldR}) to (${q},${r}), cost=${totalCost}, remaining moves=${state.moves}`);
     return true;
   }
 

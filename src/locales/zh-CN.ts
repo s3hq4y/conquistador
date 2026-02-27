@@ -53,6 +53,8 @@ export default {
     neutral: '中立',
     player: '玩家',
     enemy: '敌方',
+    army: '军队',
+    building: '建筑',
     plains: '平原',
     forest: '森林',
     mountain: '山地',

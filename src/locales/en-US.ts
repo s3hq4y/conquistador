@@ -53,6 +53,8 @@ export default {
     neutral: 'Neutral',
     player: 'Player',
     enemy: 'Enemy',
+    army: 'Army',
+    building: 'Building',
     plains: 'Plains',
     forest: 'Forest',
     mountain: 'Mountain',

@@ -28,7 +28,7 @@ const switchLocale = (newLocale: string) => {
 </script>
 
 <template>
-  <div class="absolute top-0 left-0 right-0 h-12 bg-stone-950/80 border-b border-stone-800/50 flex items-center justify-between px-4">
+  <div class="absolute top-0 left-0 right-0 h-12 bg-stone-950/80 border-b border-stone-800/50 flex items-center justify-between px-4 pointer-events-auto">
     <div class="flex items-center gap-4">
       <div class="flex items-center gap-2">
         <span class="text-amber-400">🪙</span>

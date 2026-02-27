@@ -2,6 +2,7 @@ import { GameEngine, MapSystem, CameraControlSystem, MovementSystem, UnitRenderS
 import { EditorSystem } from './editor';
 import { GameModeSystem } from './game';
 import type { GameMode } from './stores/game';
+import { debug } from './core/utils/debug';
 
 export interface GameSetupResult {
   engine: GameEngine;
@@ -82,7 +83,7 @@ export function setupGame(canvas: HTMLCanvasElement, mode: GameMode): GameSetupR
     }
   });
 
-  console.log('Game started successfully (mode=', mode, ')');
+  debug.game('Game started successfully (mode=', mode, ')');
 
   return {
     engine,

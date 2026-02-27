@@ -3,7 +3,7 @@ import EditorRoot from './components/EditorRoot.vue';
 import type { EditorTool, PaintMode } from './EditorSystem';
 import type { TerrainTypeDefinition, OwnerTagDefinition, EdgeType } from '../core/map';
 import type { Trait, TraitTypeDefinition, UnitStats } from '../core/traits';
-import { debugConfig } from '../core/config';
+import { debug } from '../core/utils/debug';
 
 export const EditorUIStateKey = Symbol('EditorUIState');
 
@@ -131,16 +131,12 @@ export class EditorUI {
 
   getCurrentTool(): EditorTool {
     const tool = this.state.currentTool.value;
-    if (debugConfig.editor.editorUI) {
-      console.log('EditorUI.getCurrentTool:', tool);
-    }
+    debug.editor('editorUI', 'getCurrentTool:', tool);
     return tool;
   }
 
   setCurrentTool(tool: EditorTool): void {
-    if (debugConfig.editor.editorUI) {
-      console.log('EditorUI.setCurrentTool:', tool);
-    }
+    debug.editor('editorUI', 'setCurrentTool:', tool);
     this.state.currentTool.value = tool;
   }
 
@@ -188,7 +184,7 @@ export class EditorUI {
     if (this.editorPanelInstance?.showToast) {
       this.editorPanelInstance.showToast(message, type);
     } else {
-      console.warn('[EditorUI] Toast not available:', message, type);
+      debug.editor('editorUI', 'Toast not available:', message, type);
     }
   }
 

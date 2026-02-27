@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = 3003;
-const SCENES_DIR = path.join(__dirname, '..', 'public', 'scenarios');
+const SCENES_DIR = path.join(__dirname, '..', 'public', 'game_saves');
 const GAME_SAVES_DIR = path.join(__dirname, '..', 'public', 'game_saves');
 
 app.use(cors());
@@ -73,14 +73,15 @@ app.get('/api/scenes/:id', async (req, res) => {
     const sceneId = req.params.id;
     const scenePath = path.join(SCENES_DIR, sceneId);
     
-    const [manifestData, terrainData, ownerData, tilesData, edgesData, unitsData, terrainGroupsData] = await Promise.all([
+    const [manifestData, terrainData, ownerData, tilesData, edgesData, unitsData, terrainGroupsData, edgeTypesData] = await Promise.all([
       fs.readFile(path.join(scenePath, 'manifest.json'), 'utf-8'),
       fs.readFile(path.join(scenePath, 'terrain_types.json'), 'utf-8'),
       fs.readFile(path.join(scenePath, 'owner_tags.json'), 'utf-8'),
       fs.readFile(path.join(scenePath, 'tiles.json'), 'utf-8'),
       fs.readFile(path.join(scenePath, 'edges.json'), 'utf-8').catch(() => '[]'),
       fs.readFile(path.join(scenePath, 'units.json'), 'utf-8').catch(() => '[]'),
-      fs.readFile(path.join(scenePath, 'terrain_groups.json'), 'utf-8').catch(() => 'null')
+      fs.readFile(path.join(scenePath, 'terrain_groups.json'), 'utf-8').catch(() => 'null'),
+      fs.readFile(path.join(scenePath, 'edge_types.json'), 'utf-8').catch(() => '{}')
     ]);
     
     const manifest = JSON.parse(manifestData);
@@ -90,6 +91,7 @@ app.get('/api/scenes/:id', async (req, res) => {
     const edges = JSON.parse(edgesData);
     const units = JSON.parse(unitsData);
     const terrainGroups = terrainGroupsData !== 'null' ? JSON.parse(terrainGroupsData) : null;
+    const edgeTypes = JSON.parse(edgeTypesData);
     
     res.json({
       success: true,
@@ -100,6 +102,7 @@ app.get('/api/scenes/:id', async (req, res) => {
         tiles,
         edges,
         units,
+        edgeTypes,
         ...(terrainGroups && { terrainGroups })
       }
     });
@@ -110,7 +113,7 @@ app.get('/api/scenes/:id', async (req, res) => {
 
 app.post('/api/scenes', async (req, res) => {
   try {
-    const { id, name, description, author, settings, terrainTypes, ownerTags, tiles, edges, units, terrainGroups } = req.body;
+    const { id, name, description, author, settings, terrainTypes, ownerTags, tiles, edges, units, terrainGroups, edgeTypes } = req.body;
     
     const sceneId = id || `scene_${Date.now()}`;
     const scenePath = path.join(SCENES_DIR, sceneId);
@@ -141,7 +144,8 @@ app.post('/api/scenes', async (req, res) => {
       fs.writeFile(path.join(scenePath, 'tiles.json'), JSON.stringify(tiles || [], null, 2)),
       fs.writeFile(path.join(scenePath, 'edges.json'), JSON.stringify(edges || [], null, 2)),
       fs.writeFile(path.join(scenePath, 'units.json'), JSON.stringify(units || [], null, 2)),
-      terrainGroups ? fs.writeFile(path.join(scenePath, 'terrain_groups.json'), JSON.stringify(terrainGroups, null, 2)) : Promise.resolve()
+      terrainGroups ? fs.writeFile(path.join(scenePath, 'terrain_groups.json'), JSON.stringify(terrainGroups, null, 2)) : Promise.resolve(),
+      edgeTypes ? fs.writeFile(path.join(scenePath, 'edge_types.json'), JSON.stringify(edgeTypes, null, 2)) : Promise.resolve()
     ]);
     
     res.json({ success: true, sceneId, message: 'Scene saved successfully' });
@@ -154,7 +158,7 @@ app.post('/api/scenes', async (req, res) => {
 app.put('/api/scenes/:id', async (req, res) => {
   try {
     const sceneId = req.params.id;
-    const { name, description, author, settings, terrainTypes, ownerTags, tiles, edges, units, terrainGroups } = req.body;
+    const { name, description, author, settings, terrainTypes, ownerTags, tiles, edges, units, terrainGroups, edgeTypes } = req.body;
     
     const scenePath = path.join(SCENES_DIR, sceneId);
     
@@ -179,7 +183,8 @@ app.put('/api/scenes/:id', async (req, res) => {
       fs.writeFile(path.join(scenePath, 'tiles.json'), JSON.stringify(tiles || [], null, 2)),
       fs.writeFile(path.join(scenePath, 'edges.json'), JSON.stringify(edges || [], null, 2)),
       fs.writeFile(path.join(scenePath, 'units.json'), JSON.stringify(units || [], null, 2)),
-      terrainGroups ? fs.writeFile(path.join(scenePath, 'terrain_groups.json'), JSON.stringify(terrainGroups, null, 2)) : Promise.resolve()
+      terrainGroups ? fs.writeFile(path.join(scenePath, 'terrain_groups.json'), JSON.stringify(terrainGroups, null, 2)) : Promise.resolve(),
+      edgeTypes ? fs.writeFile(path.join(scenePath, 'edge_types.json'), JSON.stringify(edgeTypes, null, 2)) : Promise.resolve()
     ]);
     
     res.json({ success: true, message: 'Scene updated successfully' });

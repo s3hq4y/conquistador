@@ -5,7 +5,7 @@ const { t } = useI18n();
 </script>
 
 <template>
-  <div class="absolute right-4 top-20 flex flex-col gap-2">
+  <div class="absolute right-4 top-20 flex flex-col gap-2 pointer-events-auto">
     <button 
       class="w-10 h-10 bg-stone-950/80 border border-stone-800/50 rounded flex items-center justify-center hover:border-amber-800/50 transition-colors"
       :title="t('game.zoomIn')"

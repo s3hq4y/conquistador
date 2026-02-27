@@ -1,4 +1,5 @@
 import * as pc from 'playcanvas';
+import { debug } from './debug';
 
 export class TextureManager {
   private app: pc.Application;
@@ -18,7 +19,7 @@ export class TextureManager {
     try {
       const response = await fetch(`/${path}`);
       if (!response.ok) {
-        console.warn(`TextureManager: Failed to load texture: ${path}`);
+        debug.texture(`Failed to load texture: ${path}`);
         return null;
       }
 
@@ -50,18 +51,18 @@ export class TextureManager {
           URL.revokeObjectURL(url);
           
           this.textureCache.set(cacheKey, texture);
-          console.log(`TextureManager: Loaded texture: ${cacheKey}`);
+          debug.texture(`Loaded texture: ${cacheKey}`);
           resolve(texture);
         };
         img.onerror = () => {
           URL.revokeObjectURL(url);
-          console.warn(`TextureManager: Failed to create texture: ${path}`);
+          debug.texture(`Failed to create texture: ${path}`);
           resolve(null);
         };
-        img.src = url;
+
       });
     } catch (error) {
-      console.warn(`TextureManager: Error loading texture ${path}:`, error);
+      debug.texture(`Error loading texture ${path}:`, error);
       return null;
     }
   }

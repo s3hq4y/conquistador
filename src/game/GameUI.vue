@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useGameStore, type OwnerStates } from '../stores/game';
 import { useGameEventStore } from '../stores/gameEvent';
+import { debug } from '../core/utils/debug';
 import { debugConfig } from '../core/config';
 import {
   GameTopBar,
@@ -107,7 +108,7 @@ const handleCanvasClick = (event: MouseEvent) => {
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
   
-  console.log('Canvas clicked at:', x, y);
+  debug.game('Canvas clicked at:', x, y);
 };
 
 const handleTurnEnded = () => {
@@ -282,7 +283,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="fixed inset-0 pointer-events-none">
+  <div class="fixed inset-0 pointer-events-none z-50">
     <Compass :show="debugConfig.game.compass" />
 
     <GameTopBar 

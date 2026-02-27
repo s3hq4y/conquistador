@@ -1,5 +1,13 @@
 [
   {
+    "id": "city_capital",
+    "q": 0,
+    "r": -2,
+    "owner": "player",
+    "traits": ["city"],
+    "hp": 200
+  },
+  {
     "id": "unit_swordsman_01",
     "q": 2,
     "r": -1,

@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import type { EditorTool } from '../EditorSystem';
 import type { EdgeType } from '../../core/map';
-import { debugConfig } from '../../core/config';
+import { debug } from '../../core/utils/debug';
 
 defineProps<{
   currentTool: EditorTool;
@@ -40,9 +40,7 @@ const currentEdgeLabel = computed(() => {
 });
 
 const handleToolClick = (toolId: EditorTool) => {
-  if (debugConfig.editor.editorUI) {
-    console.log('ToolButtons.handleToolClick:', toolId);
-  }
+  debug.editor('editorUI', 'handleToolClick:', toolId);
   emit('update:currentTool', toolId);
 };
 

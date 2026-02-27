@@ -3,6 +3,7 @@ import { HexGrid, Tile, SceneData, TerrainTypeDefinition, OwnerTagDefinition, cr
 import type { GameEngine } from '../engine';
 import { HexTile } from '../../components/HexTile';
 import { TextureManager } from '../utils/TextureManager';
+import { debug } from '../utils/debug';
 
 type MapMode = 'NONE' | 'RANDOM' | 'CUSTOM';
 
@@ -53,13 +54,38 @@ export class MapSystem extends GameSystem {
       }
     }
     
-    // 预加载所有纹理
-    const loadPromises = Array.from(textureConfigs.entries()).map(([path, rotateDegrees]) => 
-      this.textureManager.loadTexture(path, rotateDegrees)
-    );
+    debug.scene('preloadTerrainTextures: terrain types count:', this.terrainTypes.size, 'texture configs:', textureConfigs.size);
     
-    await Promise.all(loadPromises);
-    console.log(`TextureManager: Preloaded ${textureConfigs.size} terrain textures`);
+    if (textureConfigs.size === 0) {
+      debug.scene('preloadTerrainTextures: no textures to load');
+      return Promise.resolve();
+    }
+    
+    // 预加载所有纹理 - 使用 timeout 避免无限等待
+    const loadPromises = Array.from(textureConfigs.entries()).map(([path, rotateDegrees]) => {
+      const timeoutPromise = new Promise((resolve) => 
+        setTimeout(() => {
+          debug.scene('Texture load timeout for:', path);
+          resolve(null);
+        }, 3000) // 3秒超时
+      );
+      return Promise.race([
+        this.textureManager.loadTexture(path, rotateDegrees).catch(err => {
+          debug.scene('Failed to load texture:', path, err);
+          return null;
+        }),
+        timeoutPromise
+      ]);
+    });
+    
+    try {
+      await Promise.all(loadPromises);
+    } catch (err) {
+      debug.scene('Error loading textures:', err);
+    }
+    
+    debug.scene('preloadTerrainTextures: proceeding with tile creation (with or without textures)');
+    return;
   }
 
   update(_dt: number): void {
@@ -253,6 +279,7 @@ export class MapSystem extends GameSystem {
 
   loadSceneData(data: SceneData): boolean {
     try {
+      debug.scene('loadSceneData called, tiles count:', data.tiles?.length || 0);
       this.sceneData = data;
       this.terrainTypes.clear();
       this.ownerTags.clear();
@@ -273,21 +300,37 @@ export class MapSystem extends GameSystem {
       
       this.clearMap();
       
+      debug.scene('Preloading terrain textures...');
       // 预加载场景的纹理
-      this.preloadTerrainTextures().then(() => {
-        // 纹理预加载完成后创建地块
-        for (const tileData of data.tiles) {
-          const tile = Tile.fromJSON(tileData);
-          this.grid.addTile(tile);
-          this.createTileEntity(tile);
-        }
-        this.updateAllBorderStates();
-        this.engine.getEventBus().emit('map:loaded', data);
-      });
+      this.preloadTerrainTextures()
+        .then(() => {
+          debug.scene('Texture preloaded, creating tiles...');
+          // 纹理预加载完成后创建地块
+          for (const tileData of data.tiles) {
+            const tile = Tile.fromJSON(tileData);
+            this.grid.addTile(tile);
+            this.createTileEntity(tile);
+          }
+          debug.scene('Tiles created, tileEntities count:', this.tileEntities.size);
+          this.updateAllBorderStates();
+          this.engine.getEventBus().emit('map:loaded', data);
+        })
+        .catch(err => {
+          debug.scene('Error in preloadTerrainTextures:', err);
+          // 即使出错也尝试创建地块
+          for (const tileData of data.tiles) {
+            const tile = Tile.fromJSON(tileData);
+            this.grid.addTile(tile);
+            this.createTileEntity(tile);
+          }
+          debug.scene('Tiles created (after error), tileEntities count:', this.tileEntities.size);
+          this.updateAllBorderStates();
+          this.engine.getEventBus().emit('map:loaded', data);
+        });
       
       return true;
     } catch (error) {
-      console.error('Failed to load scene:', error);
+      debug.scene('Failed to load scene:', error);
       return false;
     }
   }

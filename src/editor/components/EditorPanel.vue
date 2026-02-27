@@ -13,7 +13,7 @@ import type { EdgeType } from '../../core/map';
 import * as sceneApi from '../sceneApi';
 import { EditorUIStateKey, type EditorUIState } from '../EditorUI';
 import { ActivePanelKey, type ActivePanelRef } from './editorSymbols';
-import { debugConfig } from '../../core/config';
+import { debug } from '../../core/utils/debug';
 import './editor-vars.css';
 
 interface EditorCallbacks {
@@ -45,12 +45,12 @@ const defaultState: EditorUIState = {
 };
 
 const defaultCallbacks: EditorCallbacks = {
-  onSave: async () => { console.warn('[EditorPanel] Save not available'); },
-  onLoad: async (_sceneId: string) => { console.warn('[EditorPanel] Load not available'); },
-  onExport: () => { console.warn('[EditorPanel] Export not available'); },
-  onImport: (_file: File) => { console.warn('[EditorPanel] Import not available'); },
-  onAddTerrain: (_terrain: { id: string; name: string; color: string }) => { console.warn('[EditorPanel] Add terrain not available'); },
-  onAddOwner: (_owner: { id: string; name: string; color: string }) => { console.warn('[EditorPanel] Add owner not available'); }
+  onSave: async () => { debug.editor('editorUI', 'Save not available'); },
+  onLoad: async (_sceneId: string) => { debug.editor('editorUI', 'Load not available'); },
+  onExport: () => { debug.editor('editorUI', 'Export not available'); },
+  onImport: (_file: File) => { debug.editor('editorUI', 'Import not available'); },
+  onAddTerrain: (_terrain: { id: string; name: string; color: string }) => { debug.editor('editorUI', 'Add terrain not available'); },
+  onAddOwner: (_owner: { id: string; name: string; color: string }) => { debug.editor('editorUI', 'Add owner not available'); }
 };
 
 interface EditorContext {
@@ -109,9 +109,7 @@ watch(() => state.sceneName.value, (val) => { localSceneName.value = val; });
 watch(() => state.sceneDescription.value, (val) => { localSceneDescription.value = val; });
 
 const handleToolChange = (tool: EditorTool) => {
-  if (debugConfig.editor.editorUI) {
-    console.log('EditorPanel.handleToolChange:', tool);
-  }
+  debug.editor('editorUI', 'handleToolChange:', tool);
   state.currentTool.value = tool;
 };
 
@@ -151,12 +149,12 @@ const handleSceneDescChange = () => {
 };
 
 const handleSave = async () => {
-  console.log('[EditorPanel] Saving scene...');
+  debug.editor('editorUI', 'Saving scene...');
   try {
     await callbacks.onSave();
-    console.log('[EditorPanel] Save completed');
+    debug.editor('editorUI', 'Save completed');
   } catch (error) {
-    console.error('Save error:', error);
+    debug.editor('editorUI', 'Save error:', error);
     showToast('保存失败: ' + (error instanceof Error ? error.message : '未知错误'), 'error');
   }
 };
@@ -166,9 +164,10 @@ const handleLoad = async () => {
     scenes.value = await sceneApi.listScenes();
     showSceneList.value = true;
   } catch (error) {
-    console.error('Load scene list error:', error);
+    debug.editor('editorUI', 'Load scene list error:', error);
     showToast('获取场景列表失败', 'error');
   }
+
 };
 
 const handleSceneSelect = (sceneId: string) => {
