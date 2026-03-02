@@ -43,6 +43,16 @@ export interface StateEffect {
   maxPercent?: number;
 }
 
+export type BuildConditionType = 'terrain' | 'owner' | 'adjacentCity' | 'adjacentBuilding' | 'hasResource' | 'minDistanceFromCity';
+
+export interface BuildCondition {
+  type: BuildConditionType;
+  values?: string[];
+  value?: string | number | boolean;
+  minValue?: number;
+  maxValue?: number;
+}
+
 export interface Trait {
   id: string;
   name: string;
@@ -55,6 +65,13 @@ export interface Trait {
   combatBonuses?: CombatBonus[];
   stateEffects?: StateEffect[];
   production?: Record<string, number>;
+  cost?: Record<string, number>;
+  buildConditions?: BuildCondition[];
+  recruitTypes?: string[];
+  upgradeFrom?: string;
+  upgradeCost?: Record<string, number>;
+  upgradeStats?: UnitStats;
+  capacityCost?: { army?: number; building?: number };
 }
 
 export interface TraitData {

@@ -1,0 +1,15 @@
+{
+  "version": "1.0.0",
+  "description": "可招募单位类型定义",
+  "files": {
+    "recruit_units": "recruit_units.json",
+    "buildings": "buildings.json"
+  },
+  "categories": {
+    "infantry": { "name": "步兵", "icon": "⚔️" },
+    "ranged": { "name": "远程", "icon": "🏹" },
+    "cavalry": { "name": "骑兵", "icon": "🐎" },
+    "siege": { "name": "攻城", "icon": "🪨" },
+    "naval": { "name": "海军", "icon": "🚢" }
+  }
+}

@@ -4,6 +4,7 @@ import { MapSystem, MovementSystem, EdgeSystem } from '../../core/systems';
 import type { SceneData } from '../../core/map';
 import type { OwnerStates } from '../../stores/game';
 import { TraitManager } from '../../core/traits/TraitManager';
+import { unitTypeManager } from '../../core/unit';
 import { SCENE_BASE_PATH } from '../../core/config';
 import { debug } from '../../core/utils/debug';
 
@@ -62,6 +63,10 @@ export class SceneLoader extends GameSystem {
           this.movementSystem.setTraitManager(this.traitManager);
           debug.scene('TraitManager set to MovementSystem');
         }
+
+        unitTypeManager.setTraitManager(this.traitManager);
+        await unitTypeManager.loadFromPath(`${SCENE_BASE_PATH}/${targetSceneId}/unit`);
+        debug.scene('Unit types loaded');
       }
 
       this.mapSystem.loadSceneData(sceneData);

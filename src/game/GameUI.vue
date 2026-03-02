@@ -22,6 +22,8 @@ import {
   KeyboardHints,
   TileUnitsPanel
 } from './components/overlay';
+import BuildPanel from './components/BuildPanel.vue';
+import RecruitPanel from './components/RecruitPanel.vue';
 
 interface UnitStats {
   hp?: number;
@@ -68,6 +70,14 @@ const selectedTile = computed(() => gameEventStore.selectedTile);
 const tileUnits = computed(() => gameEventStore.tileUnits);
 const showTileUnits = computed(() => gameEventStore.showTileUnits);
 const tileUnitsPosition = computed(() => gameEventStore.tileUnitsPosition);
+
+const showBuildPanel = computed(() => gameEventStore.showBuildPanel);
+const buildPanelPosition = computed(() => gameEventStore.buildPanelPosition);
+const canBuild = computed(() => gameEventStore.canBuild);
+
+const showRecruitPanel = computed(() => gameEventStore.showRecruitPanel);
+const recruitPanelPosition = computed(() => gameEventStore.recruitPanelPosition);
+const canRecruit = computed(() => gameEventStore.canRecruit);
 
 const tileCapacity = computed(() => {
   if (!selectedTile.value?.capacity) return null;
@@ -254,6 +264,66 @@ const handleTileUnitsClose = () => {
   gameEventStore.clearTileUnits();
 };
 
+const buildableItems = computed(() => {
+  const pos = buildPanelPosition.value;
+  if (!pos || !window.__getBuildableItems) return [];
+  return window.__getBuildableItems(pos.q, pos.r);
+});
+
+const recruitableItems = computed(() => {
+  const pos = recruitPanelPosition.value;
+  if (!pos || !window.__getRecruitableItems) return [];
+  return window.__getRecruitableItems(pos.q, pos.r);
+});
+
+const handleBuild = (traitId: string) => {
+  const pos = buildPanelPosition.value;
+  if (!pos || !window.__build) return;
+  
+  const result = window.__build(traitId, pos.q, pos.r);
+  if (result.success) {
+    gameEventStore.closeBuildPanel();
+    gameEventStore.clearTileSelection();
+  } else {
+    console.error('Build failed:', result.error);
+  }
+};
+
+const handleBuildPanelClose = () => {
+  gameEventStore.closeBuildPanel();
+};
+
+const handleRecruit = (unitTypeId: string) => {
+  const pos = recruitPanelPosition.value;
+  if (!pos || !window.__recruit) return;
+  
+  const result = window.__recruit(unitTypeId, pos.q, pos.r);
+  if (result.success) {
+    gameEventStore.closeRecruitPanel();
+    gameEventStore.clearTileSelection();
+  } else {
+    console.error('Recruit failed:', result.error);
+  }
+};
+
+const handleRecruitPanelClose = () => {
+  gameEventStore.closeRecruitPanel();
+};
+
+const handleRecruitButtonClick = () => {
+  const pos = recruitPanelPosition.value;
+  if (pos) {
+    gameEventStore.openRecruitPanel(pos);
+  }
+};
+
+const handleBuildButtonClick = () => {
+  const pos = buildPanelPosition.value;
+  if (pos) {
+    gameEventStore.openBuildPanel(pos);
+  }
+};
+
 onMounted(() => {
   const canvas = document.getElementById('gameCanvas');
   if (canvas) {
@@ -341,10 +411,88 @@ onUnmounted(() => {
       @close="handleTileUnitsClose"
     />
 
+    <BuildPanel
+      v-if="showBuildPanel"
+      :visible="showBuildPanel"
+      :buildable-items="buildableItems"
+      :position="buildPanelPosition"
+      @build="handleBuild"
+      @close="handleBuildPanelClose"
+    />
+
+    <RecruitPanel
+      v-if="showRecruitPanel"
+      :visible="showRecruitPanel"
+      :recruitable-items="recruitableItems"
+      :position="recruitPanelPosition"
+      @recruit="handleRecruit"
+      @close="handleRecruitPanelClose"
+    />
+
     <EndTurnButton @click="handleEndTurn" />
+
+    <button
+      v-if="canRecruit"
+      class="recruit-button"
+      @click="handleRecruitButtonClick"
+    >
+      ⚔️ {{ t('recruit.title') || '招募' }}
+    </button>
+
+    <button
+      v-if="canBuild"
+      class="build-button"
+      @click="handleBuildButtonClick"
+    >
+      🏗️ {{ t('build.title') || '建造' }}
+    </button>
 
     <ZoomControls />
 
     <KeyboardHints />
   </div>
 </template>
+
+<style scoped>
+.build-button {
+  position: fixed;
+  bottom: 100px;
+  left: 20px;
+  padding: 12px 20px;
+  background: #4caf50;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  pointer-events: auto;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.build-button:hover {
+  background: #45a049;
+}
+
+.recruit-button {
+  position: fixed;
+  bottom: 100px;
+  left: 140px;
+  padding: 12px 20px;
+  background: #2196f3;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  pointer-events: auto;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.recruit-button:hover {
+  background: #1976d2;
+}
+</style>

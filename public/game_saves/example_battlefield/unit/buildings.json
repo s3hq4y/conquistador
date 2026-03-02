@@ -1,0 +1,46 @@
+{
+  "recruitBuildings": {
+    "barracks": {
+      "name": { "zh": "兵营", "en": "Barracks" },
+      "description": { "zh": "基础军事建筑", "en": "Basic military building" },
+      "icon": "⚔️",
+      "capacity": 3,
+      "recruitSlots": [
+        {
+          "unitType": "swordsman",
+          "unlockTurn": 0,
+          "costMultiplier": 1.0
+        },
+        {
+          "unitType": "archer",
+          "unlockTurn": 0,
+          "costMultiplier": 1.0
+        },
+        {
+          "unitType": "pikeman",
+          "unlockTurn": 5,
+          "costMultiplier": 1.0
+        }
+      ],
+      "productionPerTurn": {
+        "experience": 1
+      }
+    },
+    "city": {
+      "name": { "zh": "城市", "en": "City" },
+      "description": { "zh": "首都城市，可以招募卫队", "en": "Capital city, can recruit guards" },
+      "icon": "🏰",
+      "capacity": 5,
+      "recruitSlots": [
+        {
+          "unitType": "swordsman",
+          "unlockTurn": 0,
+          "costMultiplier": 0.8
+        }
+      ],
+      "productionPerTurn": {
+        "experience": 2
+      }
+    }
+  }
+}

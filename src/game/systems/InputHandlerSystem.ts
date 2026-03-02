@@ -65,10 +65,14 @@ export class InputHandlerSystem extends GameSystem {
       this.selectionSystem?.selectTile(tileKey, hexPos.q, hexPos.r);
       
       const topUnit = this.movementSystem.getTopUnitAt(hexPos.q, hexPos.r);
-      if (!topUnit) return;
+      if (!topUnit) {
+        this.checkAndShowBuildPanel(hexPos.q, hexPos.r);
+        return;
+      }
 
       if (this.selectionSystem?.isCurrentPlayerUnit(topUnit)) {
         this.selectionSystem.selectUnit(topUnit);
+        this.checkAndShowBuildPanel(hexPos.q, hexPos.r);
         return;
       } else {
         this.selectionSystem?.selectEnemyUnit(topUnit);
@@ -78,8 +82,11 @@ export class InputHandlerSystem extends GameSystem {
           return;
         }
       }
+      this.checkAndShowBuildPanel(hexPos.q, hexPos.r);
       return;
     }
+
+    this.checkAndShowBuildPanel(hexPos.q, hexPos.r);
 
     const reachableTiles = this.selectionSystem?.getReachableTiles() ?? new Set();
 
@@ -121,6 +128,104 @@ export class InputHandlerSystem extends GameSystem {
 
     this.selectionSystem?.deselectUnit();
     this.selectionSystem?.selectTile(tileKey, hexPos.q, hexPos.r);
+
+    this.checkAndShowBuildPanel(hexPos.q, hexPos.r);
+  }
+
+  private checkAndShowBuildPanel(q: number, r: number): void {
+    const tile = this.movementSystem?.getTileAt(q, r);
+    if (!tile) {
+      debug.building('[InputHandler] checkAndShowBuildPanel: tile not found');
+      this.gameEventStore.setCanBuild(false);
+      this.gameEventStore.setCanRecruit(false);
+      return;
+    }
+
+    const currentPlayer = this.gameEventStore.currentPlayerId;
+    if (!currentPlayer) {
+      debug.building('[InputHandler] checkAndShowBuildPanel: no current player');
+      this.gameEventStore.setCanBuild(false);
+      this.gameEventStore.setCanRecruit(false);
+      return;
+    }
+
+    const isOwnTile = tile.owner === currentPlayer;
+    const hasBuilding = !!tile.building;
+    const canAddBuilding = tile.canAddBuilding();
+    const canAddArmy = tile.canAddArmy();
+
+    debug.building('[InputHandler] checkAndShowBuildPanel:', {
+      q, r,
+      tileOwner: tile.owner,
+      currentPlayer,
+      isOwnTile,
+      hasBuilding,
+      buildingId: tile.building,
+      canAddBuilding,
+      canAddArmy,
+      buildingCapacity: tile.capacity.building,
+      buildingCount: tile.getBuildingCount()
+    });
+
+    const canBuild = isOwnTile && !hasBuilding && canAddBuilding;
+    this.gameEventStore.setCanBuild(canBuild);
+
+    if (canBuild) {
+      this.gameEventStore.setBuildPanelPosition({ q, r });
+    } else {
+      this.gameEventStore.closeBuildPanel();
+    }
+
+    this.checkAndShowRecruitPanel(q, r, isOwnTile, hasBuilding, canAddArmy);
+  }
+
+  private checkAndShowRecruitPanel(q: number, r: number, isOwnTile: boolean, hasBuilding: boolean, canAddArmy: boolean): void {
+    debug.building('[InputHandler] checkAndShowRecruitPanel called:', { q, r, isOwnTile, hasBuilding, canAddArmy });
+    
+    if (!isOwnTile || !hasBuilding || !canAddArmy) {
+      debug.building('[InputHandler] checkAndShowRecruitPanel: conditions not met');
+      this.gameEventStore.setCanRecruit(false);
+      this.gameEventStore.closeRecruitPanel();
+      return;
+    }
+
+    const buildingId = this.movementSystem?.getBuildingAt(q, r);
+    debug.building('[InputHandler] checkAndShowRecruitPanel: buildingId =', buildingId);
+    
+    if (!buildingId) {
+      debug.building('[InputHandler] checkAndShowRecruitPanel: no building at position');
+      this.gameEventStore.setCanRecruit(false);
+      this.gameEventStore.closeRecruitPanel();
+      return;
+    }
+
+    const building = this.movementSystem?.getUnit(buildingId);
+    if (!building) {
+      this.gameEventStore.setCanRecruit(false);
+      this.gameEventStore.closeRecruitPanel();
+      return;
+    }
+
+    const buildingTraitId = building.traits[0];
+    const trait = this.traitManager?.getTrait(buildingTraitId);
+    const recruitTypes = trait?.recruitTypes;
+
+    const canRecruit = !!recruitTypes && recruitTypes.length > 0;
+    debug.building('[InputHandler] checkAndShowRecruitPanel:', {
+      q, r,
+      buildingId,
+      buildingTraitId,
+      recruitTypes,
+      canRecruit
+    });
+
+    this.gameEventStore.setCanRecruit(canRecruit);
+
+    if (canRecruit) {
+      this.gameEventStore.setRecruitPanelPosition({ q, r });
+    } else {
+      this.gameEventStore.closeRecruitPanel();
+    }
   }
 
   private executeAttack(attackerId: string, defender: UnitInstance): void {

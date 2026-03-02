@@ -552,4 +552,41 @@ export class MovementSystem extends GameSystem {
   getUnitMaxMoves(id: string): number {
     return this.getUnitState(id).maxMoves;
   }
+
+  getBuildingAt(q: number, r: number): string | null {
+    const tile = this.getTileAt(q, r);
+    return tile?.building || null;
+  }
+
+  getBuildingsByOwner(ownerId: string): UnitInstance[] {
+    return Array.from(this.units.values()).filter(unit => {
+      const category = this.getUnitCategory(unit);
+      return category === 'building' && unit.owner === ownerId;
+    });
+  }
+
+  getAdjacentBuildings(q: number, r: number, ownerId?: string): UnitInstance[] {
+    if (!this.mapSystem || !this.mapSystem.getGrid) return [];
+    
+    const grid = this.mapSystem.getGrid();
+    const neighbors = grid.getNeighbors(q, r);
+    const buildings: UnitInstance[] = [];
+
+    for (const n of neighbors) {
+      const buildingId = this.getBuildingAt(n.q, n.r);
+      if (buildingId) {
+        const unit = this.units.get(buildingId);
+        if (unit && (!ownerId || unit.owner === ownerId)) {
+          buildings.push(unit);
+        }
+      }
+    }
+
+    return buildings;
+  }
+
+  getNeighbors(q: number, r: number): Array<{ q: number; r: number }> {
+    if (!this.mapSystem || !this.mapSystem.getGrid) return [];
+    return this.mapSystem.getGrid().getNeighbors(q, r);
+  }
 }

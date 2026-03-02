@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { debug } from '../core/utils/debug';
 
 export interface UnitInfo {
   id: string
@@ -71,6 +72,14 @@ export const useGameEventStore = defineStore('gameEvent', () => {
   const tileUnits = ref<TileUnitInfo[]>([])
   const showTileUnits = ref(false)
   const tileUnitsPosition = ref<{ q: number; r: number } | null>(null)
+
+  const showBuildPanel = ref(false)
+  const buildPanelPosition = ref<{ q: number; r: number } | null>(null)
+  const canBuild = ref(false)
+
+  const showRecruitPanel = ref(false)
+  const recruitPanelPosition = ref<{ q: number; r: number } | null>(null)
+  const canRecruit = ref(false)
 
   let onTileUnitSelect: ((unitId: string) => void) | null = null
   let onTileUnitReorder: ((newOrder: string[]) => void) | null = null
@@ -167,6 +176,58 @@ export const useGameEventStore = defineStore('gameEvent', () => {
     }
   }
 
+  function openBuildPanel(position: { q: number; r: number }) {
+    debug.building('[gameEvent] openBuildPanel:', position);
+    buildPanelPosition.value = position;
+    showBuildPanel.value = true;
+  }
+
+  function closeBuildPanel() {
+    debug.building('[gameEvent] closeBuildPanel');
+    showBuildPanel.value = false;
+  }
+
+  function setCanBuild(value: boolean) {
+    debug.building('[gameEvent] setCanBuild:', value);
+    canBuild.value = value;
+  }
+
+  function setBuildPanelPosition(position: { q: number; r: number }) {
+    buildPanelPosition.value = position;
+  }
+
+  function setBuildButtonVisible(visible: boolean) {
+    if (visible && buildPanelPosition.value) {
+      showBuildPanel.value = true
+    }
+  }
+
+  function openRecruitPanel(position: { q: number; r: number }) {
+    debug.building('[gameEvent] openRecruitPanel:', position);
+    recruitPanelPosition.value = position;
+    showRecruitPanel.value = true;
+  }
+
+  function closeRecruitPanel() {
+    debug.building('[gameEvent] closeRecruitPanel');
+    showRecruitPanel.value = false;
+  }
+
+  function setCanRecruit(value: boolean) {
+    debug.building('[gameEvent] setCanRecruit:', value);
+    canRecruit.value = value;
+  }
+
+  function setRecruitPanelPosition(position: { q: number; r: number }) {
+    recruitPanelPosition.value = position;
+  }
+
+  function setRecruitButtonVisible(visible: boolean) {
+    if (visible && recruitPanelPosition.value) {
+      showRecruitPanel.value = true
+    }
+  }
+
   return {
     selectedUnit,
     unitStats,
@@ -180,6 +241,12 @@ export const useGameEventStore = defineStore('gameEvent', () => {
     tileUnits,
     showTileUnits,
     tileUnitsPosition,
+    showBuildPanel,
+    buildPanelPosition,
+    canBuild,
+    showRecruitPanel,
+    recruitPanelPosition,
+    canRecruit,
     selectUnit,
     selectTile,
     clearTileSelection,
@@ -195,6 +262,16 @@ export const useGameEventStore = defineStore('gameEvent', () => {
     clearTileUnits,
     reorderTileUnits,
     setTileUnitCallbacks,
-    triggerTileUnitSelect
+    triggerTileUnitSelect,
+    openBuildPanel,
+    closeBuildPanel,
+    setCanBuild,
+    setBuildPanelPosition,
+    setBuildButtonVisible,
+    openRecruitPanel,
+    closeRecruitPanel,
+    setCanRecruit,
+    setRecruitPanelPosition,
+    setRecruitButtonVisible
   }
 })

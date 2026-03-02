@@ -19,6 +19,7 @@ export interface DebugConfig {
     compass: boolean;
     directionArrows: boolean;
     coloredBorder: boolean;
+    building: boolean;
   };
   beta: {
     pathfinding: boolean;
@@ -49,7 +50,8 @@ const DEBUG_SETTINGS: DebugConfig = {
     texture: false,
     compass: false,
     directionArrows: false,
-    coloredBorder: false
+    coloredBorder: false,
+    building: true
   },
   beta: {
     pathfinding: false,
@@ -81,4 +83,5 @@ export function setGameDebug(enabled: boolean): void {
   debugConfig.game.compass = enabled;
   debugConfig.game.directionArrows = enabled;
   debugConfig.game.coloredBorder = enabled;
+  debugConfig.game.building = enabled;
 }

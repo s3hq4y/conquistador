@@ -11,7 +11,7 @@ const { t } = useI18n();
 </script>
 
 <template>
-  <div class="fixed inset-0 bg-stone-950/90 flex items-center justify-center z-50">
+  <div class="fixed inset-0 bg-stone-950/90 flex items-center justify-center z-50 pointer-events-auto">
     <div class="bg-stone-900 border border-stone-800 rounded-lg p-6 min-w-[300px]">
       <h2 class="text-stone-200 font-light tracking-wider text-lg mb-6 text-center">{{ t('game.gameMenu') }}</h2>
       <div class="flex flex-col gap-3">

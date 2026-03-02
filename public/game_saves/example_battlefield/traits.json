@@ -273,15 +273,45 @@
       "name": "城市",
       "type": "buildingType",
       "description": "主要城镇建筑，每回合产出金币",
+      "icon": "🏰",
       "stats": {
         "hp": 200,
-        "defense": 10,
+        "defense": 20,
         "movement": 0,
         "range": 0
       },
       "production": {
         "ducat": 10
-      }
+      },
+      "cost": {
+        "ducat": 100
+      },
+      "buildConditions": [
+        { "type": "terrain", "values": ["plains", "grassland", "hill", "forest"] }
+      ],
+      "capacityCost": { "building": 2 }
+    },
+    "barracks": {
+      "id": "barracks",
+      "name": "兵营",
+      "type": "buildingType",
+      "description": "军事建筑，可以招募基础单位",
+      "icon": "⚔️",
+      "stats": {
+        "hp": 150,
+        "defense": 15,
+        "movement": 0,
+        "range": 0
+      },
+      "recruitTypes": ["infantry", "archer"],
+      "cost": {
+        "ducat": 50
+      },
+      "buildConditions": [
+        { "type": "terrain", "values": ["plains", "grassland"] },
+        { "type": "adjacentCity", "value": true }
+      ],
+      "capacityCost": { "building": 1 }
     }
   }
 }

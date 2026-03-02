@@ -29,8 +29,8 @@ onUnmounted(() => {
 
 <template>
   <div class="w-full h-screen relative">
-    <canvas id="gameCanvas" class="absolute inset-0 z-10"></canvas>
-    <div id="ui"></div>
+    <canvas id="gameCanvas" class="absolute inset-0 z-0"></canvas>
+    <div id="ui" class="absolute inset-0 z-10 pointer-events-none"></div>
     <GameUI v-if="gameStore.gameMode === 'GAME'" />
     <div v-else-if="gameStore.gameMode === 'CUSTOM'" class="absolute inset-0 flex items-center justify-center pointer-events-none">
       <div class="text-stone-500 text-sm">编辑器加载中...</div>

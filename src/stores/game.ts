@@ -113,6 +113,34 @@ export const useGameStore = defineStore('game', () => {
     return newValue;
   }
 
+  function canAfford(cost: Record<string, number>, ownerId?: string): boolean {
+    const owner = ownerId || currentOwner.value;
+    for (const [resourceId, amount] of Object.entries(cost)) {
+      if (getResource(resourceId, owner) < amount) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function deductResources(cost: Record<string, number>, ownerId?: string): boolean {
+    if (!canAfford(cost, ownerId)) {
+      return false;
+    }
+    const owner = ownerId || currentOwner.value;
+    for (const [resourceId, amount] of Object.entries(cost)) {
+      modifyResource(resourceId, -amount, owner);
+    }
+    return true;
+  }
+
+  function addResources(cost: Record<string, number>, ownerId?: string): void {
+    const owner = ownerId || currentOwner.value;
+    for (const [resourceId, amount] of Object.entries(cost)) {
+      modifyResource(resourceId, amount, owner);
+    }
+  }
+
   return {
     gameMode,
     gameType,
@@ -139,6 +167,9 @@ export const useGameStore = defineStore('game', () => {
     setCurrentOwner,
     getResource,
     setResource,
-    modifyResource
+    modifyResource,
+    canAfford,
+    deductResources,
+    addResources
   };
 });

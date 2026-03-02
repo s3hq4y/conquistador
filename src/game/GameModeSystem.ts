@@ -3,6 +3,7 @@ import type { GameEngine } from '../core/engine';
 import { CombatSystem } from '../core/traits/CombatSystem';
 import { TraitManager } from '../core/traits/TraitManager';
 import type { UnitInstance } from '../core/map';
+import { BuildingSystem } from '../core/systems/BuildingSystem';
 import { TurnSystem, SelectionSystem, InputHandlerSystem, SceneLoader } from './systems';
 import { useGameStore } from '../stores/game';
 import { useGameEventStore } from '../stores/gameEvent';
@@ -12,6 +13,10 @@ declare global {
   interface Window {
     __setOwnerStates?: (states: OwnerStates) => void;
     __endTurn?: () => void;
+    __getBuildableItems?: (q: number, r: number) => any[];
+    __build?: (traitId: string, q: number, r: number) => { success: boolean; error?: string };
+    __getRecruitableItems?: (q: number, r: number) => any[];
+    __recruit?: (unitTypeId: string, q: number, r: number) => { success: boolean; error?: string };
   }
 }
 
@@ -22,6 +27,7 @@ export class GameModeSystem extends GameSystem {
   private sceneLoader: SceneLoader | null = null;
   private traitManager: TraitManager | null = null;
   private combatSystem: CombatSystem | null = null;
+  private buildingSystem: BuildingSystem | null = null;
   private gameStore = useGameStore();
   private gameEventStore = useGameEventStore();
 
@@ -41,11 +47,14 @@ export class GameModeSystem extends GameSystem {
     if (this.traitManager) {
       this.combatSystem = new CombatSystem(this.traitManager);
       this.turnSystem.setTraitManager(this.traitManager);
+      this.buildingSystem = new BuildingSystem(this.engine);
+      this.buildingSystem.setTraitManager(this.traitManager);
     }
 
     await this.turnSystem.initialize();
     await this.selectionSystem.initialize();
     await this.inputHandlerSystem.initialize();
+    this.buildingSystem?.initialize();
 
     this.selectionSystem.setDependencies(
       () => this.getCurrentPlayerId(),
@@ -71,6 +80,22 @@ export class GameModeSystem extends GameSystem {
     );
 
     window.__endTurn = () => this.endTurn();
+    window.__getBuildableItems = (q: number, r: number) => {
+      if (!this.buildingSystem) return [];
+      return this.buildingSystem.getBuildableItems(q, r, this.getCurrentPlayerId());
+    };
+    window.__build = (traitId: string, q: number, r: number) => {
+      if (!this.buildingSystem) return { success: false, error: 'BuildingSystem not initialized' };
+      return this.buildingSystem.build(traitId, q, r, this.getCurrentPlayerId());
+    };
+    window.__getRecruitableItems = (q: number, r: number) => {
+      if (!this.buildingSystem) return [];
+      return this.buildingSystem.getRecruitableItems(q, r, this.getCurrentPlayerId());
+    };
+    window.__recruit = (unitTypeId: string, q: number, r: number) => {
+      if (!this.buildingSystem) return { success: false, error: 'BuildingSystem not initialized' };
+      return this.buildingSystem.recruitByUnitType(unitTypeId, q, r, this.getCurrentPlayerId());
+    };
 
     await this.sceneLoader.loadDemoScene();
   }
@@ -108,6 +133,10 @@ export class GameModeSystem extends GameSystem {
     return this.turnSystem?.getCurrentPlayerId() ?? this.gameStore.getCurrentPlayerId();
   }
 
+  getBuildingSystem(): BuildingSystem | null {
+    return this.buildingSystem;
+  }
+
   update(_dt: number): void {
   }
 
@@ -116,6 +145,11 @@ export class GameModeSystem extends GameSystem {
     this.selectionSystem?.dispose();
     this.inputHandlerSystem?.dispose();
     this.sceneLoader?.dispose();
+    this.buildingSystem?.dispose();
     window.__endTurn = undefined;
+    window.__getBuildableItems = undefined;
+    window.__build = undefined;
+    window.__getRecruitableItems = undefined;
+    window.__recruit = undefined;
   }
 }

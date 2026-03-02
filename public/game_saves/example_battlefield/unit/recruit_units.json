@@ -1,0 +1,213 @@
+{
+  "units": {
+    "swordsman": {
+      "id": "swordsman",
+      "name": {
+        "zh": "剑士",
+        "en": "Swordsman"
+      },
+      "description": {
+        "zh": "训练有素的剑士，擅长近身作战",
+        "en": "Well-trained swordsman, excel at close combat"
+      },
+      "icon": "⚔️",
+      "category": "infantry",
+      "tier": 1,
+      "baseStats": {
+        "hp": 100,
+        "attack": 15,
+        "defense": 15,
+        "movement": 4,
+        "range": 1
+      },
+      "traits": ["infantry", "sword", "chainmail", "shield"],
+      "cost": {
+        "ducat": 50
+      },
+      "recruitTime": 1,
+      "requirements": {
+        "building": "barracks",
+        "technology": null
+      },
+      "bonuses": {
+        "vsCavalry": 1.2,
+        "defenseBonus": 0.1
+      },
+      "visible": true
+    },
+    "archer": {
+      "id": "archer",
+      "name": {
+        "zh": "弓箭手",
+        "en": "Archer"
+      },
+      "description": {
+        "zh": "精准的远程射手，适合支援作战",
+        "en": "Accurate ranged shooter, suitable for support combat"
+      },
+      "icon": "🏹",
+      "category": "ranged",
+      "tier": 1,
+      "baseStats": {
+        "hp": 80,
+        "attack": 12,
+        "defense": 8,
+        "movement": 4,
+        "range": 3
+      },
+      "traits": ["archer", "longbow", "leatherArmor"],
+      "cost": {
+        "ducat": 40
+      },
+      "recruitTime": 1,
+      "requirements": {
+        "building": "barracks",
+        "technology": null
+      },
+      "bonuses": {
+        "vsInfantry": 1.1,
+        "attackBonus": 0.15
+      },
+      "visible": true
+    },
+    "cavalry": {
+      "id": "cavalry",
+      "name": {
+        "zh": "骑兵",
+        "en": "Cavalry"
+      },
+      "description": {
+        "zh": "高速机动的骑兵单位，冲锋陷阵",
+        "en": "High-speed mobile cavalry, charge into battle"
+      },
+      "icon": "🐎",
+      "category": "cavalry",
+      "tier": 2,
+      "baseStats": {
+        "hp": 120,
+        "attack": 20,
+        "defense": 10,
+        "movement": 6,
+        "range": 1
+      },
+      "traits": ["cavalry", "lance", "lightCavalryArmor"],
+      "cost": {
+        "ducat": 80
+      },
+      "recruitTime": 2,
+      "requirements": {
+        "building": "barracks",
+        "technology": null
+      },
+      "bonuses": {
+        "vsArcher": 1.3,
+        "firstStrike": true
+      },
+      "visible": true
+    },
+    "pikeman": {
+      "id": "pikeman",
+      "name": {
+        "zh": "长矛兵",
+        "en": "Pikeman"
+      },
+      "description": {
+        "zh": "手持长矛的步兵，对骑兵有额外克制",
+        "en": "Infantry with pikes, has extra bonus against cavalry"
+      },
+      "icon": "🔱",
+      "category": "infantry",
+      "tier": 2,
+      "baseStats": {
+        "hp": 110,
+        "attack": 14,
+        "defense": 18,
+        "movement": 3,
+        "range": 1
+      },
+      "traits": ["infantry", "spear", "chainmail"],
+      "cost": {
+        "ducat": 55
+      },
+      "recruitTime": 1,
+      "requirements": {
+        "building": "barracks",
+        "technology": null
+      },
+      "bonuses": {
+        "vsCavalry": 1.5,
+        "defenseBonus": 0.2
+      },
+      "visible": true
+    },
+    "crossbowman": {
+      "id": "crossbowman",
+      "name": {
+        "zh": "弩手",
+        "en": "Crossbowman"
+      },
+      "description": {
+        "zh": "使用强弩的射手，穿透力强",
+        "en": "Soldier using crossbow, strong penetration"
+      },
+      "icon": "🎯",
+      "category": "ranged",
+      "tier": 2,
+      "baseStats": {
+        "hp": 90,
+        "attack": 18,
+        "defense": 10,
+        "movement": 3,
+        "range": 2
+      },
+      "traits": ["archer", "crossbow", "leatherArmor"],
+      "cost": {
+        "ducat": 60
+      },
+      "recruitTime": 1,
+      "requirements": {
+        "building": "barracks",
+        "technology": null
+      },
+      "bonuses": {
+        "vsHeavyArmor": 1.2
+      },
+      "visible": true
+    },
+    "knight": {
+      "id": "knight",
+      "name": {
+        "zh": "骑士",
+        "en": "Knight"
+      },
+      "description": {
+        "zh": "重装骑兵，战场的主力冲击部队",
+        "en": "Heavy cavalry, main charge unit in battlefield"
+      },
+      "icon": "🛡️",
+      "category": "cavalry",
+      "tier": 3,
+      "baseStats": {
+        "hp": 150,
+        "attack": 25,
+        "defense": 20,
+        "movement": 5,
+        "range": 1
+      },
+      "traits": ["cavalry", "lance", "plateArmor"],
+      "cost": {
+        "ducat": 150
+      },
+      "recruitTime": 3,
+      "requirements": {
+        "building": "barracks",
+        "technology": null
+      },
+      "bonuses": {
+        "vsInfantry": 1.4,
+        "charge": true
+      },
+      "visible": true
+    }
+  }
+}

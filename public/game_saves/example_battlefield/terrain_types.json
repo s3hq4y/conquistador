@@ -13,7 +13,9 @@
       "icon": "🌾",
       "texture": "game_saves/example_battlefield/textures/terrain/plains.png",
       "isPassable": true,
-      "movementCost": 2
+      "movementCost": 2,
+      "buildable": true,
+      "capacity": { "army": 4, "building": 2 }
     }
   },
   "grassland": {
@@ -29,7 +31,9 @@
       "color": "#7cb342",
       "icon": "🌿",
       "isPassable": true,
-      "movementCost": 2
+      "movementCost": 2,
+      "buildable": true,
+      "capacity": { "army": 4, "building": 2 }
     }
   },
   "forest": {
@@ -45,7 +49,9 @@
       "color": "#266b2e",
       "icon": "🌲",
       "isPassable": true,
-      "movementCost": 3
+      "movementCost": 3,
+      "buildable": true,
+      "capacity": { "army": 3, "building": 1 }
     }
   },
   "hill": {
@@ -61,7 +67,9 @@
       "color": "#8d6e63",
       "icon": "🏞️",
       "isPassable": true,
-      "movementCost": 3
+      "movementCost": 3,
+      "buildable": true,
+      "capacity": { "army": 2, "building": 1 }
     }
   },
   "mountain": {
@@ -77,7 +85,9 @@
       "color": "#7f786b",
       "icon": "⛰️",
       "isPassable": true,
-      "movementCost": 4
+      "movementCost": 4,
+      "buildable": false,
+      "capacity": { "army": 2, "building": 0 }
     }
   },
   "desert": {
@@ -93,7 +103,9 @@
       "color": "#e6c85b",
       "icon": "🏜️",
       "isPassable": true,
-      "movementCost": 3
+      "movementCost": 3,
+      "buildable": true,
+      "capacity": { "army": 2, "building": 1 }
     }
   },
   "tundra": {
@@ -109,7 +121,9 @@
       "color": "#b0bec5",
       "icon": "❄️",
       "isPassable": true,
-      "movementCost": 3
+      "movementCost": 3,
+      "buildable": false,
+      "capacity": { "army": 1, "building": 0 }
     }
   },
   "shallow_sea": {
@@ -126,7 +140,9 @@
       "icon": "🌊",
       "isWater": true,
       "isPassable": true,
-      "movementCost": 1
+      "movementCost": 1,
+      "buildable": false,
+      "capacity": { "army": 2, "building": 1 }
     }
   },
   "deep_sea": {
@@ -143,7 +159,9 @@
       "icon": "🌊",
       "isWater": true,
       "isPassable": true,
-      "movementCost": 1
+      "movementCost": 1,
+      "buildable": false,
+      "capacity": { "army": 0, "building": 0 }
     }
   },
   "coast": {
@@ -159,7 +177,9 @@
       "color": "#4fc3f7",
       "icon": "🏖️",
       "isPassable": true,
-      "movementCost": 2
+      "movementCost": 2,
+      "buildable": true,
+      "capacity": { "army": 3, "building": 2 }
     }
   }
 }

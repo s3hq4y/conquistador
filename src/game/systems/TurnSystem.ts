@@ -27,6 +27,9 @@ export class TurnSystem extends GameSystem {
     this.movementSystem = this.engine.getSystems().find(s => s instanceof MovementSystem) as MovementSystem;
     this.unitRenderSystem = this.engine.getSystems().find(s => s instanceof UnitRenderSystem) as UnitRenderSystem;
 
+    const currentPlayerId = this.gameStore.getCurrentPlayerId();
+    this.gameEventStore.setCurrentPlayer(currentPlayerId);
+
     window.__endTurn = () => this.endTurn();
   }
 
