@@ -5,7 +5,6 @@ import type { PlayerInfo } from '../../../stores/game';
 const props = defineProps<{
   turn: number;
   currentPlayer: PlayerInfo | null;
-  isHotseat: boolean;
   locale: string;
   ducat: number;
 }>();
@@ -42,7 +41,6 @@ const switchLocale = (newLocale: string) => {
           :style="{ backgroundColor: currentPlayer.color }"
         ></div>
         <span class="text-stone-300 text-sm">{{ currentPlayer.name }}</span>
-        <span v-if="isHotseat" class="text-stone-500 text-xs">({{ t('game.hotseat') }})</span>
       </div>
     </div>
     

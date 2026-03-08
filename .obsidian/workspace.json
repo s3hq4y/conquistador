@@ -20,8 +20,21 @@
               "icon": "lucide-file",
               "title": "README"
             }
+          },
+          {
+            "id": "0714634ef006ed73",
+            "type": "leaf",
+            "state": {
+              "type": "release-notes",
+              "state": {
+                "currentVersion": "1.12.4"
+              },
+              "icon": "lucide-book-up",
+              "title": "版本说明 1.12.4"
+            }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -183,7 +196,7 @@
       "bases:新建数据库": false
     }
   },
-  "active": "9044a28c07444273",
+  "active": "0714634ef006ed73",
   "lastOpenFiles": [
     "vite.config.ts.timestamp-1772206046566-66d772eff2fc.mjs",
     "vite.config.ts.timestamp-1772147548570-96c34601394b7.mjs",

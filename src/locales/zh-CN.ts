@@ -23,14 +23,12 @@ export default {
     description: '选择启动模式开始游戏，支持随机生成地图或自定义创建',
     buttons: {
       singlePlayer: '单人模式',
-      hotseat: '热座模式',
       randomMap: '生成随机地图',
       customMap: '自定义地图',
       gameMode: '游戏模式'
     },
     descriptions: {
       singlePlayer: '与AI或其他玩家对战',
-      hotseat: '多人轮流在同一台设备上游玩',
       gameMode: '加载示例场景开始游戏',
       randomMap: '程序化生成独特地形',
       customMap: '从零开始构建你的世界'
@@ -76,7 +74,6 @@ export default {
     drag: '拖拽',
     move: '移动',
     turn: '回合',
-    hotseat: '热座',
     playerSwitch: '切换玩家',
     playerSwitchHint: '请将设备交给下一位玩家',
     aiTurnTitle: 'AI 回合',

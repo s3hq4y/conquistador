@@ -68,8 +68,7 @@ export class TurnSystem extends GameSystem {
   }
 
   private isAIControlledPlayer(player: { isAI: boolean; isLocal: boolean }): boolean {
-    if (player.isAI) return true;
-    return this.gameStore.isSingle && !player.isLocal;
+    return player.isAI;
   }
 
   private calculateIncome(): void {

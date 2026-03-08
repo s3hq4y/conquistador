@@ -62,7 +62,6 @@ const combatResult = ref<{ show: boolean; attackerDamage: number; defenderDamage
 const ducat = computed(() => gameStore.getResource('ducat'));
 
 const currentPlayer = computed(() => gameStore.currentPlayer);
-const isHotseat = computed(() => gameStore.isHotseat);
 const isAITurn = computed(() => gameEventStore.isAITurn);
 
 const selectedTile = computed(() => gameEventStore.selectedTile);
@@ -98,9 +97,7 @@ const terrainName = computed(() => {
 const handleEndTurn = () => {
   if (window.__endTurn) {
     window.__endTurn();
-    if (!gameStore.isHotseat) {
-      turn.value++;
-    }
+    turn.value++;
   }
 };
 
@@ -134,9 +131,7 @@ const handlePlayerChanged = () => {
 };
 
 const shouldShowPlayerSwitch = (): boolean => {
-  const player = currentPlayer.value;
-  if (!player) return false;
-  return isHotseat.value && player.isLocal && !player.isAI;
+  return false;
 };
 
 const handleCombatExecuted = (event: CustomEvent) => {
@@ -359,7 +354,6 @@ onUnmounted(() => {
     <GameTopBar 
       :turn="turn"
       :current-player="currentPlayer"
-      :is-hotseat="isHotseat"
       :locale="locale"
       :ducat="ducat"
       @update:locale="switchLocale"
