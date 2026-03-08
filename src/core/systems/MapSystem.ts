@@ -4,6 +4,7 @@ import type { GameEngine } from '../engine';
 import { HexTile } from '../../components/HexTile';
 import { TextureManager } from '../utils/TextureManager';
 import { debug } from '../utils/debug';
+import { DIRECTIONS, DIRECTION_TO_EDGE } from '../constants';
 
 type MapMode = 'NONE' | 'RANDOM' | 'CUSTOM';
 
@@ -398,28 +399,14 @@ export class MapSystem extends GameSystem {
   }
 
   private calculateBorderEdges(tile: Tile): number[] {
-    const directions = [
-      [1, 0], [1, -1], [0, -1],
-      [-1, 0], [-1, 1], [0, 1]
-    ];
-    
-    const directionToEdge: { [key: number]: number } = {
-      0: 1,
-      1: 0,
-      2: 5,
-      3: 4,
-      4: 3,
-      5: 2
-    };
-    
     const borderEdges: number[] = [];
     
-    for (let i = 0; i < 6; i++) {
-      const [dq, dr] = directions[i];
+    for (let i = 0; i < DIRECTIONS.length; i++) {
+      const [dq, dr] = DIRECTIONS[i];
       const neighbor = this.grid.getTile(tile.q + dq, tile.r + dr);
       
       if (!neighbor || neighbor.owner !== tile.owner) {
-        borderEdges.push(directionToEdge[i]);
+        borderEdges.push(DIRECTION_TO_EDGE[i]);
       }
     }
     
@@ -497,30 +484,16 @@ export class MapSystem extends GameSystem {
   }
 
   private calculateBorderEdgesForOwner(q: number, r: number, _ownerId: string, ownerTiles: Set<string>): number[] {
-    const directions = [
-      [1, 0], [1, -1], [0, -1],
-      [-1, 0], [-1, 1], [0, 1]
-    ];
-    
-    const directionToEdge: { [key: number]: number } = {
-      0: 1,
-      1: 0,
-      2: 5,
-      3: 4,
-      4: 3,
-      5: 2
-    };
-    
     const borderEdges: number[] = [];
     
-    for (let i = 0; i < 6; i++) {
-      const [dq, dr] = directions[i];
+    for (let i = 0; i < DIRECTIONS.length; i++) {
+      const [dq, dr] = DIRECTIONS[i];
       const nq = q + dq;
       const nr = r + dr;
       const nKey = `${nq},${nr}`;
       
       if (!ownerTiles.has(nKey)) {
-        borderEdges.push(directionToEdge[i]);
+        borderEdges.push(DIRECTION_TO_EDGE[i]);
       }
     }
     

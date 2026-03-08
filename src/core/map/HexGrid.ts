@@ -15,6 +15,7 @@
  */
 
 import { Tile } from './Tile';
+import { DIRECTIONS, DIRECTION_TO_EDGE } from '../constants';
 
 /**
  * HexGrid 类 - 六边形网格数据管理
@@ -220,10 +221,6 @@ export class HexGrid {
    * 方向4: (-1, +1)  - 西北（屏幕左上方）
    * 方向5: (0, +1)   - 南（屏幕下方）
    */
-  private static readonly DIRECTIONS = [
-    [1, 0], [1, -1], [0, -1],
-    [-1, 0], [-1, 1], [0, 1]
-  ] as const;
 
   /**
    * 获取指定位置的所有邻居地块
@@ -236,7 +233,7 @@ export class HexGrid {
     const neighbors: Tile[] = [];
     
     // 遍历6个方向
-    for (const [dq, dr] of HexGrid.DIRECTIONS) {
+    for (const [dq, dr] of DIRECTIONS) {
       const tile = this.getTile(q + dq, r + dr);
       if (tile) {
         neighbors.push(tile);
@@ -259,7 +256,7 @@ export class HexGrid {
   getEmptyNeighbors(q: number, r: number): { q: number; r: number }[] {
     const emptyNeighbors: { q: number; r: number }[] = [];
 
-    for (const [dq, dr] of HexGrid.DIRECTIONS) {
+    for (const [dq, dr] of DIRECTIONS) {
       const nq = q + dq;
       const nr = r + dr;
       // 检查该位置是否没有地块
@@ -348,20 +345,10 @@ export class HexGrid {
     const dr = tileB.r - tileA.r;
 
     // 查找方向索引
-    for (let i = 0; i < HexGrid.DIRECTIONS.length; i++) {
-      if (HexGrid.DIRECTIONS[i][0] === dq && HexGrid.DIRECTIONS[i][1] === dr) {
-        // 方向到边的映射（尖顶六边形）
-        const directionToEdge: { [key: number]: number } = {
-          0: 1,  // 方向0 → 边1
-          1: 0,  // 方向1 → 边0
-          2: 5,  // 方向2 → 边5
-          3: 4,  // 方向3 → 边4
-          4: 3,  // 方向4 → 边3
-          5: 2   // 方向5 → 边2
-        };
-
-        const edgeA = directionToEdge[i];
-        const edgeB = directionToEdge[(i + 3) % 6]; // 对边的索引 = (i + 3) % 6
+    for (let i = 0; i < DIRECTIONS.length; i++) {
+      if (DIRECTIONS[i][0] === dq && DIRECTIONS[i][1] === dr) {
+        const edgeA = DIRECTION_TO_EDGE[i];
+        const edgeB = DIRECTION_TO_EDGE[(i + 3) % 6]; // 对边的索引 = (i + 3) % 6
 
         return { edgeA, edgeB };
       }

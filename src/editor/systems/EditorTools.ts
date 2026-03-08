@@ -4,6 +4,7 @@ import type { EditorUI, SelectedUnit } from '../EditorUI';
 import type { UnitInstance } from '../../core/map/SceneData';
 import { TraitManager } from '../../core/traits';
 import { debug } from '../../core/utils/debug';
+import { DIRECTIONS } from '../../core/constants';
 
 export class EditorTools {
   private mapSystem: MapSystem | null;
@@ -201,10 +202,6 @@ export class EditorTools {
 
     const visited = new Set<string>();
     const queue: [number, number][] = [[startQ, startR]];
-    const directions = [
-      [1, 0], [0, 1], [-1, 1],
-      [-1, 0], [0, -1], [1, -1]
-    ];
 
     while (queue.length > 0) {
       const [q, r] = queue.shift()!;
@@ -233,7 +230,7 @@ export class EditorTools {
         this.mapSystem.updateTileOwner(q, r, newOwner);
       }
 
-      for (const [dq, dr] of directions) {
+      for (const [dq, dr] of DIRECTIONS) {
         queue.push([q + dq, r + dr]);
       }
     }

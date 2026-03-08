@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { debug } from '../core/utils/debug';
+import type { SceneData } from '../core/map';
 
 export interface UnitInfo {
   id: string
@@ -67,7 +68,7 @@ export const useGameEventStore = defineStore('gameEvent', () => {
   const currentTurn = ref(0)
   const isAITurn = ref(false)
   
-  const mapData = ref<any>(null)
+  const mapData = ref<SceneData | null>(null)
 
   const tileUnits = ref<TileUnitInfo[]>([])
   const showTileUnits = ref(false)
@@ -135,7 +136,7 @@ export const useGameEventStore = defineStore('gameEvent', () => {
     isAITurn.value = value
   }
 
-  function setMapData(data: any) {
+  function setMapData(data: SceneData) {
     mapData.value = data
   }
 

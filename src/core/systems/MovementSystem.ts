@@ -4,6 +4,7 @@ import type { GameEngine } from '../engine';
 import type { UnitInstance } from '../map/SceneData';
 import { TraitManager } from '../traits';
 import { debug } from '../utils/debug';
+import type { MapSystem } from './MapSystem';
 
 export type UnitType = 'land' | 'sea' | 'air';
 export type { UnitInstance } from '../map/SceneData';
@@ -22,7 +23,7 @@ interface UnitState {
 
 export class MovementSystem extends GameSystem {
   private grid: HexGrid | null = null;
-  private mapSystem: any = null;
+  private mapSystem: MapSystem | null = null;
   private terrainGroups: TerrainGroups = {
     land: ['plains', 'grassland', 'forest', 'hill', 'mountain', 'desert', 'tundra'],
     sea: ['shallow_sea', 'deep_sea', 'coast'],
@@ -63,7 +64,8 @@ export class MovementSystem extends GameSystem {
   }
 
   private onMapLoaded(sceneData: SceneData): void {
-    this.mapSystem = this.engine.getSystems().find(s => s.constructor.name === 'MapSystem');
+    const found = this.engine.getSystems().find(s => s.constructor.name === 'MapSystem');
+    this.mapSystem = found as MapSystem | null;
     if (this.mapSystem && this.mapSystem.getGrid) {
       this.grid = this.mapSystem.getGrid();
     }

@@ -1,3 +1,5 @@
+import { DIRECTIONS } from '../../core/constants';
+
 export class MovementRangeSystem {
   private grid: any;
   private terrainTypes: Map<string, { movementCost: number; isPassable: boolean }> = new Map();
@@ -36,10 +38,6 @@ export class MovementRangeSystem {
     }
 
     const getKey = (q: number, r: number): string => `${q},${r}`;
-    const directions = [
-      [1, 0], [1, -1], [0, -1],
-      [-1, 0], [-1, 1], [0, 1]
-    ];
 
     const costs = new Map<string, number>();
     const queue: { q: number; r: number; cost: number }[] = [];
@@ -59,7 +57,7 @@ export class MovementRangeSystem {
         reachable.set(currentKey, { q: current.q, r: current.r, cost: current.cost });
       }
 
-      for (const [dq, dr] of directions) {
+      for (const [dq, dr] of DIRECTIONS) {
         const nq = current.q + dq;
         const nr = current.r + dr;
         const neighborKey = getKey(nq, nr);

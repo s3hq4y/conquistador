@@ -1,3 +1,5 @@
+import { DIRECTIONS } from '../../../core/constants';
+
 export class PathfindingSystem {
   private grid: any;
   private debug: boolean = false;
@@ -44,11 +46,6 @@ export class PathfindingSystem {
     fScore.set(startKey, this.heuristic(startQ, startR, endQ, endR));
     openSet.add(startKey);
 
-    const directions = [
-      [1, 0], [1, -1], [0, -1],
-      [-1, 0], [-1, 1], [0, 1]
-    ];
-
     let iterations = 0;
     const maxIterations = 1000;
 
@@ -82,7 +79,7 @@ export class PathfindingSystem {
       const [cq, cr] = current.split(',').map(Number);
       if (this.debug) console.log('Processing current:', current, 'neighbors check:');
 
-      for (const [dq, dr] of directions) {
+      for (const [dq, dr] of DIRECTIONS) {
         const nq = cq + dq;
         const nr = cr + dr;
         const neighbor = getKey(nq, nr);

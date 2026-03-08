@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 
 export type GameMode = 'GAME' | 'RANDOM' | 'CUSTOM';
+export type GameType = 'single' | 'hotseat' | 'online';
 
 export interface PlayerInfo {
   id: string;
@@ -21,6 +22,7 @@ export interface OwnerStates {
 
 export const useGameStore = defineStore('game', () => {
   const gameMode = ref<GameMode | null>(null);
+  const gameType = ref<GameType | null>(null);
   const isGameStarted = ref(false);
   const isPaused = ref(false);
   const players = ref<PlayerInfo[]>([]);
@@ -37,6 +39,10 @@ export const useGameStore = defineStore('game', () => {
   function setGameMode(mode: GameMode) {
     gameMode.value = mode;
     isGameStarted.value = true;
+  }
+
+  function setGameType(type: GameType) {
+    gameType.value = type;
   }
 
   function setPlayers(newPlayers: PlayerInfo[]) {
@@ -67,6 +73,7 @@ export const useGameStore = defineStore('game', () => {
 
   function resetGame() {
     gameMode.value = null;
+    gameType.value = null;
     isGameStarted.value = false;
     isPaused.value = false;
     players.value = [];
@@ -134,6 +141,7 @@ export const useGameStore = defineStore('game', () => {
 
   return {
     gameMode,
+    gameType,
     isGameStarted,
     isPaused,
     isPlaying,
@@ -144,6 +152,7 @@ export const useGameStore = defineStore('game', () => {
     ownerStates,
     currentOwnerState,
     setGameMode,
+    setGameType,
     setPlayers,
     nextPlayer,
     getCurrentPlayerId,

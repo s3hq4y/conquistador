@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { useGameStore, type GameMode, type PlayerInfo } from '../stores/game';
+import { useGameStore, type GameMode, type GameType, type PlayerInfo } from '../stores/game';
 
 const router = useRouter();
 const { t, locale } = useI18n();
