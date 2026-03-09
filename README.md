@@ -114,15 +114,22 @@ Add `?debug=module` to URL to enable debug logs:
 src/
 ├── core/               # Core game systems
 │   ├── systems/       # Game systems (Map, Movement, Combat, etc.)
+│   │   └── movement/  # Movement system submodules
+│   │       ├── PathfindingSystem.ts  # Pathfinding (Dijkstra)
+│   │       ├── TerrainManager.ts     # Terrain groups & movement cost
+│   │       ├── UnitStateManager.ts   # Unit state (moves, attack status)
+│   │       └── UnitManager.ts        # Unit CRUD operations
 │   ├── map/           # Hex grid and tile implementations
-│   ├── traits/        # Unit traits and combat system
-│   └── unit/          # Unit type definitions
-├── game/              # Game mode implementation
-│   ├── systems/       # Input, Selection, Turn systems
-│   └── components/    # Game UI components
-├── editor/            # Scene editor module
-├── stores/            # Pinia stores (game state)
-└── ui/                # Vue pages
+│   ├── traits/       # Unit traits and combat system
+│   ├── unit/         # Unit type definitions
+│   ├── constants/   # Shared constants (directions.ts)
+│   └── utils/hex/   # Hex utilities (HexMeshUtils.ts)
+├── game/             # Game mode implementation
+│   ├── systems/      # Input, Selection, Turn systems
+│   └── components/  # Game UI components
+├── editor/           # Scene editor module
+├── stores/           # Pinia stores (game state)
+└── ui/               # Vue pages
 ```
 
 ---
@@ -226,9 +233,16 @@ npm run dev:all
 src/
 ├── core/               # 核心游戏系统
 │   ├── systems/       # 游戏系统（地图、移动、战斗等）
+│   │   └── movement/  # 移动系统子模块
+│   │       ├── PathfindingSystem.ts  # 寻路算法（Dijkstra）
+│   │       ├── TerrainManager.ts     # 地形组/移动成本
+│   │       ├── UnitStateManager.ts   # 单位状态管理
+│   │       └── UnitManager.ts        # 单位 CRUD 操作
 │   ├── map/           # 六边形网格和地块实现
 │   ├── traits/        # 单位特性和战斗系统
-│   └── unit/          # 单位类型定义
+│   ├── unit/          # 单位类型定义
+│   ├── constants/     # 共享常量（directions.ts）
+│   └── utils/hex/     # 六边形工具函数
 ├── game/              # 游戏模式实现
 │   ├── systems/       # 输入、选择、回合系统
 │   └── components/    # 游戏 UI 组件
