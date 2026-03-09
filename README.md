@@ -114,11 +114,14 @@ Add `?debug=module` to URL to enable debug logs:
 src/
 ├── core/               # Core game systems
 │   ├── systems/       # Game systems (Map, Movement, Combat, etc.)
-│   │   └── movement/  # Movement system submodules
-│   │       ├── PathfindingSystem.ts  # Pathfinding (Dijkstra)
-│   │       ├── TerrainManager.ts     # Terrain groups & movement cost
-│   │       ├── UnitStateManager.ts   # Unit state (moves, attack status)
-│   │       └── UnitManager.ts        # Unit CRUD operations
+│   │   ├── movement/  # Movement system submodules
+│   │   │   ├── PathfindingSystem.ts  # Pathfinding (Dijkstra)
+│   │   │   ├── TerrainManager.ts     # Terrain groups & movement cost
+│   │   │   ├── UnitStateManager.ts   # Unit state (moves, attack status)
+│   │   │   └── UnitManager.ts        # Unit CRUD operations
+│   │   └── map/     # Map system submodules
+│   │       ├── BorderSystem.ts       # Border calculation (BFS)
+│   │       └── TerrainRegistry.ts     # Terrain/owner definitions
 │   ├── map/           # Hex grid and tile implementations
 │   ├── traits/       # Unit traits and combat system
 │   ├── unit/         # Unit type definitions
@@ -238,6 +241,9 @@ src/
 │   │       ├── TerrainManager.ts     # 地形组/移动成本
 │   │       ├── UnitStateManager.ts   # 单位状态管理
 │   │       └── UnitManager.ts        # 单位 CRUD 操作
+│   │   └── map/     # 地图系统子模块
+│   │       ├── BorderSystem.ts       # 边境计算（BFS）
+│   │       └── TerrainRegistry.ts     # 地形/归属定义管理
 │   ├── map/           # 六边形网格和地块实现
 │   ├── traits/        # 单位特性和战斗系统
 │   ├── unit/          # 单位类型定义

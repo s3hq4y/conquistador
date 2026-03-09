@@ -1,10 +1,10 @@
-import { GameSystem } from './GameSystem';
-import { HexGrid, Tile, SceneData, TerrainTypeDefinition, OwnerTagDefinition, createEmptyScene, DEFAULT_TERRAIN_TYPES, DEFAULT_OWNER_TAGS, terrainInstanceToDefinition, ownerInstanceToDefinition, setEdgeConfigs } from '../map';
-import type { GameEngine } from '../engine';
-import { HexTile } from '../../components/HexTile';
-import { TextureManager } from '../utils/TextureManager';
-import { debug } from '../utils/debug';
-import { DIRECTIONS, DIRECTION_TO_EDGE } from '../constants';
+import { GameSystem } from '@core/systems/GameSystem';
+import { HexGrid, Tile, SceneData, TerrainTypeDefinition, OwnerTagDefinition, createEmptyScene, setEdgeConfigs } from '@core/map';
+import type { GameEngine } from '@core/engine';
+import { HexTile } from '@components/HexTile';
+import { TextureManager } from '@core/utils/TextureManager';
+import { debug } from '@core/utils/debug';
+import { BorderSystem, TerrainRegistry } from './map';
 
 type MapMode = 'NONE' | 'RANDOM' | 'CUSTOM';
 
@@ -14,9 +14,10 @@ export class MapSystem extends GameSystem {
   private tileEntities: Map<string, HexTile> = new Map();
   private mode: MapMode = 'NONE';
   private sceneData: SceneData;
-  private terrainTypes: Map<string, TerrainTypeDefinition> = new Map();
-  private ownerTags: Map<string, OwnerTagDefinition> = new Map();
   private textureManager: TextureManager;
+  
+  private borderSystem: BorderSystem;
+  private terrainRegistry: TerrainRegistry;
 
   constructor(engine: GameEngine, hexSize: number = 50) {
     super(engine);
@@ -24,20 +25,13 @@ export class MapSystem extends GameSystem {
     this.grid = new HexGrid(10, hexSize);
     this.sceneData = createEmptyScene();
     this.textureManager = new TextureManager(engine.getApplication());
-    this.initDefaultDefinitions();
+    this.borderSystem = new BorderSystem();
+    this.terrainRegistry = new TerrainRegistry();
+    this.borderSystem.setGrid(this.grid);
   }
 
   getTextureManager(): TextureManager {
     return this.textureManager;
-  }
-
-  private initDefaultDefinitions(): void {
-    Object.entries(DEFAULT_TERRAIN_TYPES).forEach(([id, instance]) => {
-      this.terrainTypes.set(id, terrainInstanceToDefinition(id, instance));
-    });
-    Object.entries(DEFAULT_OWNER_TAGS).forEach(([id, instance]) => {
-      this.ownerTags.set(id, ownerInstanceToDefinition(id, instance));
-    });
   }
 
   initialize(): void {
@@ -45,24 +39,21 @@ export class MapSystem extends GameSystem {
   }
 
   private async preloadTerrainTextures(): Promise<void> {
-    const textureConfigs = new Map<string, number>(); // path -> rotateDegrees
+    const textureConfigs = new Map<string, number>();
     
-    // 收集所有地形定义的纹理路径和旋转角度
-    for (const terrainDef of this.terrainTypes.values()) {
+    for (const terrainDef of this.terrainRegistry.getAllTerrainTypes()) {
       if (terrainDef.texture) {
-        // 尖顶几何体旋转30°后视觉为平顶，所以纹理需要反向旋转210°（30° + 180°）
         textureConfigs.set(terrainDef.texture, 210);
       }
     }
     
-    debug.scene('preloadTerrainTextures: terrain types count:', this.terrainTypes.size, 'texture configs:', textureConfigs.size);
+    debug.scene('preloadTerrainTextures: terrain types count:', this.terrainRegistry.getAllTerrainTypes().length, 'texture configs:', textureConfigs.size);
     
     if (textureConfigs.size === 0) {
       debug.scene('preloadTerrainTextures: no textures to load');
-      return Promise.resolve();
+      return;
     }
     
-    // 预加载所有纹理
     const loadPromises = Array.from(textureConfigs.entries()).map(([path, rotateDegrees]) => {
       return this.textureManager.loadTexture(path, rotateDegrees).catch(err => {
         debug.scene('Failed to load texture:', path, err);
@@ -77,17 +68,9 @@ export class MapSystem extends GameSystem {
     }
     
     debug.scene('preloadTerrainTextures: proceeding with tile creation (with or without textures)');
-    
-    // 纹理加载完成后，刷新所有地块材质
     this.refreshAllTileTextures();
-    
-    return;
   }
-  
-  /**
-   * 刷新所有地块的材质纹理
-   * 在纹理异步加载完成后调用
-   */
+
   private refreshAllTileTextures(): void {
     for (const hexTile of this.tileEntities.values()) {
       hexTile.refreshTerrain(this.textureManager);
@@ -104,23 +87,23 @@ export class MapSystem extends GameSystem {
   }
 
   getTerrainDef(id: string): TerrainTypeDefinition {
-    return this.terrainTypes.get(id) || this.terrainTypes.get('plains')!;
+    return this.terrainRegistry.getTerrainDef(id);
   }
 
   getOwnerDef(id: string): OwnerTagDefinition {
-    return this.ownerTags.get(id) || this.ownerTags.get('neutral')!;
+    return this.terrainRegistry.getOwnerDef(id);
   }
 
   getAllTerrainTypes(): TerrainTypeDefinition[] {
-    return Array.from(this.terrainTypes.values());
+    return this.terrainRegistry.getAllTerrainTypes();
   }
 
   getAllOwnerTags(): OwnerTagDefinition[] {
-    return Array.from(this.ownerTags.values());
+    return this.terrainRegistry.getAllOwnerTags();
   }
 
   addTerrainType(def: TerrainTypeDefinition): void {
-    this.terrainTypes.set(def.id, def);
+    this.terrainRegistry.addTerrainType(def);
     this.sceneData.terrainTypes[def.id] = {
       components: {
         name: def.name,
@@ -136,7 +119,7 @@ export class MapSystem extends GameSystem {
   }
 
   addOwnerTag(def: OwnerTagDefinition): void {
-    this.ownerTags.set(def.id, def);
+    this.terrainRegistry.addOwnerTag(def);
     this.sceneData.ownerTags[def.id] = {
       components: {
         name: def.name,
@@ -150,7 +133,7 @@ export class MapSystem extends GameSystem {
   }
 
   updateTerrainType(def: TerrainTypeDefinition): void {
-    this.terrainTypes.set(def.id, def);
+    this.terrainRegistry.updateTerrainType(def);
     this.sceneData.terrainTypes[def.id] = {
       components: {
         name: def.name,
@@ -165,7 +148,7 @@ export class MapSystem extends GameSystem {
   }
 
   updateOwnerTag(def: OwnerTagDefinition): void {
-    this.ownerTags.set(def.id, def);
+    this.terrainRegistry.updateOwnerTag(def);
     this.sceneData.ownerTags[def.id] = {
       components: {
         name: def.name,
@@ -288,15 +271,6 @@ export class MapSystem extends GameSystem {
     try {
       debug.scene('loadSceneData called, tiles count:', data.tiles?.length || 0);
       this.sceneData = data;
-      this.terrainTypes.clear();
-      this.ownerTags.clear();
-      
-      Object.entries(data.terrainTypes).forEach(([id, instance]) => {
-        this.terrainTypes.set(id, terrainInstanceToDefinition(id, instance));
-      });
-      Object.entries(data.ownerTags).forEach(([id, instance]) => {
-        this.ownerTags.set(id, ownerInstanceToDefinition(id, instance));
-      });
       
       if (data.edgeTypes) {
         setEdgeConfigs(data.edgeTypes as Record<string, { color: { r: number; g: number; b: number }; width: number; alpha: number; layers: number }>);
@@ -304,35 +278,34 @@ export class MapSystem extends GameSystem {
       
       this.hexSize = data.settings.hexSize;
       this.grid = new HexGrid(10, this.hexSize);
+      this.borderSystem.setGrid(this.grid);
       
       this.clearMap();
       
       debug.scene('Preloading terrain textures...');
-      // 预加载场景的纹理
+      
+      const loadTiles = () => {
+        // @ts-ignore - SceneData types are complex
+        this.terrainRegistry.loadFromSceneData(data.terrainTypes, data.ownerTags);
+        
+        for (const tileData of data.tiles) {
+          const tile = Tile.fromJSON(tileData);
+          this.grid.addTile(tile);
+          this.createTileEntity(tile);
+        }
+        debug.scene('Tiles created, tileEntities count:', this.tileEntities.size);
+        this.updateAllBorderStates();
+        this.engine.getEventBus().emit('map:loaded', data);
+      };
+      
       this.preloadTerrainTextures()
         .then(() => {
           debug.scene('Texture preloaded, creating tiles...');
-          // 纹理预加载完成后创建地块
-          for (const tileData of data.tiles) {
-            const tile = Tile.fromJSON(tileData);
-            this.grid.addTile(tile);
-            this.createTileEntity(tile);
-          }
-          debug.scene('Tiles created, tileEntities count:', this.tileEntities.size);
-          this.updateAllBorderStates();
-          this.engine.getEventBus().emit('map:loaded', data);
+          loadTiles();
         })
         .catch(err => {
           debug.scene('Error in preloadTerrainTextures:', err);
-          // 即使出错也尝试创建地块
-          for (const tileData of data.tiles) {
-            const tile = Tile.fromJSON(tileData);
-            this.grid.addTile(tile);
-            this.createTileEntity(tile);
-          }
-          debug.scene('Tiles created (after error), tileEntities count:', this.tileEntities.size);
-          this.updateAllBorderStates();
-          this.engine.getEventBus().emit('map:loaded', data);
+          loadTiles();
         });
       
       return true;
@@ -374,129 +347,6 @@ export class MapSystem extends GameSystem {
   }
 
   updateAllBorderStates(): void {
-    const ownerRegions = this.findOwnerRegions();
-    
-    for (const hexTile of this.tileEntities.values()) {
-      const tile = hexTile.getTile();
-      const key = tile.getKey();
-      const region = ownerRegions.get(tile.owner);
-      
-      if (!region) {
-        hexTile.setBorderState(false, 0, []);
-        continue;
-      }
-
-      const isBorder = region.borderTiles.has(key);
-      let distanceFromBorder = 0;
-
-      if (!isBorder && region.tileDistances.has(key)) {
-        distanceFromBorder = region.tileDistances.get(key)!;
-      }
-
-      const borderEdges = this.calculateBorderEdges(tile);
-      hexTile.setBorderState(isBorder, distanceFromBorder, borderEdges);
-    }
-  }
-
-  private calculateBorderEdges(tile: Tile): number[] {
-    const borderEdges: number[] = [];
-    
-    for (let i = 0; i < DIRECTIONS.length; i++) {
-      const [dq, dr] = DIRECTIONS[i];
-      const neighbor = this.grid.getTile(tile.q + dq, tile.r + dr);
-      
-      if (!neighbor || neighbor.owner !== tile.owner) {
-        borderEdges.push(DIRECTION_TO_EDGE[i]);
-      }
-    }
-    
-    return borderEdges;
-  }
-
-  private findOwnerRegions(): Map<string, { 
-    borderTiles: Set<string>, 
-    tileDistances: Map<string, number>,
-    borderEdges: Map<string, number[]>
-  }> {
-    const regions = new Map<string, { 
-      borderTiles: Set<string>, 
-      tileDistances: Map<string, number>,
-      borderEdges: Map<string, number[]>
-    }>();
-
-    const tiles = this.grid.getTiles();
-    const ownerGroups = new Map<string, Set<string>>();
-
-    for (const tile of tiles) {
-      if (!ownerGroups.has(tile.owner)) {
-        ownerGroups.set(tile.owner, new Set());
-      }
-      ownerGroups.get(tile.owner)!.add(tile.getKey());
-    }
-
-    for (const [ownerId, tileKeys] of ownerGroups) {
-      const borderTiles = new Set<string>();
-      const tileDistances = new Map<string, number>();
-      const borderEdgesMap = new Map<string, number[]>();
-
-      for (const key of tileKeys) {
-        const { q, r } = Tile.fromKey(key);
-        const edges = this.calculateBorderEdgesForOwner(q, r, ownerId, tileKeys);
-        
-        if (edges.length > 0) {
-          borderTiles.add(key);
-          tileDistances.set(key, 0);
-          borderEdgesMap.set(key, edges);
-        }
-      }
-
-      const visited = new Set<string>(borderTiles);
-      let currentWave = Array.from(borderTiles);
-      let distance = 1;
-
-      while (currentWave.length > 0 && distance <= 3) {
-        const nextWave: string[] = [];
-
-        for (const key of currentWave) {
-          const { q, r } = Tile.fromKey(key);
-          const neighbors = this.grid.getNeighbors(q, r);
-
-          for (const neighbor of neighbors) {
-            const nKey = neighbor.getKey();
-            if (!visited.has(nKey) && tileKeys.has(nKey)) {
-              visited.add(nKey);
-              tileDistances.set(nKey, distance);
-              const edges = this.calculateBorderEdgesForOwner(neighbor.q, neighbor.r, ownerId, tileKeys);
-              borderEdgesMap.set(nKey, edges);
-              nextWave.push(nKey);
-            }
-          }
-        }
-
-        currentWave = nextWave;
-        distance++;
-      }
-
-      regions.set(ownerId, { borderTiles, tileDistances, borderEdges: borderEdgesMap });
-    }
-
-    return regions;
-  }
-
-  private calculateBorderEdgesForOwner(q: number, r: number, _ownerId: string, ownerTiles: Set<string>): number[] {
-    const borderEdges: number[] = [];
-    
-    for (let i = 0; i < DIRECTIONS.length; i++) {
-      const [dq, dr] = DIRECTIONS[i];
-      const nq = q + dq;
-      const nr = r + dr;
-      const nKey = `${nq},${nr}`;
-      
-      if (!ownerTiles.has(nKey)) {
-        borderEdges.push(DIRECTION_TO_EDGE[i]);
-      }
-    }
-    
-    return borderEdges;
+    this.borderSystem.updateAllBorderStates(this.tileEntities);
   }
 }
