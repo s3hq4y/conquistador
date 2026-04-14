@@ -13,6 +13,7 @@
 
 [English](#english) | [中文](#中文)
 
+![image](/image.png)
 ---
 
 ## English
